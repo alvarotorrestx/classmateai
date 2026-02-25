@@ -1,0 +1,37 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+*.pyc
+__pycache__/
+*.sqlite3
+*.db
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*.iml
+
+# Server
+/server/.venv/
+/server/venv/
+/server/.pytest_cache/
+/server/.mypy_cache/
+/server/.ruff_cache/
+/server/.coverage
+/server/htmlcov/
+/server/alembic/versions/*.pyc
+/server/*.db
+/server/*.sqlite
+/server/*.sqlite3
+
+# Client
+/client/node_modules/
+/client/dist/
+/client/.vite/
+/client/.DS_Store
+
