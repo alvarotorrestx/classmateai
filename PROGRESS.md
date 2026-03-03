@@ -291,7 +291,7 @@ an attacker from enumerating which IDs exist).
 
 ---
 
-## Phase 4 — AI Generation 🔲 NOT STARTED
+## Phase 4 — AI Generation ✅ COMPLETE
 
 ### What needs to be built
 
@@ -512,6 +512,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 | 1 — Database layer | ✅ Done | 9 SQLAlchemy models, Alembic migrations, DB wiring |
 | 2 — Auth layer | ✅ Done | Register, login, JWT, `get_current_user` dependency |
 | 3 — Notes API | ✅ Done | CRUD endpoints for notes |
-| 4 — AI generation | 🔲 Next | Claude API integration, study set generation |
-| 5 — Study content routes | 🔲 Pending | Fetch content, record quiz attempts and flashcard reviews |
+| 4 — AI generation | ✅ Done | Claude API integration, study set generation |
+| 5 — Study content routes | 🔲 Next | Fetch content, record quiz attempts and flashcard reviews |
 | 6 — Frontend | 🔲 Pending | React SPA — auth, dashboard, note, study set views |

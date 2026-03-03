@@ -5,10 +5,12 @@ from db import get_db, engine
 from sqlalchemy import text
 from routes.auth import router as auth_router
 from routes.notes import router as notes_router
+from routes.generate import router as generate_router
 
 app = FastAPI()
 app.include_router(auth_router)
 app.include_router(notes_router)
+app.include_router(generate_router)
 
 @app.get("/")
 def read_root():
