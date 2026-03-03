@@ -1,4 +1,4 @@
-import models  # noqa: F401 — registers all ORM models
+import models
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from db import get_db, engine
@@ -16,9 +16,7 @@ def read_root():
 
 @app.get("/db-test")
 def test_database(db: Session = Depends(get_db)):
-    """Test database connection"""
     try:
-        # Test the connection by running a simple query
         result = db.execute(text("SELECT version()"))
         version = result.fetchone()[0]
         return {
