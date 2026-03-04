@@ -354,7 +354,7 @@ And `ANTHROPIC_API_KEY` added to `.env` / `.env.example`.
 
 ---
 
-## Phase 5 — Study Content Routes 🔲 NOT STARTED
+## Phase 5 — Study Content Routes ✅ COMPLETE
 
 ### What needs to be built
 
@@ -384,7 +384,7 @@ Read routes to fetch generated content, plus write routes for recording progress
 
 ---
 
-## Phase 6 — Frontend 🔲 NOT STARTED
+## Phase 6 — Frontend 🔲 NEXT
 
 ### What needs to be built
 
@@ -513,5 +513,5 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 | 2 — Auth layer | ✅ Done | Register, login, JWT, `get_current_user` dependency |
 | 3 — Notes API | ✅ Done | CRUD endpoints for notes |
 | 4 — AI generation | ✅ Done | Claude API integration, study set generation |
-| 5 — Study content routes | 🔲 Next | Fetch content, record quiz attempts and flashcard reviews |
-| 6 — Frontend | 🔲 Pending | React SPA — auth, dashboard, note, study set views |
+| 5 — Study content routes | ✅ Done | Fetch content, record quiz attempts and flashcard reviews |
+| 6 — Frontend | 🔲 Next | React SPA — auth, dashboard, note, study set views |
