@@ -191,24 +191,23 @@
   /* Badge base */
   .badge {
     @apply inline-flex items-center rounded-full px-4 py-1 text-sm font-semibold;
-    border-radius: 100%;
   }
 
 
   /* Badge variants */
   .badge-correct {
     background: var(--mint-400);
-    color: black;
+    color: #00241B;
   }
 
   .badge-review {
     background: var(--warning);
-    color: black;
+    color: #3B2705;
   }
 
   .badge-progress {
     background: var(--info);
-    color: white;
+    color: #00241B;
   }
 
 }

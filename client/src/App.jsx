@@ -9,6 +9,8 @@ import upload_notes from './assets/icons/core/upload_notes.svg'
 // Button import and test examples
 import Button from "./components/ui/Button"
 
+// Badge import and test examples
+import Badge from "./components/ui/Badge"
 
 function App() {
 
@@ -25,6 +27,10 @@ function App() {
       <Button variant="ghost" disabled>Cancel</Button>
       <Button size="sm">Small</Button>
       <Button size="lg">Large</Button>
+
+      <Badge>Correct</Badge>
+      <Badge variant="review">Review</Badge>
+      <Badge variant="progress">In Progress</Badge>
     </>
   )
 }
