@@ -97,6 +97,7 @@ A complete SQLAlchemy 2.0 model layer and Alembic migration pipeline.
 | `flashcard_reviews` | Spaced-rep review records | FK → users + flashcards, `confidence` SMALLINT 1–4, immutable |
 
 All tables use:
+
 - UUID primary keys with `gen_random_uuid()` as the server-side default
 - `TIMESTAMPTZ` timestamps via `TimestampMixin` (`created_at`, `updated_at`)
 - Exception: `quiz_attempts` and `flashcard_reviews` are immutable append-only tables so they only have a single `_at` timestamp column
@@ -188,6 +189,7 @@ reusable `get_current_user` FastAPI dependency for protecting routes.
 | `POST` | `/auth/login` | No | Verify credentials, returns JWT |
 
 Both endpoints return the same `AuthResponse` shape:
+
 ```json
 {
   "user": {
@@ -203,6 +205,7 @@ Both endpoints return the same `AuthResponse` shape:
 ```
 
 Error responses:
+
 - `409 Conflict` — email already registered (register)
 - `401 Unauthorized` — wrong email or password (login)
 - `400 Bad Request` — account is inactive (login)
@@ -281,11 +284,13 @@ And `app/main.py` gets: `app.include_router(notes_router)`.
 
 Straightforward SQLAlchemy CRUD. The only non-obvious piece is ownership enforcement —
 every `GET`/`PATCH`/`DELETE` by ID will do:
+
 ```python
 note = db.get(Note, note_id)
 if not note or note.user_id != current_user.id:
     raise HTTPException(404)   # 404 not 403 — don't leak existence
 ```
+
 Returning 404 instead of 403 for unauthorized access is a security best practice (prevents
 an attacker from enumerating which IDs exist).
 
@@ -425,6 +430,172 @@ client/src/
 └── utils/
     └── auth.js                   localStorage token helpers
 ```
+
+---
+
+### Frontend Additions - 3/4/26
+
+# 1. Global Styling and Design System
+
+- A Mint color scale (`--mint-50` → `--mint-950`) used for branding and UI accents
+- Neutral colors (`--black`, `--white`)
+- Supporting status colors:
+  - Success
+  - Warning
+  - Error
+  - Info
+- UI variables for consistent styling:
+  - `--bg`
+  - `--surface`
+  - `--border`
+  - `--brand`
+  - `--btn-brand`
+  - `--btn-brand-hover`
+  - `--text`
+  - `--text-emphasis`
+
+Typography was also defined globally:
+
+| Element | Font | Size | Weight |
+|------|------|------|------|
+| H1 | Poppins | 48px | 700 |
+| H2 | Poppins | 36px | 700 |
+| H3 | Poppins | 28px | 600 |
+| Body | Inter | 16px | normal |
+| Caption | Inter | 12px | normal |
+
+# 2. Asset Organization (Icons)
+
+An assets directory was created to organize static resources such as icons.
+
+### Structure
+
+```
+src/
+  assets/
+    icons/
+      core/
+      navigation/
+      status_and_feedback/
+      study_tools/
+```
+
+Icons are currently imported directly as SVG files.
+
+### Example
+
+```import flashcard from "/assets/icons/core/flashcard.svg"```
+
+# 3. Reusable UI Components
+
+Three reusable UI components were created for consistency and ease of development.
+
+### Location
+
+```
+src/
+  components/
+            ui/
+```
+
+### Components
+
+- Button.jsx
+- Badge.jsx
+- Icon.jsx
+
+## Icon Component
+
+A simple wrapper around an image element used to render SVG icons consistently.
+
+### Example
+
+```
+import Icon from "/components/ui/Icon"
+import flashcard from "/assets/icons/core/flashcard.svg"
+
+<Icon src={flashcard} size={24} />
+```
+
+This keeps icon usage consistent across the application.
+
+---
+
+## Button Component
+
+Buttons are implemented using variant-based styling.
+
+Available variants:
+
+- primary
+- secondary
+- ghost
+
+Available sizes:
+
+- sm
+- lg
+
+### Example usage
+
+```
+import Button from "@/components/ui/Button"
+
+<Button>
+Generate Flashcards
+</Button>
+
+<Button variant="secondary">
+Upload Notes
+</Button>
+
+<Button size="lg">
+Start Quiz
+</Button>
+```
+
+## Badge Component
+
+Badges provide visual status indicators.
+
+Variants:
+
+- correct
+- review
+- progress
+
+### Example usage
+
+```
+import Badge from "/components/ui/Badge"
+
+<Badge>
+Correct
+</Badge>
+
+<Badge variant="review">
+Needs Review
+</Badge>
+
+<Badge variant="progress">
+In Progress
+</Badge>
+```
+
+Badges use the .badge base class and variant classes defined in the CSS layer.
+
+# Next Steps
+
+With the design system and reusable components in place, the next step is to:
+
+1. Implement the application layout
+2. Configure React Router
+3. Add navigation with NavLink
+4. Begin building the first application screens
+
+This foundation allows new features to be developed quickly while keeping the UI consistent across the application.
+
+---
 
 ### Implementation approach
 
