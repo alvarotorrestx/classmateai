@@ -1,42 +1,213 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+@import "tailwindcss";
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
+@layer base {
+  :root {
+    /* Primary Colors */
+    --mint-50: #e5fff9;
+    --mint-100: #ccfff2;
+    --mint-200: #99ffe6;
+    --mint-300: #66ffd9;
+    --mint-400: #33ffcc;
+    --mint-500: #00ffbf;
+    --mint-600: #00cc99;
+    --mint-700: #009973;
+    --mint-800: #00664d;
+    --mint-900: #003326;
+    --mint-950: #00241b;
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+    /* Neutrals */
+    --black: #000000;
+    --white: #ffffff;
+
+    /* Supporting Colors */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
+
+    /* UI specific cases (see utilities below) */
+    --bg: var(--white);
+    --surface: var(--white);
+    --border: var(--mint-300);
+    --brand: var(--mint-600);
+    --btn-brand: var(--mint-600);
+    --btn-brand-hover: var(--mint-700);
+    --text: var(--black);
+    --text-emphasis: var(--mint-900);
   }
-  to {
-    transform: rotate(360deg);
+
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 16px;
+    color: #000;
+  }
+
+  h1 {
+    font-family: Poppins, system-ui, sans-serif;
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  h2 {
+    font-family: Poppins, system-ui, sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  h3 {
+    font-family: Poppins, system-ui, sans-serif;
+    font-size: 28px;
+    font-weight: 600;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+@layer utilities {
+  .body-large {
+    font-size: 18px;
+  }
+
+  .body-small {
+    font-size: 14px;
+  }
+
+  .caption {
+    font-size: 12px;
+  }
+
+  .bg-brand {
+    background-color: var(--btn-brand);
+  }
+
+  .bg-brand-hover {
+    background-color: var(--btn-brand-hover);
+  }
+
+  .text-brand {
+    color: var(--brand);
+  }
+
+  .border-ui {
+    border-color: var(--border);
+  }
+
+  .text-em {
+    color: var(--text-emphasis);
+  }
+
+  .bg-success {
+    background-color: var(--success);
+  }
+
+  .bg-warning {
+    background-color: var(--warning);
+  }
+
+  .bg-error {
+    background-color: var(--error);
+  }
+
+  .bg-info {
+    background-color: var(--info);
+  }
+
+  .text-success {
+    color: var(--success);
+  }
+
+  .text-warning {
+    color: var(--warning);
+  }
+
+  .text-error {
+    color: var(--error);
+  }
+
+  .text-info {
+    color: var(--info);
   }
 }
 
-.card {
-  padding: 2em;
-}
+@layer components {
 
-.read-the-docs {
-  color: #888;
+  /* Primary Button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition;
+    background: var(--btn-brand);
+    color: var(--black);
+    border-radius: .7rem;
+  }
+
+  .btn-primary:hover {
+    background: var(--btn-brand-hover);
+  }
+
+
+  /* Secondary Button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition border;
+    background: var(--white);
+    color: var(--brand);
+    border-radius: .7rem;
+  }
+
+  .btn-secondary:hover {
+    background: var(--mint-50);
+  }
+
+
+  /* Ghost Button */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition;
+    background: transparent;
+    color: var(--white);
+    border-radius: .7rem;
+  }
+
+  .btn-ghost:hover {
+    background: var(--mint-50);
+  }
+
+  /* Button sizing */
+  .btn-sm {
+    @apply px-4 py-2 text-sm;
+  }
+
+  .btn-lg {
+    @apply px-4 py-2 text-lg;
+  }
+
+
+  /* Disabled state */
+  .btn-disabled {
+    @apply opacity-50 cursor-not-allowed;
+    background: #444;
+    color: #fff;
+  }
+
+
+
+  /* Badge base */
+  .badge {
+    @apply inline-flex items-center rounded-full px-4 py-1 text-sm font-semibold;
+  }
+
+
+  /* Badge variants */
+  .badge-correct {
+    background: var(--mint-400);
+    color: #00241B;
+  }
+
+  .badge-review {
+    background: var(--warning);
+    color: #3B2705;
+  }
+
+  .badge-progress {
+    background: var(--info);
+    color: #00241B;
+  }
+
 }

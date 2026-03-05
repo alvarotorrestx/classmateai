@@ -1,33 +1,36 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// Icon import and test examples
+import Icon from "./components/ui/Icon"
+import flashcard from './assets/icons/core/flashcard.svg'
+import ai_processing from './assets/icons/core/ai_processing.svg'
+import quiz from './assets/icons/core/quiz.svg'
+import study_session from './assets/icons/core/study_session.svg'
+import upload_notes from './assets/icons/core/upload_notes.svg'
+
+// Button import and test examples
+import Button from "./components/ui/Button"
+
+// Badge import and test examples
+import Badge from "./components/ui/Badge"
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Icon src={flashcard} />
+      <Icon src={ai_processing} />
+      <Icon src={quiz} />
+      <Icon src={study_session} />
+      <Icon src={upload_notes} />
+
+      <Button>Generate Flashcards</Button>
+      <Button variant="secondary">Upload Notes</Button>
+      <Button variant="ghost" disabled>Cancel</Button>
+      <Button size="sm">Small</Button>
+      <Button size="lg">Large</Button>
+
+      <Badge>Correct</Badge>
+      <Badge variant="review">Review</Badge>
+      <Badge variant="progress">In Progress</Badge>
     </>
   )
 }
