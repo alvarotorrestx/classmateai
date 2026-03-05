@@ -136,6 +136,7 @@
     @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition;
     background: var(--btn-brand);
     color: var(--black);
+    border-radius: .7rem;
   }
 
   .btn-primary:hover {
@@ -148,6 +149,7 @@
     @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition border;
     background: var(--white);
     color: var(--brand);
+    border-radius: .7rem;
   }
 
   .btn-secondary:hover {
@@ -160,6 +162,7 @@
     @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition;
     background: transparent;
     color: var(--white);
+    border-radius: .7rem;
   }
 
   .btn-ghost:hover {
@@ -172,7 +175,7 @@
   }
 
   .btn-lg {
-    @apply px-8 py-4 text-lg;
+    @apply px-4 py-2 text-lg;
   }
 
 
@@ -188,6 +191,7 @@
   /* Badge base */
   .badge {
     @apply inline-flex items-center rounded-full px-4 py-1 text-sm font-semibold;
+    border-radius: 100%;
   }
 
 
