@@ -17,42 +17,33 @@ import Dashboard from "./pages/app/Dashboard";
 // import NotFound from "./pages/NotFound";
 
 // Route guards
-// import RequireAuth from "./components/auth/RequireAuth";
+import RequireAuth from "./components/auth/RequireAuth";
 // import PersistLogin from "./components/auth/PersistLogin";
-// import RedirectIfAuth from "./components/auth/RedirectIfAuth";
+import RedirectIfAuth from "./components/auth/RedirectIfAuth";
 
 export default function App() {
   return (
     <Routes>
 
-      {/* Public Pages - Temporary */}
-      <Route path="/" element={<Landing />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-
-      {/*
       <Route element={<RedirectIfAuth />}>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Route>
-      */}
 
-      {/*
-      <Route element={<PersistLogin />}>
-        <Route element={<RequireAuth />}>
-          <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/courses" element={<Courses />} />
-            <Route path="/flashcards" element={<Flashcards />} />
-            <Route path="/quizzes" element={<Quizzes />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/settings" element={<Settings />} />
-          </Route>
-        </Route>
+      {/* <Route element={<PersistLogin />}> */}
+      <Route element={<RequireAuth />}>
+        {/* <Route element={<AppLayout />}> */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        {/* <Route path="/courses" element={<Courses />} />
+          <Route path="/flashcards" element={<Flashcards />} />
+          <Route path="/quizzes" element={<Quizzes />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} /> */}
+        {/* </Route> */}
       </Route>
-      */}
+      {/* </Route> */}
+
 
       {/* <Route path="*" element={<NotFound />} /> */}
     </Routes>
