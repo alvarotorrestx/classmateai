@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import Icon from "../ui/Icon";
 
 import dashboardIcon from "../../assets/icons/navigation/dashboard.svg";
@@ -6,6 +7,8 @@ import courseIcon from "../../assets/icons/navigation/course.svg";
 import flashcardIcon from "../../assets/icons/core/flashcard.svg";
 import quizIcon from "../../assets/icons/core/quiz.svg";
 import analyticsIcon from "../../assets/icons/study_tools/chart.svg";
+
+import useAuth from "../../hooks/useAuth";
 
 const InnerPageLayout = ({
     headerTitle = "Welcome back!",
@@ -19,6 +22,29 @@ const InnerPageLayout = ({
             ? "bg-(--mint-100) text-(--mint-900)"
             : "text-(--text) hover:bg-(--mint-50)"
         }`;
+
+    const navigate = useNavigate();
+    const { setAuth } = useAuth();
+
+    const handleLogout = () => {
+        setAuth(null)
+        localStorage.removeItem("auth")
+        navigate("/")
+    }
+
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setMenuOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     return (
         <section className="w-full flex items-center justify-center max-w-500 mx-auto">
@@ -37,8 +63,30 @@ const InnerPageLayout = ({
                         </span>
                     </div>
 
-                    <div className="w-10 h-10 rounded-full bg-(--mint-400) flex items-center justify-center font-semibold text-(--mint-950) shrink-0">
-                        {profileInitials}
+                    <div className="relative shrink-0" ref={menuRef}>
+                        <button
+                            type="button"
+                            onClick={() => setMenuOpen((prev) => !prev)}
+                            className="w-10 h-10 rounded-full bg-(--mint-400) flex items-center justify-center font-semibold text-(--mint-950) hover:bg-(--mint-300) transition cursor-pointer"
+                            title="Account menu"
+                        >
+                            {profileInitials}
+                        </button>
+
+                        {menuOpen && (
+                            <div className="absolute right-0 mt-2 min-w-36 rounded-xl border border-(--mint-100) bg-white shadow-lg py-2 z-50">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setMenuOpen(false);
+                                        handleLogout();
+                                    }}
+                                    className="w-full px-4 py-2 text-left text-sm font-medium text-(--text) hover:bg-(--mint-50) transition cursor-pointer"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </header>
 
