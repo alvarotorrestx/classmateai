@@ -18,7 +18,7 @@ const DefaultPageLayout = ({ pageTitle, title, subtitle, children }) => {
 
                 <div className="px-6 py-4">
                     <div className="text-center mb-8">
-                        <h2>{title}</h2>
+                        <h1>{title}</h1>
                         {subtitle ? <p className="text-em mt-1">{subtitle}</p> : null}
                     </div>
 

@@ -4,6 +4,7 @@ const InnerPageLayout = ({ title, subtitle, children }) => {
     return (
         <section className="w-full flex items-center justify-center max-w-500 mx-auto">
             <div className="w-full bg-(--surface) overflow-hidden">
+                {/* Header */}
                 <header className="w-full bg-brand px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <img
@@ -13,7 +14,7 @@ const InnerPageLayout = ({ title, subtitle, children }) => {
                         />
 
                         <Link to="/dashboard" className="text-white font-medium flex justify-center items-center gap-1">
-                            <span className="text-4xl">←</span> Back to Dashboard
+                            <span className="body-large">←</span> Back to Dashboard
                         </Link>
                     </div>
 
@@ -22,12 +23,14 @@ const InnerPageLayout = ({ title, subtitle, children }) => {
                     </div>
                 </header>
 
+                {/* Main body */}
                 <div className="px-6 py-4">
                     <div className="text-center mb-8">
-                        <h2>{title}</h2>
+                        <h1>{title}</h1>
                         {subtitle ? <p className="text-em mt-1">{subtitle}</p> : null}
                     </div>
 
+                    {/* Content */}
                     {children}
                 </div>
             </div>
