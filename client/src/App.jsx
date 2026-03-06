@@ -6,7 +6,7 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 
 // App pages (protected)
-// import Dashboard from "./pages/app/Dashboard";
+import Dashboard from "./pages/app/Dashboard";
 // import Courses from "./pages/app/Courses";
 // import Flashcards from "./pages/app/Flashcards";
 // import Quizzes from "./pages/app/Quizzes";
@@ -29,6 +29,7 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={<Dashboard />} />
 
       {/*
       <Route element={<RedirectIfAuth />}>

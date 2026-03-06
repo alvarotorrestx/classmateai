@@ -1,5 +1,6 @@
 import models
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from db import get_db, engine
 from sqlalchemy import text
@@ -15,6 +16,18 @@ app.include_router(notes_router)
 app.include_router(generate_router)
 app.include_router(study_sets_router)
 app.include_router(progress_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://classmateai-five.vercel.app"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def read_root():
