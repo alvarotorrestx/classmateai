@@ -1,12 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
-// Layouts
-// import AppLayout from "./components/layout/AppLayout";
-
 // Public pages
 import Landing from "./pages/public/Landing";
 // import Login from "./pages/auth/Login";
-// import Register from "./pages/auth/Register";
+import Register from "./pages/auth/Register";
 
 // App pages (protected)
 // import Dashboard from "./pages/app/Dashboard";
@@ -26,12 +23,13 @@ import Landing from "./pages/public/Landing";
 
 export default function App() {
   return (
+    <Routes>
 
-    <main className="flex justify-center items-center px-4 py-2 max-w-500">
-      <Routes>
-        <Route path="/" element={<Landing />} />
+      {/* Public Pages - Temporary */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/register" element={<Register />} />
 
-        {/*
+      {/*
       <Route element={<RedirectIfAuth />}>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
@@ -39,7 +37,7 @@ export default function App() {
       </Route>
       */}
 
-        {/*
+      {/*
       <Route element={<PersistLogin />}>
         <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
@@ -54,8 +52,7 @@ export default function App() {
       </Route>
       */}
 
-        {/* <Route path="*" element={<NotFound />} /> */}
-      </Routes>
-    </main>
+      {/* <Route path="*" element={<NotFound />} /> */}
+    </Routes>
   );
 }

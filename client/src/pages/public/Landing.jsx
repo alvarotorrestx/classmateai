@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 
 const Landing = () => {
     return (
-        <section className="w-full min-h-screen flex flex-col items-center justify-center">
+        <section className="mx-auto px-4 max-w-500 w-full min-h-screen flex flex-col items-center justify-center">
 
             {/* Logo */}
             <img
