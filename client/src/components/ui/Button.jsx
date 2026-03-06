@@ -1,7 +1,7 @@
 export default function Button({
     children,
     variant = "primary",
-    size = "lg",
+    size = "",
     disabled = false,
     className = "",
     type = "button",

@@ -584,16 +584,191 @@ In Progress
 
 Badges use the .badge base class and variant classes defined in the CSS layer.
 
-# Next Steps
+### Frontend Additions - 3/5/26
 
-With the design system and reusable components in place, the next step is to:
+## Authentication and Core Layout Implementation
 
-1. Implement the application layout
-2. Configure React Router
-3. Add navigation with NavLink
-4. Begin building the first application screens
+## Login and Register Pages
 
-This foundation allows new features to be developed quickly while keeping the UI consistent across the application.
+The **Login** and **Register** pages were designed using the `DefaultPageLayout` component to maintain a consistent structure and
+styling.
+
+Key features implemented:
+
+- Form inputs styled using the shared design tokens and Tailwind
+    utility classes
+- Reusable `Button` component used for all form actions
+- Client-side loading state for form submissions
+- Error handling with feedback messages returned from the API
+- Disabled form fields and buttons while authentication requests are
+    processing
+
+The authentication forms were connected to the backend API using
+**Axios** through the `authService` layer. Successful authentication
+responses return a **JWT access token** and user information, which are
+stored in the application's authentication context and persisted to
+**localStorage**.
+
+Once authenticated, users are automatically redirected to the dashboard.
+
+------------------------------------------------------------------------
+
+## Authentication Guards
+
+Two route guards were implemented to manage access to protected routes.
+
+### RequireAuth
+
+Ensures that only authenticated users can access protected application
+pages such as the dashboard.
+
+### RedirectIfAuth
+
+Prevents authenticated users from accessing login or register pages and
+redirects them back to the dashboard.
+
+------------------------------------------------------------------------
+
+## Application Layout System
+
+To support different page types across the application, three layout
+components were created.
+
+### DefaultPageLayout
+
+Used for public authentication pages such as **Login** and **Register**.
+
+Features: - Centered page layout - Application header - Consistent form
+container styling
+
+### InnerAppPageLayout
+
+Used for internal pages that provide a quick return link to the
+dashboard.
+
+Features: - Header with **Back to Dashboard** navigation - Consistent
+content spacing - Flexible content rendering
+
+### MainAppPageLayout
+
+Serves as the **primary layout for the application**.
+
+Features: - Top application header - Sidebar navigation - Active route
+highlighting using `NavLink` - Main content area for application screens
+
+This layout will be reused across most authenticated application pages.
+
+------------------------------------------------------------------------
+
+## Dashboard Layout (First Draft)
+
+The initial dashboard structure was implemented using the
+`MainAppPageLayout`.
+
+While the inner dashboard components are still under development, the
+foundational layout includes:
+
+- Top header with a dynamic greeting and user initials
+- Sidebar navigation for major application sections
+- Title and subtitle area for contextual page information
+- Flexible content region for dashboard widgets and cards
+
+The greeting dynamically adjusts based on the user's **local time** and
+extracts the user's **first name** from the authentication context to
+personalize the interface.
+
+Example greeting behavior:
+
+Good morning, Alvaro!\
+Good afternoon, Alvaro!\
+Good evening, Alvaro!
+
+This establishes the primary structure for the rest of the application
+and allows future features such as:
+
+- Course cards
+- Flashcards
+- Quiz systems
+- Study analytics
+
+to be built within a consistent layout framework.
+
+------------------------------------------------------------------------
+
+## How to Use the Layouts
+
+### DefaultPageLayout
+
+Used for authentication pages like **Login** and **Register**.
+
+Example:
+
+    <DefaultPageLayout
+      pageTitle="Sign In"
+      title="Sign Into your account"
+      subtitle="Sign in with your email and password below."
+    >
+      {/* page content */}
+    </DefaultPageLayout>
+
+------------------------------------------------------------------------
+
+### InnerAppPageLayout
+
+Used for internal pages that should include a **Back to Dashboard**
+option.
+
+Example:
+
+    <InnerAppPageLayout
+      title="Flashcards"
+      subtitle="Review your generated flashcards"
+    >
+      {/* page content */}
+    </InnerAppPageLayout>
+
+------------------------------------------------------------------------
+
+### MainAppPageLayout
+
+Used for the main authenticated pages of the application, such as the
+**Dashboard**.
+
+It includes:
+
+- Top header
+- User profile indicator
+- Sidebar navigation
+- Main content area
+
+Example:
+
+    <MainAppPageLayout
+      headerTitle="Welcome back!"
+      title="Good afternoon, Joe!"
+      subtitle="You've studied for 2 hours today."
+    >
+      {/* dashboard content */}
+    </MainAppPageLayout>
+
+------------------------------------------------------------------------
+
+## Current Progress Summary - 3/5/26
+
+Completed so far:
+
+- Login page UI and backend authentication integration
+- Register page UI and backend authentication integration
+- Axios service layer for API communication
+- Authentication context and localStorage persistence
+- Route protection with RequireAuth and RedirectIfAuth
+- Three reusable layout systems
+- Dashboard shell layout with navigation sidebar
+- Dynamic greeting and profile initials rendering
+
+This foundation now allows the rest of the application screens to be
+implemented quickly while maintaining a consistent UI and scalable
+architecture.
 
 ---
 

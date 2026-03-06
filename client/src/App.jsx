@@ -1,38 +1,51 @@
-// Icon import and test examples
-import Icon from "./components/ui/Icon"
-import flashcard from './assets/icons/core/flashcard.svg'
-import ai_processing from './assets/icons/core/ai_processing.svg'
-import quiz from './assets/icons/core/quiz.svg'
-import study_session from './assets/icons/core/study_session.svg'
-import upload_notes from './assets/icons/core/upload_notes.svg'
+import { Routes, Route, Navigate } from "react-router-dom";
 
-// Button import and test examples
-import Button from "./components/ui/Button"
+// Public pages
+import Landing from "./pages/public/Landing";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
 
-// Badge import and test examples
-import Badge from "./components/ui/Badge"
+// App pages (protected)
+import Dashboard from "./pages/app/Dashboard";
+// import Courses from "./pages/app/Courses";
+// import Flashcards from "./pages/app/Flashcards";
+// import Quizzes from "./pages/app/Quizzes";
+// import Analytics from "./pages/app/Analytics";
+// import Settings from "./pages/app/Settings";
 
-function App() {
+// 404 page
+// import NotFound from "./pages/NotFound";
 
+// Route guards
+import RequireAuth from "./components/auth/RequireAuth";
+// import PersistLogin from "./components/auth/PersistLogin";
+import RedirectIfAuth from "./components/auth/RedirectIfAuth";
+
+export default function App() {
   return (
-    <>
-      <Icon src={flashcard} />
-      <Icon src={ai_processing} />
-      <Icon src={quiz} />
-      <Icon src={study_session} />
-      <Icon src={upload_notes} />
+    <Routes>
 
-      <Button>Generate Flashcards</Button>
-      <Button variant="secondary">Upload Notes</Button>
-      <Button variant="ghost" disabled>Cancel</Button>
-      <Button size="sm">Small</Button>
-      <Button size="lg">Large</Button>
+      <Route element={<RedirectIfAuth />}>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Route>
 
-      <Badge>Correct</Badge>
-      <Badge variant="review">Review</Badge>
-      <Badge variant="progress">In Progress</Badge>
-    </>
-  )
+      {/* <Route element={<PersistLogin />}> */}
+      <Route element={<RequireAuth />}>
+        {/* <Route element={<AppLayout />}> */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        {/* <Route path="/courses" element={<Courses />} />
+          <Route path="/flashcards" element={<Flashcards />} />
+          <Route path="/quizzes" element={<Quizzes />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} /> */}
+        {/* </Route> */}
+      </Route>
+      {/* </Route> */}
+
+
+      {/* <Route path="*" element={<NotFound />} /> */}
+    </Routes>
+  );
 }
-
-export default App
