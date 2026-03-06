@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 // Public pages
 import Landing from "./pages/public/Landing";
-// import Login from "./pages/auth/Login";
+import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 
 // App pages (protected)
@@ -28,6 +28,7 @@ export default function App() {
       {/* Public Pages - Temporary */}
       <Route path="/" element={<Landing />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<Login />} />
 
       {/*
       <Route element={<RedirectIfAuth />}>
