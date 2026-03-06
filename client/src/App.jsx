@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 // import AppLayout from "./components/layout/AppLayout";
 
 // Public pages
-// import Landing from "./pages/public/Landing";
+import Landing from "./pages/public/Landing";
 // import Login from "./pages/auth/Login";
 // import Register from "./pages/auth/Register";
 
@@ -26,10 +26,12 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 export default function App() {
   return (
-    <Routes>
 
+    <main className="flex justify-center items-center px-4 py-2 max-w-500">
+      <Routes>
+        <Route path="/" element={<Landing />} />
 
-      {/*
+        {/*
       <Route element={<RedirectIfAuth />}>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
@@ -37,7 +39,7 @@ export default function App() {
       </Route>
       */}
 
-      {/*
+        {/*
       <Route element={<PersistLogin />}>
         <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
@@ -52,7 +54,8 @@ export default function App() {
       </Route>
       */}
 
-      {/* <Route path="*" element={<NotFound />} /> */}
-    </Routes>
+        {/* <Route path="*" element={<NotFound />} /> */}
+      </Routes>
+    </main>
   );
 }
