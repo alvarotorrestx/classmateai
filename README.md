@@ -30,13 +30,14 @@ Improve using analytics.
 ### Backend
 
 -   Python 3.11+
--   Flask
--   Flask-CORS
--   PyPDF2
+-   FastAPI
+-   SQLAlchemy
+-   psycopg3
 
 ### Database
 
--   PostgreSQL
+-   PostgreSQL 17 (Supabase — hosted)
+-   Docker (local fallback — see Dev Setup)
 
 ### AI & APIs
 
@@ -47,17 +48,60 @@ Improve using analytics.
 ## Architecture
 
 -   **Frontend:** React SPA deployed via Vercel
--   **Backend:** Flask API hosted on Heroku
--   **Database:** PostgreSQL
--   **AI Layer:** Pre-trained NLP models for content generation
+-   **Backend:** FastAPI deployed via Vercel
+-   **Database:** PostgreSQL via Supabase
+-   **AI Layer:** Anthropic Claude API for content generation
 
 ------------------------------------------------------------------------
 
 ## Project Structure (High-Level)
 
     /client      → React application
-    /server      → Flask API
-    /db          → PostgreSQL schemas
+    /server      → FastAPI application
+    /docker      → Local PostgreSQL + pgAdmin (fallback only)
+
+------------------------------------------------------------------------
+
+## Dev Setup
+
+### 1. Backend
+
+```bash
+cd server
+cp .env.example .env   # fill in your DATABASE_URL (ask a teammate for credentials)
+py -m pip install -r requirements.txt
+py -m uvicorn app.main:app --reload
+```
+
+API runs at `http://localhost:8000`. Test DB connection at `http://localhost:8000/db-test`.
+
+### 2. Frontend
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+### 3. Database
+
+**Default — Supabase (works on any network except Full Sail):**
+Set `DATABASE_URL` in `server/.env` to the Supabase connection string (ask a teammate for credentials).
+
+**Fallback — Local Docker (Full Sail / restricted networks):**
+The school network blocks outbound connections to Supabase. Use Docker locally instead:
+
+```bash
+docker compose -f docker/compose.yml up -d
+```
+
+Then set `server/.env` to:
+```
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/classmateai
+```
+
+pgAdmin available at `http://localhost:5050` (admin@classmateai.com / admin123).
+Use container name `classmateai_postgres` (not `localhost`) as the host when adding a server in pgAdmin.
 
 ------------------------------------------------------------------------
 
