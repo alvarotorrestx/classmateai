@@ -99,7 +99,7 @@ const InnerPageLayout = ({
                             <span>Dashboard</span>
                         </NavLink>
 
-                        <NavLink to="/courses" className={navLinkClass}>
+                        <NavLink to="/dashboard" className={navLinkClass}>
                             <Icon src={courseIcon} size={24} />
                             <span>Courses</span>
                         </NavLink>
@@ -121,11 +121,13 @@ const InnerPageLayout = ({
                     </aside>
 
                     {/* Content */}
-                    <div className="flex-1 px-6 py-4">
-                        <div className="mb-8">
-                            <h1>{title}</h1>
-                            {subtitle ? <p className="text-em mt-1">{subtitle}</p> : null}
-                        </div>
+                    <div className="flex-1 px-6 py-6">
+                        {(title || subtitle) && (
+                            <div className="mb-6">
+                                {title && <h3>{title}</h3>}
+                                {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+                            </div>
+                        )}
 
                         {children}
                     </div>
