@@ -28,6 +28,15 @@ def _get_owned_study_set(study_set_id: uuid.UUID, db: Session, current_user: Use
     return study_set
 
 
+@router.get("/study-sets", response_model=list[StudySetResponse])
+def list_all_study_sets(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    notes = db.query(Note).filter(Note.user_id == current_user.id).all()
+    study_sets = []
+    for note in notes:
+        study_sets.extend(note.study_sets)
+    return study_sets
+
+
 @router.get("/notes/{note_id}/study-sets", response_model=list[StudySetResponse])
 def list_study_sets(note_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     note = db.get(Note, note_id)
