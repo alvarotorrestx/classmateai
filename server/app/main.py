@@ -11,11 +11,6 @@ from routes.study_sets import router as study_sets_router
 from routes.progress import router as progress_router
 
 app = FastAPI()
-app.include_router(auth_router)
-app.include_router(notes_router)
-app.include_router(generate_router)
-app.include_router(study_sets_router)
-app.include_router(progress_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,6 +23,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(auth_router)
+app.include_router(notes_router)
+app.include_router(generate_router)
+app.include_router(study_sets_router)
+app.include_router(progress_router)
+
 
 @app.get("/")
 def read_root():
