@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
-import { getQuiz } from "../../services/noteService";
+import { getQuiz, getStudySet, getNote } from "../../services/noteService";
+import { saveQuizResult } from "../../hooks/useQuizHistory";
 
 const LETTERS = ["A", "B", "C", "D"];
 
@@ -10,6 +11,7 @@ const QuizSession = () => {
   const navigate = useNavigate();
 
   const [questions, setQuestions] = useState([]);
+  const [quizMeta, setQuizMeta] = useState({ quizLabel: null, courseTitle: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -19,16 +21,24 @@ const QuizSession = () => {
   const [finished, setFinished] = useState(false);
 
   useEffect(() => {
-    getQuiz(quizId)
-      .then((data) => {
-        const sorted = [...data].sort(
+    Promise.all([
+      getQuiz(quizId),
+      getStudySet(quizId).catch(() => null),
+      getNote(courseId).catch(() => null),
+    ])
+      .then(([questions, set, note]) => {
+        const sorted = [...questions].sort(
           (a, b) => a.display_order - b.display_order
         );
         setQuestions(sorted);
+        setQuizMeta({
+          quizLabel: set?.label || null,
+          courseTitle: note?.title || null,
+        });
       })
       .catch(() => setError("Failed to load quiz. Please try again."))
       .finally(() => setLoading(false));
-  }, [quizId]);
+  }, [quizId, courseId]);
 
   const saveAndGo = (direction) => {
     const updated = { ...answers };
@@ -44,6 +54,20 @@ const QuizSession = () => {
     if (selected !== null) updated[current] = selected;
     setAnswers(updated);
     setFinished(true);
+
+    const total = questions.length;
+    const correct = questions.filter((q, i) => updated[i] === q.correct_index).length;
+    saveQuizResult({
+      id: crypto.randomUUID(),
+      quizId,
+      courseId,
+      quizLabel: quizMeta.quizLabel,
+      courseTitle: quizMeta.courseTitle,
+      correct,
+      total,
+      scorePercent: Math.round((correct / total) * 100),
+      takenAt: new Date().toISOString(),
+    });
   };
 
   const handleRetake = () => {
@@ -99,40 +123,120 @@ const QuizSession = () => {
   }
 
   if (finished) {
-    const answeredCount = Object.keys(answers).length;
     const total = questions.length;
+    const correct = questions.filter(
+      (q, i) => answers[i] === q.correct_index
+    ).length;
+    const incorrect = total - correct;
+    const scorePercent = Math.round((correct / total) * 100);
+
+    const reviewQuestions = questions.map((q, i) => ({
+      q,
+      i,
+      isCorrect: answers[i] === q.correct_index,
+    }));
+
     return (
       <InnerAppPageLayout>
-        <div className="max-w-lg mx-auto text-center">
-          <div className="w-16 h-16 rounded-full bg-(--mint-100) flex items-center justify-center mx-auto mb-4">
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-(--mint-600)"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </div>
-          <h3 className="mb-2">Quiz Complete!</h3>
-          <p className="text-sm text-gray-400 mb-8">
-            You answered{" "}
-            <span className="font-semibold text-black">{answeredCount}</span> of{" "}
-            <span className="font-semibold text-black">{total}</span> questions
-          </p>
-
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mb-6">
-            <p className="text-4xl font-bold text-(--mint-600) mb-1">
-              {answeredCount}/{total}
-            </p>
-            <p className="text-sm text-gray-400">Questions answered</p>
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 rounded-full bg-(--mint-100) flex items-center justify-center mx-auto mb-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                className="text-(--mint-600)"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3 className="mb-1">Quiz Complete!</h3>
+            <p className="text-sm text-gray-400">Here's how you did</p>
           </div>
 
+          {/* Score card */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6 flex flex-col items-center">
+            <p className="text-5xl font-bold text-(--mint-600) mb-1">{scorePercent}%</p>
+            <p className="text-sm text-gray-400 mb-5">{correct} of {total} correct</p>
+            <div className="w-full flex gap-4">
+              <div className="flex-1 bg-green-50 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-green-600">{correct}</p>
+                <p className="text-xs text-green-700 font-medium mt-0.5">Correct</p>
+              </div>
+              <div className="flex-1 bg-red-50 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-red-500">{incorrect}</p>
+                <p className="text-xs text-red-600 font-medium mt-0.5">Incorrect</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Full review */}
+          <div className="mb-6">
+            <p className="font-bold text-base mb-3">Review All Answers</p>
+            <div className="flex flex-col gap-4">
+              {reviewQuestions.map(({ q, i, isCorrect }) => (
+                <div
+                  key={i}
+                  className={`bg-white rounded-2xl border-2 shadow-sm p-5 ${
+                    isCorrect ? "border-green-100" : "border-red-100"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <p className="text-sm font-semibold text-(--text-emphasis)">
+                      Q{i + 1}. {q.question}
+                    </p>
+                    <span
+                      className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        isCorrect
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-600"
+                      }`}
+                    >
+                      {isCorrect ? "Correct" : "Incorrect"}
+                    </span>
+                  </div>
+
+                  {/* User's answer — only show separately if wrong */}
+                  {!isCorrect && (
+                    answers[i] !== undefined ? (
+                      <div className="flex items-start gap-3 mb-2">
+                        <span className="mt-0.5 w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs font-bold shrink-0">
+                          {LETTERS[answers[i]]}
+                        </span>
+                        <div>
+                          <p className="text-xs text-red-500 font-medium">Your answer</p>
+                          <p className="text-sm text-gray-700">{q.options[answers[i]]}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 mb-2 italic">Not answered</p>
+                    )
+                  )}
+
+                  {/* Correct answer */}
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 w-6 h-6 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold shrink-0">
+                      {LETTERS[q.correct_index]}
+                    </span>
+                    <div>
+                      <p className="text-xs text-green-600 font-medium">
+                        {isCorrect ? "Your answer" : "Correct answer"}
+                      </p>
+                      <p className="text-sm text-gray-700">{q.options[q.correct_index]}</p>
+                    </div>
+                  </div>
+
+                  {/* Explanation */}
+                  {q.explanation && (
+                    <p className="mt-3 text-xs text-gray-400 border-t border-gray-100 pt-3">
+                      {q.explanation}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Actions */}
           <div className="flex justify-center gap-4">
             <button
               onClick={() => navigate(`/courses/${courseId}`)}

@@ -2,13 +2,16 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { getAllStudySets, getNotes } from "../../services/noteService";
+import { getQuizHistory } from "../../hooks/useQuizHistory";
 
 const AllQuizzes = () => {
   const [sets, setSets] = useState([]);
   const [noteMap, setNoteMap] = useState({});
   const [loading, setLoading] = useState(true);
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
+    setHistory(getQuizHistory());
     Promise.all([getAllStudySets(), getNotes()])
       .then(([data, notes]) => {
         const map = Object.fromEntries(notes.map((n) => [n.id, n.title]));
@@ -57,6 +60,62 @@ const AllQuizzes = () => {
               </Link>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Quiz History */}
+      {history.length > 0 && (
+        <div className="mt-10">
+          <p className="text-xl font-bold mb-4">Recent Results</p>
+          <div className="flex flex-col gap-3">
+            {history.map((entry) => (
+              <div
+                key={entry.id}
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-between gap-4"
+              >
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm truncate">
+                    {entry.courseTitle || "Unknown Course"}
+                    {entry.quizLabel ? (
+                      <span className="text-gray-400 font-normal"> — {entry.quizLabel}</span>
+                    ) : null}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {new Date(entry.takenAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                  <div className="flex gap-3 mt-1.5 text-xs">
+                    <span className="text-green-600 font-medium">{entry.correct} correct</span>
+                    <span className="text-red-500 font-medium">{entry.total - entry.correct} incorrect</span>
+                  </div>
+                </div>
+                <div className="shrink-0 flex flex-col items-center">
+                  <p
+                    className={`text-2xl font-bold ${
+                      entry.scorePercent >= 80
+                        ? "text-green-600"
+                        : entry.scorePercent >= 60
+                        ? "text-(--mint-600)"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {entry.scorePercent}%
+                  </p>
+                  <Link
+                    to={`/quizzes/${entry.courseId}/session/${entry.quizId}`}
+                    className="text-xs text-(--mint-700) font-medium hover:underline mt-1"
+                  >
+                    Retake →
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </InnerAppPageLayout>

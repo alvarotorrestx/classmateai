@@ -17,7 +17,7 @@ Users can then study the generated content and track their progress over time.
 | Database | PostgreSQL 17 (local Docker / Supabase in prod) |
 | Migrations | Alembic |
 | Auth | bcrypt (password hashing) + python-jose (JWT) |
-| AI | Claude API (Anthropic) — not yet integrated |
+| AI | Google Gemini API (`google-genai` SDK) |
 | HTTP client (FE) | Axios |
 | Routing (FE) | React Router v7 |
 
@@ -27,28 +27,70 @@ Users can then study the generated content and track their progress over time.
 
 ```
 classmateai/
-├── client/                        # React frontend (Vite scaffold only)
-│   ├── src/
-│   │   ├── components/            # empty
-│   │   ├── hooks/                 # empty
-│   │   ├── pages/                 # empty
-│   │   ├── services/              # empty
-│   │   ├── utils/                 # empty
-│   │   ├── App.jsx                # default Vite placeholder
-│   │   └── main.jsx
-│   └── package.json
+├── client/
+│   └── src/
+│       ├── assets/icons/          # SVG icons organized by category
+│       │   ├── core/
+│       │   ├── navigation/
+│       │   ├── status_and_feedback/
+│       │   └── study_tools/
+│       ├── components/
+│       │   ├── auth/
+│       │   │   ├── RequireAuth.jsx
+│       │   │   └── RedirectIfAuth.jsx
+│       │   ├── layout/
+│       │   │   ├── DefaultPageLayout.jsx
+│       │   │   ├── InnerAppPageLayout.jsx
+│       │   │   └── MainAppPageLayout.jsx
+│       │   └── ui/
+│       │       ├── Badge.jsx
+│       │       ├── Button.jsx
+│       │       └── Icon.jsx
+│       ├── context/
+│       │   └── AuthContext.jsx
+│       ├── hooks/
+│       │   ├── useAuth.js
+│       │   └── useQuizHistory.js  # localStorage quiz history (max 20)
+│       ├── pages/
+│       │   ├── NotFound.jsx
+│       │   ├── app/
+│       │   │   ├── AllCourses.jsx
+│       │   │   ├── AllFlashcards.jsx
+│       │   │   ├── AllQuizzes.jsx
+│       │   │   ├── Analytics.jsx
+│       │   │   ├── Courses.jsx
+│       │   │   ├── Dashboard.jsx
+│       │   │   ├── Flashcards.jsx
+│       │   │   ├── NewCourse.jsx
+│       │   │   ├── Processing.jsx
+│       │   │   ├── Quizzes.jsx
+│       │   │   ├── QuizSession.jsx
+│       │   │   ├── StudyMaterialsReady.jsx
+│       │   │   └── UploadNotes.jsx
+│       │   ├── auth/
+│       │   │   ├── Login.jsx
+│       │   │   └── Register.jsx
+│       │   └── public/
+│       │       └── Landing.jsx
+│       ├── services/
+│       │   ├── api.js             # Axios instance + auth interceptor
+│       │   ├── authService.js
+│       │   └── noteService.js
+│       ├── App.jsx
+│       └── main.jsx
 │
-├── server/                        # FastAPI backend
+├── server/
 │   ├── alembic/
-│   │   ├── env.py                 # wired to load .env + Base.metadata
+│   │   ├── env.py
 │   │   └── versions/
-│   │       └── 1613ca85eff1_initial_schema.py   # applied ✓
+│   │       ├── 1613ca85eff1_initial_schema.py
+│   │       └── a2f3e8b1c9d4_study_sets_user_id_note_nullable.py
 │   ├── app/
 │   │   └── main.py                # FastAPI app + router registration
 │   ├── db/
-│   │   └── __init__.py            # engine, SessionLocal, get_db()
+│   │   └── __init__.py
 │   ├── models/
-│   │   ├── base.py                # Base (DeclarativeBase) + TimestampMixin
+│   │   ├── base.py
 │   │   ├── user.py
 │   │   ├── note.py
 │   │   ├── study_set.py
@@ -59,14 +101,23 @@ classmateai/
 │   │   ├── quiz_attempt.py
 │   │   └── flashcard_review.py
 │   ├── routes/
-│   │   └── auth.py                # POST /auth/register, POST /auth/login
+│   │   ├── auth.py
+│   │   ├── generate.py
+│   │   ├── notes.py
+│   │   ├── progress.py
+│   │   └── study_sets.py
 │   ├── schemas/
-│   │   └── auth.py                # Pydantic request/response models
+│   │   ├── auth.py
+│   │   ├── note.py
+│   │   ├── study_content.py
+│   │   └── study_set.py
+│   ├── services/
+│   │   └── ai.py                  # Gemini API + prompt construction
 │   ├── utils/
-│   │   ├── auth.py                # bcrypt + JWT helpers
-│   │   └── deps.py                # get_current_user FastAPI dependency
-│   ├── .env                       # gitignored — DATABASE_URL, SECRET_KEY
-│   ├── .env.example               # template
+│   │   ├── auth.py
+│   │   └── deps.py
+│   ├── .env                       # gitignored
+│   ├── .env.example
 │   ├── alembic.ini
 │   └── requirements.txt
 │
@@ -301,10 +352,10 @@ an attacker from enumerating which IDs exist).
 ### What needs to be built
 
 The core feature. A single endpoint that takes a `note_id`, sends the note content to
-Claude, and writes back a complete `StudySet` with all its children in one database
+Google Gemini, and writes back a complete `StudySet` with all its children in one database
 transaction.
 
-### Planned endpoint
+### Endpoint
 
 | Method | Path | Description |
 |---|---|---|
@@ -313,16 +364,15 @@ transaction.
 Response: the created `StudySet` with nested flashcards, quiz questions, summary, and
 study guide.
 
-### How it will work
+### How it works
 
 1. Look up the note (verify ownership).
-2. Build a prompt that instructs Claude to return structured JSON containing:
+2. Build a prompt that instructs Gemini to return structured JSON containing:
    - An array of flashcard objects `{front, back}`
    - An array of quiz question objects `{question, options: [...], correct_index, explanation}`
    - A summary string
    - A study guide string
-3. Call the Claude API using structured output / tool use so the response is guaranteed
-   to be valid JSON matching our expected shape.
+3. Call the Gemini API (`gemini-2.5-flash`) and parse the JSON response.
 4. Write everything to the database inside a single transaction:
    - Insert one `StudySet` row
    - Bulk-insert `Flashcard` rows with `display_order` = index
@@ -331,31 +381,27 @@ study guide.
    - Insert one `StudyGuide` row
 5. Return the assembled study set.
 
-### Planned files
+### Files
 
 ```
-server/services/ai.py            Claude API call + prompt construction + response parsing
+server/services/ai.py            Gemini API call + prompt construction + response parsing
 server/schemas/study_set.py      StudySetResponse (nested flashcards, questions, etc.)
 server/routes/generate.py        POST /notes/{note_id}/generate
 ```
 
-### Dependencies to add
+### Dependencies
 
 ```
-anthropic>=0.25.0                official Anthropic Python SDK
+google-genai                     official Google Gemini Python SDK
 ```
 
-And `ANTHROPIC_API_KEY` added to `.env` / `.env.example`.
+`GEMINI_API_KEY` in `.env` / `.env.example`.
 
-### Key decisions to make at implementation time
+### Key design decisions
 
-- **How many flashcards / questions to generate** — likely configurable per request with a
-  sensible default (e.g. 10 flashcards, 5 MCQ questions).
-- **Error handling for malformed AI output** — the generation endpoint should return a
-  clear error if Claude returns something unexpected, rather than a 500.
-- **Regeneration** — calling `POST /notes/{note_id}/generate` a second time will create a
-  second `StudySet` for the same note (the schema supports multiple study sets per note).
-  The frontend can decide which one to display.
+- **Model**: `gemini-2.5-flash` — free tier as of March 2026 (2.0 models retired March 3, 2026).
+- **Regeneration** — calling `POST /notes/{note_id}/generate` a second time creates a new
+  `StudySet` for the same note. The schema supports multiple study sets per note.
 
 ---
 
@@ -380,56 +426,76 @@ Read routes to fetch generated content, plus write routes for recording progress
 
 ### Notable design notes
 
-- **Quiz responses omit `correct_index`** — the GET quiz endpoint returns questions and
-  options but does not include the correct answer. The correct answer is only revealed in
-  the response to `POST /quiz/{id}/attempt`, preventing cheating by reading the API.
+- **Quiz responses include `correct_index`** — the GET quiz endpoint returns questions,
+  options, and the correct answer index. This enables the frontend to score answers and
+  display the full results review without a separate API call.
 - **`FlashcardReview` confidence values**: 1 = Again, 2 = Hard, 3 = Good, 4 = Easy.
   These map directly to SM-2 spaced-repetition grades and leave the door open for
   scheduling logic in a future phase.
 
 ---
 
-## Phase 6 — Frontend 🔲 NEXT
+## Phase 6 — Frontend ✅ COMPLETE
 
-### What needs to be built
+The full React SPA was built consuming all backend APIs.
 
-A React SPA consuming all the backend APIs. The current `client/` directory is a default
-Vite scaffold with empty placeholder directories and no application code.
+### Pages built
 
-### Planned pages
-
-| Route | Page | Description |
+| Route | Component | Description |
 |---|---|---|
-| `/login` | LoginPage | Email + password form, stores JWT in localStorage |
-| `/register` | RegisterPage | Name + email + password form |
-| `/` | DashboardPage | Lists all the user's notes |
-| `/notes/new` | NewNotePage | Title + content textarea, submit creates a note |
-| `/notes/:id` | NotePage | Shows note, "Generate" button, lists study sets |
-| `/study-sets/:id` | StudySetPage | Tabbed view: Flashcards / Quiz / Summary / Study Guide |
+| `/` | Landing | Public landing page |
+| `/login` | Login | Email + password form, stores JWT |
+| `/register` | Register | Name + email + password form |
+| `/dashboard` | Dashboard | Recent courses (last 3), stat cards, greeting |
+| `/courses` | AllCourses | All courses sorted by newest |
+| `/courses/new` | NewCourse | Create a course |
+| `/courses/:courseId` | Courses | Course detail — study sets, upload, delete |
+| `/courses/:courseId/upload` | UploadNotes | Paste notes and trigger AI generation |
+| `/courses/:courseId/processing` | Processing | Generation loading state |
+| `/courses/:courseId/ready` | StudyMaterialsReady | Post-generation success screen |
+| `/flashcards` | AllFlashcards | All flashcard decks |
+| `/flashcards/:deckId` | Flashcards | Flip-card study mode |
+| `/quizzes` | AllQuizzes | All quizzes + recent quiz history |
+| `/quizzes/:courseId` | Quizzes | Quizzes for a specific course |
+| `/quizzes/:courseId/session/:quizId` | QuizSession | Quiz taking + results screen |
+| `/analytics` | Analytics | Weekly bar chart + topics mastery |
+| `*` | NotFound | 404 page |
 
-### Planned component structure
+### Key frontend additions - 3/4/26
 
-```
-client/src/
-├── pages/
-│   ├── LoginPage.jsx
-│   ├── RegisterPage.jsx
-│   ├── DashboardPage.jsx
-│   ├── NotePage.jsx
-│   └── StudySetPage.jsx
-├── components/
-│   ├── Flashcard.jsx             flip-card animation
-│   ├── QuizQuestion.jsx          MCQ with answer reveal
-│   ├── NoteCard.jsx              note preview on dashboard
-│   └── ProtectedRoute.jsx        redirects to /login if no token
-├── services/
-│   └── api.js                    Axios instance + all API call functions
-├── hooks/
-│   ├── useAuth.js                login/register/logout + token state
-│   └── useNotes.js               fetch + create + delete notes
-└── utils/
-    └── auth.js                   localStorage token helpers
-```
+#### Global Styling and Design System
+
+- Mint color scale (`--mint-50` → `--mint-950`) for branding and accents
+- Supporting status colors: success, warning, error, info
+- UI variables: `--bg`, `--surface`, `--border`, `--brand`, `--text`, `--text-emphasis`
+
+Typography:
+
+| Element | Font | Size | Weight |
+|---|---|---|---|
+| H1 | Poppins | 48px | 700 |
+| H2 | Poppins | 36px | 700 |
+| H3 | Poppins | 28px | 600 |
+| Body | Inter | 16px | normal |
+| Caption | Inter | 12px | normal |
+
+#### Reusable UI Components
+
+- `Button.jsx` — variants: primary, secondary, ghost; sizes: sm, lg
+- `Badge.jsx` — variants: correct, review, progress
+- `Icon.jsx` — SVG wrapper for consistent icon rendering
+
+#### Layout System
+
+- `DefaultPageLayout` — public/auth pages (centered, no sidebar)
+- `MainAppPageLayout` — sidebar nav + header (Dashboard, Courses, Analytics, etc.)
+- `InnerAppPageLayout` — inner pages with back navigation
+
+#### Auth
+
+- JWT stored in localStorage + React context (`AuthContext` + `useAuth`)
+- `RequireAuth` — redirects unauthenticated users to `/login`
+- `RedirectIfAuth` — redirects authenticated users away from `/login` and `/register`
 
 ---
 
@@ -858,6 +924,47 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 | 1 — Database layer | ✅ Done | 9 SQLAlchemy models, Alembic migrations, DB wiring |
 | 2 — Auth layer | ✅ Done | Register, login, JWT, `get_current_user` dependency |
 | 3 — Notes API | ✅ Done | CRUD endpoints for notes |
-| 4 — AI generation | ✅ Done | Claude API integration, study set generation |
+| 4 — AI generation | ✅ Done | Google Gemini API integration, study set generation |
 | 5 — Study content routes | ✅ Done | Fetch content, record quiz attempts and flashcard reviews |
-| 6 — Frontend | 🔲 Next | React SPA — auth, dashboard, note, study set views |
+| 6 — Frontend | ✅ Done | Full React SPA — all pages, layouts, auth, study flows |
+| 7 — Polish & enhancements | ✅ Done | Quiz results review, history, analytics, nav fixes, courses page |
+
+---
+
+## Phase 7 — Polish & Enhancements ✅ COMPLETE (3/10/26)
+
+### Navigation fixes
+
+- Fixed Courses nav link pointing to `/dashboard` instead of `/courses` (both mobile sidebar and desktop sidebar)
+- Added `/courses` route (`AllCourses` page) — was missing entirely, causing 404
+
+### Courses split
+
+- **Dashboard** now shows the 3 most recent courses with a "View All →" link
+- **`/courses`** (new `AllCourses.jsx`) shows all courses sorted by newest first, with `+ New Course` button
+
+### Quiz results screen
+
+- Replaced the basic "X of Y answered" summary with a full results screen:
+  - Score percentage (large display)
+  - Correct / Incorrect count cards (green / red)
+  - Full per-question review for **every** question — correct ones show a green border + "Your answer", incorrect ones show the wrong answer in red and the correct answer in green below
+  - Explanation shown for any question that has one
+- Fixed backend bug: `GET /study-sets/{id}/quiz` was returning `correct_index=-1` for all questions, making scoring impossible. Now returns the real `correct_index` and `explanation`.
+
+### Quiz history
+
+- New `useQuizHistory.js` hook — `saveQuizResult` / `getQuizHistory` backed by localStorage, capped at 20 entries
+- `QuizSession` saves a result entry on finish (course title, quiz label, correct count, total, score %, timestamp)
+- `AllQuizzes` displays a "Recent Results" section below available quizzes, with score color-coded by performance and a "Retake →" link
+
+### Analytics
+
+- **Weekly Quiz Performance** chart now reads real data from quiz history:
+  - Last 7 days, bars scaled to 100% (not relative to max)
+  - Color-coded: green ≥80%, mint ≥60%, red <60%
+  - Hover tooltip shows exact average % and quiz count for that day
+  - Days with no quizzes show a faint stub to keep day labels aligned
+- **Topics Mastery** section now populated from quiz history:
+  - Shows any course where the user has achieved 100% on at least one quiz
+  - Empty state updated to explain the 100% requirement

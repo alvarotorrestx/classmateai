@@ -2,19 +2,20 @@
 
 **ClassmateAI** is an AI-powered study companion that transforms your lecture notes into interactive learning materials — automatically.
 
-Upload your notes, and ClassmateAI uses Google Gemini to instantly generate flashcards, multiple-choice quizzes, summaries, and study guides. Study the generated content, track your performance, and identify where you need the most practice.
+Upload your notes, and ClassmateAI uses Google Gemini to instantly generate flashcards, multiple-choice quizzes, summaries, and study guides. Study the generated content, take quizzes, review your results, and track your performance over time.
 
-> **Project Status: Alpha** — Core features are functional. See [Project Status](#project-status) for details.
+> **Project Status: Alpha** — Core features are functional end-to-end. See [Project Status](#project-status) for details.
 
 ---
 
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Alpha Features](#alpha-features)
+- [Features](#features)
 - [Technologies](#technologies)
 - [Installation](#installation)
 - [Development Setup](#development-setup)
+- [Project Structure](#project-structure)
 - [License](#license)
 - [Contributors](#contributors)
 - [Project Status](#project-status)
@@ -25,74 +26,71 @@ Upload your notes, and ClassmateAI uses Google Gemini to instantly generate flas
 
 Students often accumulate large volumes of lecture notes but struggle to convert them into effective study resources. ClassmateAI bridges this gap by:
 
-1. **Accepting raw lecture notes** — paste or type your notes into the app
+1. **Accepting raw lecture notes** — paste your notes into the app under any course
 2. **Generating study materials automatically** — flashcards, quizzes, summaries, and study guides are created by AI in seconds
-3. **Letting you study actively** — flip through flashcards, take quizzes with instant feedback
-4. **Tracking your progress** — analytics help identify knowledge gaps over time
+3. **Letting you study actively** — flip through flashcards, take quizzes, and review detailed results
+4. **Tracking your progress** — analytics show your weekly performance and highlight mastered courses
 
 ---
 
-## Alpha Features
-
-These features will be complete by the end of the month:
+## Features
 
 - **Account system** — register and log in with email and password (JWT-based auth)
-- **Course management** — create named courses and organize notes within them
+- **Course management** — create named courses; dashboard shows the 3 most recent, Courses page shows all
 - **AI-generated flashcards** — front/back cards generated from your notes via Google Gemini
 - **AI-generated quizzes** — multiple-choice questions with explanations, generated from your notes
 - **AI-generated summaries** — concise summaries of uploaded notes
 - **AI-generated study guides** — detailed study guides extracted from your notes
 - **Flashcard study mode** — flip-card interface with Previous / Skip / Next navigation
-- **Quiz session mode** — answer questions one at a time, track correct/incorrect
-- **Progress analytics dashboard** — visualize study activity and performance over time
+- **Quiz session mode** — answer questions one at a time with back/forward navigation; finish to see results
+- **Quiz results screen** — score percentage, correct/incorrect counts, and a full per-question review showing your answer and the correct answer (with explanation) for every question
+- **Quiz history** — last 20 quiz sessions stored locally; browse past results with scores and a quick Retake link from the Quizzes tab
+- **Progress analytics** — weekly bar chart of average quiz scores by day (color-coded by performance); Topics Mastery section showing courses where you've scored 100%
+- **404 page** — friendly not-found page for unknown routes
+- **Mobile navigation** — collapsible sidebar drawer on small screens
 
-> The AI component is central to the product: all study materials (flashcards, quizzes, summaries, and study guides) are generated entirely by the **Google Gemini 2.5 Flash** model from the user's raw notes.
+> All study materials are generated entirely by the **Google Gemini 2.5 Flash** model from the user's raw notes.
 
 ---
 
 ## Technologies
 
 ### Frontend
-| Technology | Purpose |
-|---|---|
-| React 18 + Vite | UI framework and build tool |
-| React Router v7 | Client-side routing |
-| TailwindCSS v4 | Utility-first styling |
-| Axios | HTTP client for API calls |
+
+| Technology | Version | Purpose |
+|---|---|---|
+| React | 19 | UI framework |
+| Vite | 6 | Build tool and dev server |
+| React Router | v7 | Client-side routing |
+| TailwindCSS | v4 | Utility-first styling |
+| Axios | — | HTTP client for API calls |
 
 ### Backend
+
 | Technology | Purpose |
 |---|---|
 | Python 3.13 | Runtime |
 | FastAPI | REST API framework |
 | SQLAlchemy 2.0 | ORM |
 | Alembic | Database migrations |
-| psycopg3 | PostgreSQL driver |
+| psycopg3 | PostgreSQL async driver |
 | bcrypt + python-jose | Password hashing and JWT authentication |
+| google-genai SDK | Official Python client for the Gemini API |
 
-### Database
+### Database & Infrastructure
+
 | Technology | Purpose |
 |---|---|
-| PostgreSQL 17 | Primary database |
+| PostgreSQL 17 | Primary relational database |
 | Supabase | Hosted production database |
-| Docker + pgAdmin | Local development database |
-
-### AI & APIs
-| Technology | Purpose |
-|---|---|
-| Google Gemini 2.5 Flash | Generates flashcards, quizzes, summaries, and study guides from notes |
-| `google-genai` SDK | Official Python client for the Gemini API |
-
-### Deployment
-| Service | Purpose |
-|---|---|
-| Vercel | Frontend (React) and backend (FastAPI) hosting |
+| Docker + pgAdmin 4 | Local development database |
+| Vercel | Frontend and backend hosting |
 
 ---
 
 ## Installation
 
-ClassmateAI is a web application — no installation is required for end users.
+ClassmateAI is a web application — no installation required for end users.
 
 1. Visit the app at: **[https://classmateai-five.vercel.app](https://classmateai-five.vercel.app)**
 2. Click **Create Account** and register with your name, email, and password
@@ -105,14 +103,14 @@ ClassmateAI is a web application — no installation is required for end users.
 
 ## Development Setup
 
-Follow these steps to run ClassmateAI locally for development.
+Follow these steps to run ClassmateAI locally.
 
 ### Prerequisites
 
 - [Node.js 18+](https://nodejs.org/)
 - [Python 3.13](https://www.python.org/downloads/) (use `py` on Windows)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for local PostgreSQL)
-- A [Google AI Studio](https://aistudio.google.com/) account to get a free Gemini API key
+- A [Google AI Studio](https://aistudio.google.com/) account for a free Gemini API key
 
 ---
 
@@ -176,8 +174,7 @@ py -m uvicorn app.main:app
 ```
 
 - API: `http://localhost:8000`
-- Interactive API docs (Swagger): `http://localhost:8000/docs`
-- DB connection test: `http://localhost:8000/db-test`
+- Interactive docs (Swagger): `http://localhost:8000/docs`
 
 ---
 
@@ -187,7 +184,7 @@ py -m uvicorn app.main:app
 cd client
 ```
 
-Create a `.env` file:
+Create `client/.env`:
 
 ```
 VITE_API_BASE_URL=http://localhost:8000
@@ -210,7 +207,7 @@ npm run dev
 - Login: `admin@classmateai.com` / `admin123`
 - Add server: host = `classmateai_postgres`, port = `5432`, user = `postgres`, password = `postgres`
 
-> Use `classmateai_postgres` (the Docker container name) — not `localhost` — when adding the server in pgAdmin.
+> Use `classmateai_postgres` (the Docker container name) — not `localhost` — as the host when registering the server in pgAdmin.
 
 ---
 
@@ -220,25 +217,44 @@ The school network blocks outbound connections to Supabase (`db.xxxx.supabase.co
 
 ---
 
-### Project structure
+## Project Structure
 
 ```
 classmateai/
-├── client/          # React frontend (Vite)
+├── client/                        # React 19 frontend (Vite)
 │   └── src/
+│       ├── assets/icons/          # SVG icons by category
+│       │   ├── core/
+│       │   ├── navigation/
+│       │   ├── status_and_feedback/
+│       │   └── study_tools/
 │       ├── components/
-│       ├── context/
-│       ├── hooks/
+│       │   ├── auth/              # RequireAuth, RedirectIfAuth
+│       │   ├── layout/            # DefaultPageLayout, MainAppPageLayout, InnerAppPageLayout
+│       │   └── ui/                # Button, Badge, Icon
+│       ├── context/               # AuthContext
+│       ├── hooks/                 # useAuth, useQuizHistory
 │       ├── pages/
-│       └── services/
-├── server/          # FastAPI backend
-│   ├── app/
-│   ├── models/
-│   ├── routes/
-│   ├── schemas/
-│   ├── services/    # AI generation logic
-│   └── utils/
-└── docker/          # Local PostgreSQL + pgAdmin
+│       │   ├── app/               # Dashboard, AllCourses, Courses, NewCourse,
+│       │   │                      #   UploadNotes, Processing, StudyMaterialsReady,
+│       │   │                      #   AllFlashcards, Flashcards, AllQuizzes,
+│       │   │                      #   Quizzes, QuizSession, Analytics
+│       │   ├── auth/              # Login, Register
+│       │   └── public/            # Landing, NotFound
+│       └── services/              # api.js, authService.js, noteService.js
+│
+├── server/                        # FastAPI backend
+│   ├── app/                       # main.py — FastAPI app + router registration
+│   ├── db/                        # SQLAlchemy engine + session setup
+│   ├── models/                    # ORM models (User, Note, StudySet, Flashcard,
+│   │                              #   QuizQuestion, Summary, StudyGuide, etc.)
+│   ├── routes/                    # auth, notes, study_sets, generate, progress
+│   ├── schemas/                   # Pydantic request/response models
+│   ├── services/                  # ai.py — Gemini API + prompt construction
+│   ├── utils/                     # JWT helpers, get_current_user dependency
+│   └── alembic/                   # Database migration history
+│
+└── docker/                        # PostgreSQL 17 + pgAdmin 4 compose config
 ```
 
 ---
@@ -288,16 +304,21 @@ This project is maintained by Patrick Caldwell and Alvaro Torres as part of the 
 
 **Current state: Alpha**
 
-The core application loop is functional end-to-end:
+The full application loop is functional end-to-end:
+
 - User registration and login
-- Course creation and note uploads
-- AI generation of flashcards, quizzes, summaries, and study guides
-- Flashcard study mode and quiz session mode
-- Basic analytics dashboard
+- Course creation, note uploads, and AI generation (flashcards, quizzes, summaries, study guides)
+- Flashcard study mode and full quiz session mode with back/forward navigation
+- Quiz results screen with per-question review — correct and incorrect answers shown for every question
+- Quiz history (last 20 sessions) persisted in localStorage with retake links
+- Analytics: weekly bar chart of average quiz scores by day + Topics Mastery for 100% courses
+- Dashboard showing 3 most recent courses; dedicated All Courses page
+- Mobile-friendly navigation sidebar
+- 404 not-found page
 
-**Known limitations in Alpha:**
-- No spaced-repetition scheduling (confidence ratings are recorded but not yet used for scheduling)
-- No mobile-optimized layout
+**Known limitations:**
+
+- No spaced-repetition scheduling — confidence ratings are recorded in the database but not yet used to schedule flashcard reviews
 - No email verification or password reset
-
-Active development is ongoing. The project is not yet production-ready for general use.
+- Quiz history is stored in the browser (localStorage) — does not sync across devices or browsers
+- No offline support

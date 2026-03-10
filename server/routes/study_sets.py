@@ -60,8 +60,8 @@ def get_quiz(study_set_id: uuid.UUID, db: Session = Depends(get_db), current_use
             id=q.id,
             question=q.question,
             options=q.options,
-            correct_index=-1,
-            explanation=None,
+            correct_index=q.correct_index,
+            explanation=q.explanation,
             display_order=q.display_order,
         ))
     return questions
