@@ -35,6 +35,8 @@ const InnerPageLayout = ({
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -46,12 +48,48 @@ const InnerPageLayout = ({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        if (!sidebarOpen) return;
+
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") setSidebarOpen(false);
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+            document.body.style.overflow = prevOverflow;
+        };
+    }, [sidebarOpen]);
+
+    const closeSidebar = () => setSidebarOpen(false);
+
     return (
         <section className="w-full flex items-center justify-center max-w-500 mx-auto">
             <div className="w-full bg-(--surface) overflow-hidden">
                 {/* Header */}
                 <header className="w-full bg-brand px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setSidebarOpen(true)}
+                            className="md:hidden w-10 h-10 rounded-lg bg-(--mint-400) flex items-center justify-center text-(--mint-950) hover:bg-(--mint-300) transition cursor-pointer"
+                            aria-label="Open navigation menu"
+                            title="Menu"
+                        >
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path
+                                    d="M4 7H20M4 12H20M4 17H20"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                />
+                            </svg>
+                        </button>
+
                         <img
                             src="/images/logo/logo.png"
                             alt="ClassmateAI logo"
@@ -92,7 +130,66 @@ const InnerPageLayout = ({
 
                 {/* Main body */}
                 <div className="flex min-h-[70vh]">
-                    {/* Sidebar */}
+                    {/* Mobile sidebar */}
+                    {sidebarOpen && (
+                        <div className="md:hidden fixed inset-0 z-40">
+                            <button
+                                type="button"
+                                className="absolute inset-0 bg-black/30"
+                                aria-label="Close navigation menu"
+                                onClick={closeSidebar}
+                            />
+
+                            <aside className="absolute left-0 top-0 h-full w-[82vw] max-w-72 border-r border-(--mint-100) bg-white px-4 py-5 flex flex-col gap-2 shadow-xl">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="font-semibold text-(--text-emphasis)">Menu</span>
+                                    <button
+                                        type="button"
+                                        onClick={closeSidebar}
+                                        className="w-9 h-9 rounded-lg hover:bg-(--mint-50) transition flex items-center justify-center cursor-pointer"
+                                        aria-label="Close navigation menu"
+                                        title="Close"
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path
+                                                d="M6 6L18 18M18 6L6 18"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <NavLink to="/dashboard" className={navLinkClass} onClick={closeSidebar}>
+                                    <Icon src={dashboardIcon} size={24} />
+                                    <span>Dashboard</span>
+                                </NavLink>
+
+                                <NavLink to="/dashboard" className={navLinkClass} onClick={closeSidebar}>
+                                    <Icon src={courseIcon} size={24} />
+                                    <span>Courses</span>
+                                </NavLink>
+
+                                <NavLink to="/flashcards" className={navLinkClass} onClick={closeSidebar}>
+                                    <Icon src={flashcardIcon} size={24} />
+                                    <span>Flashcards</span>
+                                </NavLink>
+
+                                <NavLink to="/quizzes" className={navLinkClass} onClick={closeSidebar}>
+                                    <Icon src={quizIcon} size={24} />
+                                    <span>Quizzes</span>
+                                </NavLink>
+
+                                <NavLink to="/analytics" className={navLinkClass} onClick={closeSidebar}>
+                                    <Icon src={analyticsIcon} size={24} />
+                                    <span>Analytics</span>
+                                </NavLink>
+                            </aside>
+                        </div>
+                    )}
+
+                    {/* Desktop Sidebar */}
                     <aside className="hidden md:flex w-56 border-r border-(--mint-100) bg-white px-4 py-5 flex-col gap-2">
                         <NavLink to="/dashboard" className={navLinkClass}>
                             <Icon src={dashboardIcon} size={24} />
