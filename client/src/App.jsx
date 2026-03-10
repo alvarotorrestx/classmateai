@@ -23,6 +23,9 @@ import Analytics from "./pages/app/Analytics";
 import RequireAuth from "./components/auth/RequireAuth";
 import RedirectIfAuth from "./components/auth/RedirectIfAuth";
 
+// Not found page
+import NotFound from "./pages/NotFound";
+
 export default function App() {
   return (
     <Routes>
@@ -47,6 +50,8 @@ export default function App() {
         <Route path="/quizzes/:courseId/session/:quizId" element={<QuizSession />} />
         <Route path="/analytics" element={<Analytics />} />
       </Route>
+
+      <Route path="*" element={<NotFound />} />
 
     </Routes>
   );
