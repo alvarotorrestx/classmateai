@@ -166,7 +166,7 @@ const InnerPageLayout = ({
                                     <span>Dashboard</span>
                                 </NavLink>
 
-                                <NavLink to="/dashboard" className={navLinkClass} onClick={closeSidebar}>
+                                <NavLink to="/courses" className={navLinkClass} onClick={closeSidebar}>
                                     <Icon src={courseIcon} size={24} />
                                     <span>Courses</span>
                                 </NavLink>
@@ -196,7 +196,7 @@ const InnerPageLayout = ({
                             <span>Dashboard</span>
                         </NavLink>
 
-                        <NavLink to="/dashboard" className={navLinkClass}>
+                        <NavLink to="/courses" className={navLinkClass}>
                             <Icon src={courseIcon} size={24} />
                             <span>Courses</span>
                         </NavLink>

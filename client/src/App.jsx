@@ -14,6 +14,7 @@ import Processing from "./pages/app/Processing";
 import StudyMaterialsReady from "./pages/app/StudyMaterialsReady";
 import AllFlashcards from "./pages/app/AllFlashcards";
 import AllQuizzes from "./pages/app/AllQuizzes";
+import AllCourses from "./pages/app/AllCourses";
 import Flashcards from "./pages/app/Flashcards";
 import Quizzes from "./pages/app/Quizzes";
 import QuizSession from "./pages/app/QuizSession";
@@ -38,6 +39,7 @@ export default function App() {
 
       <Route element={<RequireAuth />}>
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/courses" element={<AllCourses />} />
         <Route path="/courses/new" element={<NewCourse />} />
         <Route path="/courses/:courseId" element={<Courses />} />
         <Route path="/courses/:courseId/upload" element={<UploadNotes />} />
