@@ -19,22 +19,17 @@ router = APIRouter(tags=["study-sets"])
 
 
 def _get_owned_study_set(study_set_id: uuid.UUID, db: Session, current_user: User) -> StudySet:
+    # Ownership is now tracked directly via user_id, so this works even when note_id is NULL
     study_set = db.get(StudySet, study_set_id)
-    if not study_set:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Study set not found")
-    note = db.get(Note, study_set.note_id)
-    if not note or note.user_id != current_user.id:
+    if not study_set or study_set.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Study set not found")
     return study_set
 
 
 @router.get("/study-sets", response_model=list[StudySetResponse])
 def list_all_study_sets(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    notes = db.query(Note).filter(Note.user_id == current_user.id).all()
-    study_sets = []
-    for note in notes:
-        study_sets.extend(note.study_sets)
-    return study_sets
+    # Query by user_id directly so orphaned study sets (course deleted) are still included
+    return db.query(StudySet).filter(StudySet.user_id == current_user.id).all()
 
 
 @router.get("/notes/{note_id}/study-sets", response_model=list[StudySetResponse])

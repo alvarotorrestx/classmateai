@@ -17,8 +17,13 @@ const Processing = () => {
   const [doneSteps, setDoneSteps] = useState(0);
   const [error, setError] = useState(null);
   const studySetRef = useRef(null);
+  const hasFired = useRef(false);
 
   useEffect(() => {
+    // Guard against React StrictMode's double-invoke in development
+    if (hasFired.current) return;
+    hasFired.current = true;
+
     let cancelled = false;
     let currentProgress = 0;
     let intervalId;

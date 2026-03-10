@@ -16,5 +16,6 @@ class User(TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     notes = relationship("Note", back_populates="user", cascade="all, delete-orphan")
+    study_sets = relationship("StudySet", back_populates="user", cascade="all, delete-orphan")
     quiz_attempts = relationship("QuizAttempt", back_populates="user", cascade="all, delete-orphan")
     flashcard_reviews = relationship("FlashcardReview", back_populates="user", cascade="all, delete-orphan")

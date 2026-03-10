@@ -39,7 +39,7 @@ class StudyGuideResponse(BaseModel):
 
 class StudySetResponse(BaseModel):
     id: uuid.UUID
-    note_id: uuid.UUID
+    note_id: uuid.UUID | None
     label: str | None
     created_at: datetime
     flashcards: list[FlashcardResponse]

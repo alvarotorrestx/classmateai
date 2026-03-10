@@ -45,7 +45,7 @@ const AllFlashcards = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {decks.map((deck, i) => (
             <div key={deck.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col">
-              <p className="font-bold text-base mb-1">{noteMap[deck.note_id] || deck.label || `Deck ${i + 1}`}</p>
+              <p className="font-bold text-base mb-1">{(deck.note_id && noteMap[deck.note_id]) || deck.label || "Deleted Course"}</p>
               <p className="text-sm text-gray-400 mb-5">
                 {deck.flashcards.length} cards
               </p>

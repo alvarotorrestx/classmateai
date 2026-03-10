@@ -24,6 +24,11 @@ def generate(note_id: uuid.UUID, db: Session = Depends(get_db), current_user: Us
     if not note or note.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
 
+    # Idempotency: return existing study set if already generated for this note
+    existing = db.query(StudySet).filter(StudySet.note_id == note.id).first()
+    if existing:
+        return existing
+
     try:
         data = generate_study_materials(note.content)
     except (json.JSONDecodeError, KeyError) as e:
@@ -32,7 +37,7 @@ def generate(note_id: uuid.UUID, db: Session = Depends(get_db), current_user: Us
             detail=f"AI returned an unexpected response: {e}",
         )
 
-    study_set = StudySet(note_id=note.id)
+    study_set = StudySet(note_id=note.id, user_id=current_user.id)
     db.add(study_set)
     db.flush()  # get study_set.id before inserting children
 

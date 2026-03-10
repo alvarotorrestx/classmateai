@@ -45,7 +45,7 @@ const AllQuizzes = () => {
         <div className="flex flex-col gap-4">
           {sets.map((set, i) => (
             <div key={set.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <p className="font-bold text-base mb-1">{noteMap[set.note_id] || set.label || `Quiz ${i + 1}`}</p>
+              <p className="font-bold text-base mb-1">{(set.note_id && noteMap[set.note_id]) || set.label || "Deleted Course"}</p>
               <p className="text-sm text-gray-400 mb-4">
                 {set.quiz_questions.length} questions
               </p>

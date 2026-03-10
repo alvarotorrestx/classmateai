@@ -17,4 +17,6 @@ class Note(TimestampMixin, Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
 
     user = relationship("User", back_populates="notes")
-    study_sets = relationship("StudySet", back_populates="note", cascade="all, delete-orphan")
+    # passive_deletes=True lets the DB handle SET NULL on study_sets.note_id
+    # so study sets survive when their course is deleted
+    study_sets = relationship("StudySet", back_populates="note", cascade="save-update, merge", passive_deletes=True)
