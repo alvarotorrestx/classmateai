@@ -968,3 +968,59 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 - **Topics Mastery** section now populated from quiz history:
   - Shows any course where the user has achieved 100% on at least one quiz
   - Empty state updated to explain the 100% requirement
+
+---
+
+## Phase 8 — Study UX + Analytics Enhancements ✅ COMPLETE (3/11/26)
+
+### Flashcards: completion state + next actions
+
+- Added an explicit **end-of-deck completion screen** in `Flashcards.jsx` so users know when they’ve finished a flashcard set.
+- Completion screen includes:
+  - **Take Quiz** button (correctly linked to the associated course + study set: `/quizzes/:courseId/session/:studySetId`)
+  - **Go to Dashboard** button
+  - Session summary (cards reviewed + estimated time)
+
+### Flashcards: progress tracking (per-user DB)
+
+- Implemented client-side calls to the existing backend endpoint:
+  - `POST /flashcards/{flashcard_id}/review`
+- Flashcards now record a review event **when a card is revealed** (first flip), persisted to the user’s DB (`flashcard_reviews`).
+- Added `client/src/services/progressService.js` to centralize progress API calls.
+
+### Dashboard + Courses: mastery percent integration
+
+- **Mastery %** is now computed from quiz history (best quiz score per course) and shown on:
+  - `Dashboard.jsx` course cards
+  - `AllCourses.jsx` course cards (matched Dashboard behavior)
+- Mastery progress bars now visually reflect the % instead of the placeholder `—% / 0%`.
+
+### Analytics: deeper mastery + chart readability
+
+- **Topics Mastery** upgraded in `Analytics.jsx`:
+  - Shows **all courses with quiz history**, not only 100% courses
+  - Sorted with **Mastered (100%) first**, then by best score descending
+  - Includes quick links: **Open course** and **Retake quiz**
+- **Weekly Quiz Performance** chart improvements:
+  - Added **Y-axis % scale** (0/25/50/75/100)
+  - Added **% labels above bars** while keeping the hover tooltip for exact values
+
+### Universal delete UX (cards)
+
+- Extracted the existing delete modal into a reusable component:
+  - `client/src/components/modals/DeleteCourseModal.jsx`
+- Added hover trash actions (using the same modal + options: delete course / flashcards / quizzes) to:
+  - `/courses` (`AllCourses.jsx`)
+  - `/flashcards` (`AllFlashcards.jsx`)
+  - `/quizzes` (`AllQuizzes.jsx`)
+- Removed the original trash icon from the course detail header (`Courses.jsx`) since deletion is now available from cards.
+- Adjusted `/courses` card header UX so the **Active badge slides left on hover** and the trash icon appears cleanly (no overlap).
+
+### Tested / verification
+
+- Manually tested core flows to ensure original capabilities still work:
+  - Course creation and navigation
+  - Flashcard studying + completion flow
+  - Quiz sessions + results + quiz history
+  - Analytics pages (weekly chart + mastery)
+  - Course/material deletion via the new card-based trash controls
