@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import MainAppPageLayout from "../../components/layout/MainAppPageLayout";
 import useAuth from "../../hooks/useAuth";
 import { getNotes, getAllStudySets } from "../../services/noteService";
+import { getQuizHistory } from "../../hooks/useQuizHistory";
 
 const StatCard = ({ label, value, sub }) => (
   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-1">
@@ -56,6 +57,17 @@ const Dashboard = () => {
     }
     setByNoteId[s.note_id].flashcards += s.flashcards.length;
     setByNoteId[s.note_id].quizzes += s.quiz_questions.length;
+  }
+
+  // Build best quiz score per course from local quiz history
+  const quizHistory = getQuizHistory();
+  const bestScoreByCourse = {};
+  for (const entry of quizHistory) {
+    if (!entry.courseId) continue;
+    const existing = bestScoreByCourse[entry.courseId];
+    if (!existing || entry.scorePercent > existing) {
+      bestScoreByCourse[entry.courseId] = entry.scorePercent;
+    }
   }
 
   return (
@@ -143,6 +155,7 @@ const Dashboard = () => {
             .slice(0, 3)
             .map((course) => {
             const counts = setByNoteId[course.id] || { flashcards: 0, quizzes: 0 };
+            const mastery = bestScoreByCourse[course.id];
             return (
               <Link
                 key={course.id}
@@ -178,10 +191,15 @@ const Dashboard = () => {
                 {/* Mastery progress bar — placeholder until quiz scores are tracked */}
                 <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
                   <span>Mastery</span>
-                  <span className="font-semibold text-(--text-emphasis)">—%</span>
+                  <span className="font-semibold text-(--text-emphasis)">
+                    {typeof mastery === "number" ? `${mastery}%` : "—%"}
+                  </span>
                 </div>
                 <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-(--mint-500) rounded-full" style={{ width: "0%" }} />
+                  <div
+                    className="h-full bg-(--mint-500) rounded-full"
+                    style={{ width: typeof mastery === "number" ? `${mastery}%` : "0%" }}
+                  />
                 </div>
               </Link>
             );

@@ -3,19 +3,25 @@ import { Link } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { getAllStudySets, getNotes } from "../../services/noteService";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
+import DeleteCourseModal from "../../components/modals/DeleteCourseModal";
 
 const AllQuizzes = () => {
+  const [allSets, setAllSets] = useState([]);
   const [sets, setSets] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [noteMap, setNoteMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState([]);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     setHistory(getQuizHistory());
     Promise.all([getAllStudySets(), getNotes()])
       .then(([data, notes]) => {
         const map = Object.fromEntries(notes.map((n) => [n.id, n.title]));
+        setNotes(notes);
         setNoteMap(map);
+        setAllSets(data);
         setSets(data.filter((s) => s.quiz_questions.length > 0));
       })
       .catch(() => setSets([]))
@@ -47,7 +53,31 @@ const AllQuizzes = () => {
       ) : (
         <div className="flex flex-col gap-4">
           {sets.map((set, i) => (
-            <div key={set.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div key={set.id} className="group relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              {/* Hover delete icon */}
+              {set.note_id && (
+                <button
+                  type="button"
+                  title="Delete course or study materials"
+                  onClick={() => {
+                    const note = notes.find((n) => n.id === set.note_id);
+                    if (!note) return;
+                    setDeleteTarget({
+                      note,
+                      decks: allSets.filter((s) => s.note_id === set.note_id),
+                    });
+                  }}
+                  className="absolute top-3 right-3 w-9 h-9 rounded-lg flex items-center justify-center text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
+                >
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    <path d="M10 11v6M14 11v6" />
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                  </svg>
+                </button>
+              )}
               <p className="font-bold text-base mb-1">{(set.note_id && noteMap[set.note_id]) || set.label || "Deleted Course"}</p>
               <p className="text-sm text-gray-400 mb-4">
                 {set.quiz_questions.length} questions
@@ -61,6 +91,29 @@ const AllQuizzes = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {deleteTarget?.note && (
+        <DeleteCourseModal
+          note={deleteTarget.note}
+          decks={deleteTarget.decks}
+          onCancel={() => setDeleteTarget(null)}
+          onSuccess={() => {
+            setDeleteTarget(null);
+            setLoading(true);
+            setHistory(getQuizHistory());
+            Promise.all([getAllStudySets(), getNotes()])
+              .then(([data, notes]) => {
+                const map = Object.fromEntries(notes.map((n) => [n.id, n.title]));
+                setNotes(notes);
+                setNoteMap(map);
+                setAllSets(data);
+                setSets(data.filter((s) => s.quiz_questions.length > 0));
+              })
+              .catch(() => {})
+              .finally(() => setLoading(false));
+          }}
+        />
       )}
 
       {/* Quiz History */}
