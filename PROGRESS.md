@@ -1024,3 +1024,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
   - Quiz sessions + results + quiz history
   - Analytics pages (weekly chart + mastery)
   - Course/material deletion via the new card-based trash controls
+
+### Bug fix — Processing screen progress (3/11/26)
+
+- Fixed the `Processing.jsx` screen where the progress bar stayed at 0% and never completed after a teammate’s update.
+- Root cause: an extra `hasFired` guard around the `useEffect` prevented the real interval + API call from running under React 18 StrictMode, so the backend completed but the UI never saw the result.
+- Resolution: removed the `hasFired` guard and relied on the existing `cancelled` flag for safe cleanup, restoring the animated 0→100% progress and automatic navigation to the Study Materials Ready screen.
