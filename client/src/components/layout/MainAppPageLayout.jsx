@@ -9,6 +9,7 @@ import quizIcon from "../../assets/icons/core/quiz.svg";
 import analyticsIcon from "../../assets/icons/study_tools/chart.svg";
 
 import useAuth from "../../hooks/useAuth";
+import api from "../../services/api";
 
 const InnerPageLayout = ({
     headerTitle = "Welcome back!",
@@ -26,11 +27,15 @@ const InnerPageLayout = ({
     const navigate = useNavigate();
     const { setAuth } = useAuth();
 
-    const handleLogout = () => {
-        setAuth(null)
-        localStorage.removeItem("auth")
-        navigate("/")
-    }
+    const handleLogout = async () => {
+        try {
+            await api.post("/auth/logout");
+        } catch {
+            // ignore logout API errors; clear client state
+        }
+        setAuth(null);
+        navigate("/");
+    };
 
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
