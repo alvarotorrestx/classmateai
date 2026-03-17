@@ -5,8 +5,9 @@ from sqlalchemy.orm import Session
 
 from db import get_db
 from models.user import User
-from schemas.auth import AuthResponse, UserLogin, UserRegister, UserResponse
+from schemas.auth import AuthResponse, UserLogin, UserRegister, UserResponse, SessionResponse
 from utils.auth import create_access_token, create_refresh_token, hash_password, verify_password, decode_refresh_token
+from utils.deps import get_current_user
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_MINUTES = int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES", "10080")) # 7 days
@@ -124,3 +125,8 @@ def refresh(
 def logout(response: Response):
     clear_auth_cookies(response)
     return {"message": "Logged out successfully"}
+
+# used by the frontend to rehydrate auth state on page load
+@router.get("/session", response_model=SessionResponse)
+def get_session(current_user: User = Depends(get_current_user)):
+    return SessionResponse(user=UserResponse.model_validate(current_user))

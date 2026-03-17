@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { setLogoutHandler } from "../services/api";
+import api, { setLogoutHandler } from "../services/api";
 
 export const AuthContext = createContext(null);
 
@@ -15,6 +15,24 @@ export const AuthProvider = ({ children }) => {
       navigate("/login");
     });
   }, [navigate]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      try {
+        const res = await api.get("/auth/session");
+        if (!isMounted) return;
+        setAuth({ user: res.data.user });
+      } catch {
+        // No valid session; leave auth as null
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ auth, setAuth }}>

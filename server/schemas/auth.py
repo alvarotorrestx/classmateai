@@ -27,3 +27,7 @@ class UserResponse(BaseModel):
 class AuthResponse(BaseModel):
     user: UserResponse
     message: str
+
+
+class SessionResponse(BaseModel):
+    user: UserResponse
