@@ -28,11 +28,7 @@ const Login = () => {
         password
       })
 
-      setAuth({
-        user: data.user,
-        accessToken: data.access_token,
-        tokenType: data.token_type
-      })
+      setAuth({ user: data.user })
 
       navigate("/dashboard")
 

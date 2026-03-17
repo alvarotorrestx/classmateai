@@ -2,9 +2,9 @@ import { Navigate, Outlet } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 
 const RedirectIfAuth = () => {
-    const { auth } = useAuth();
+  const { auth } = useAuth();
 
-    return auth?.accessToken ? <Navigate to="/dashboard" replace /> : <Outlet />;
+  return auth?.user ? <Navigate to="/dashboard" replace /> : <Outlet />;
 };
 
 export default RedirectIfAuth;

@@ -1,4 +1,5 @@
 import os
+import uuid
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
 from sqlalchemy.orm import Session
 
@@ -62,10 +63,7 @@ def register(body: UserRegister, response: Response, db: Session = Depends(get_d
 
     set_auth_cookies(response, access_token, refresh_token)
 
-    return AuthResponse(
-        user=UserResponse.model_validate(user),
-        message="Account created successfully",
-    )
+    return AuthResponse(user=UserResponse.model_validate(user), message="Account created successfully")
 
 @router.post("/login", response_model=AuthResponse)
 def login(body: UserLogin, response: Response, db: Session = Depends(get_db)):
@@ -86,10 +84,7 @@ def login(body: UserLogin, response: Response, db: Session = Depends(get_db)):
 
     set_auth_cookies(response, access_token, refresh_token)
 
-    return AuthResponse(
-        user=UserResponse.model_validate(user),
-        message="Logged in successfully",
-    )
+    return AuthResponse(user=UserResponse.model_validate(user), message="Logged in successfully")
 
 @router.post("/refresh", response_model=AuthResponse)
 def refresh(
@@ -105,7 +100,12 @@ def refresh(
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     user_id = payload.get("sub")
-    user = db.query(User).filter(User.id == int(user_id)).first()
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    user = db.query(User).filter(User.id == user_uuid).first()
 
     if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="User not found or inactive")
@@ -117,8 +117,7 @@ def refresh(
 
     return AuthResponse(
         user=UserResponse.model_validate(user),
-        access_token=new_access_token,
-        refresh_token=new_refresh_token,
+        message="Token refreshed",
     )
 
 @router.post("/logout")
