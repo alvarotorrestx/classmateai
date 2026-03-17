@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
+import api from "../../services/api";
 
 const InnerAppPageLayout = ({ children }) => {
     const { auth, setAuth } = useAuth();
@@ -17,9 +18,13 @@ const InnerAppPageLayout = ({ children }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await api.post("/auth/logout");
+        } catch {
+            // ignore logout API errors; clear client state
+        }
         setAuth(null);
-        localStorage.removeItem("auth");
         navigate("/");
     };
 

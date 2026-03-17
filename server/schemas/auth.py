@@ -26,5 +26,8 @@ class UserResponse(BaseModel):
 
 class AuthResponse(BaseModel):
     user: UserResponse
-    access_token: str
-    token_type: str = "bearer"
+    message: str
+
+
+class SessionResponse(BaseModel):
+    user: UserResponse
