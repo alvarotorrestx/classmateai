@@ -9,6 +9,7 @@ from routes.notes import router as notes_router
 from routes.generate import router as generate_router
 from routes.study_sets import router as study_sets_router
 from routes.progress import router as progress_router
+from routes.upload import router as upload_router
 
 app = FastAPI()
 
@@ -31,6 +32,7 @@ app.include_router(notes_router)
 app.include_router(generate_router)
 app.include_router(study_sets_router)
 app.include_router(progress_router)
+app.include_router(upload_router)
 
 
 @app.get("/")

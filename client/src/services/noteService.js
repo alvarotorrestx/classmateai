@@ -45,6 +45,24 @@ export const deleteStudySetFlashcards = (studySetId) =>
 export const deleteStudySetQuiz = (studySetId) =>
   api.delete(`/study-sets/${studySetId}/quiz`);
 
+export const extractTextFromFile = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  // Use fetch instead of the axios instance — axios's default Content-Type: application/json
+  // header overrides the multipart/form-data boundary that the browser needs to set automatically.
+  const response = await fetch(
+    `${import.meta.env.VITE_API_BASE_URL}/extract-text`,
+    { method: "POST", credentials: "include", body: formData }
+  );
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    const err = new Error(body.detail || "File extraction failed");
+    err.response = { data: body };
+    throw err;
+  }
+  return (await response.json()).text;
+};
+
 export const deleteNote = (noteId, { deleteCourse = true, deleteFlashcards = true, deleteQuizzes = true } = {}) =>
   api.delete(`/notes/${noteId}`, {
     params: {

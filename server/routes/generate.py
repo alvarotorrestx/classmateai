@@ -1,5 +1,4 @@
 import uuid
-import json
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -32,7 +31,7 @@ def generate(note_id: uuid.UUID, db: Session = Depends(get_db), current_user: Us
 
     try:
         data = generate_study_materials(note.content)
-    except (json.JSONDecodeError, KeyError) as e:
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"AI returned an unexpected response: {e}",
@@ -76,7 +75,7 @@ def generate_new_flashcards(
 
     try:
         data = generate_flashcards(note.content)
-    except (json.JSONDecodeError, KeyError) as e:
+    except Exception as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"AI returned an unexpected response: {e}")
 
     if study_set_id:
@@ -110,7 +109,7 @@ def generate_new_quiz(
 
     try:
         data = generate_quiz(note.content)
-    except (json.JSONDecodeError, KeyError) as e:
+    except Exception as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"AI returned an unexpected response: {e}")
 
     if study_set_id:

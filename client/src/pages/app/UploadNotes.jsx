@@ -1,7 +1,10 @@
 import { useRef, useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
-import { createNote, getNote } from "../../services/noteService";
+import { createNote, getNote, extractTextFromFile } from "../../services/noteService";
+
+const ACCEPTED = ".txt,.md,.pdf,.pptx";
+const PLAIN_TEXT_TYPES = ["text/plain", "text/markdown", "text/x-markdown"];
 
 const UploadNotes = () => {
   const { courseId } = useParams();
@@ -9,11 +12,11 @@ const UploadNotes = () => {
   const location = useLocation();
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("Uploading...");
   const [error, setError] = useState("");
   const [courseTitle, setCourseTitle] = useState(location.state?.title || "");
   const inputRef = useRef(null);
 
-  // If no title in router state and this is an existing course, fetch it
   useEffect(() => {
     if (!location.state?.title && courseId !== "new") {
       getNote(courseId)
@@ -24,31 +27,50 @@ const UploadNotes = () => {
 
   const processFile = async (file) => {
     if (!file) return;
+
+    const name = file.name.toLowerCase();
+    const isPlain = PLAIN_TEXT_TYPES.includes(file.type) || name.endsWith(".txt") || name.endsWith(".md");
+    const isPdf = name.endsWith(".pdf");
+    const isPptx = name.endsWith(".pptx");
+
+    if (!isPlain && !isPdf && !isPptx) {
+      setError("Unsupported file type. Please upload a TXT, MD, PDF, or PPTX file.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const content = e.target.result;
+    try {
+      let content;
+
+      if (isPlain) {
+        content = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = reject;
+          reader.readAsText(file);
+        });
+      } else {
+        setLoadingMsg(isPdf ? "Extracting text from PDF…" : "Extracting text from PowerPoint…");
+        content = await extractTextFromFile(file);
+        setLoadingMsg("Uploading...");
+      }
+
       if (!content || !content.trim()) {
-        setError("The file appears to be empty. Please choose a different file.");
+        setError("No text could be extracted from this file. Please try a different file.");
         setLoading(false);
         return;
       }
-      try {
-        const title = courseTitle || "My Notes";
-        const note = await createNote(title, content);
-        navigate(`/courses/${note.id}/processing`);
-      } catch {
-        setError("Failed to upload notes. Please try again.");
-        setLoading(false);
-      }
-    };
-    reader.onerror = () => {
-      setError("Failed to read file. Please try again.");
+
+      const title = courseTitle || "My Notes";
+      const note = await createNote(title, content);
+      navigate(`/courses/${note.id}/processing`);
+    } catch (err) {
+      const msg = err?.response?.data?.detail;
+      setError(msg || "Failed to process file. Please try again.");
       setLoading(false);
-    };
-    reader.readAsText(file);
+    }
   };
 
   const handleDrop = (e) => {
@@ -66,7 +88,7 @@ const UploadNotes = () => {
       <h3 className="mb-1">Upload Lecture Notes</h3>
       <p className="text-sm text-gray-400 mb-6">
         {courseTitle
-          ? `${courseTitle} \xb7 Your notes will be transformed into flashcards and quizzes`
+          ? `${courseTitle} · Your notes will be transformed into flashcards and quizzes`
           : "Your notes will be transformed into flashcards and quizzes"}
       </p>
 
@@ -108,12 +130,13 @@ const UploadNotes = () => {
 
         {loading ? (
           <>
-            <p className="text-lg font-bold text-center">Uploading...</p>
+            <div className="w-6 h-6 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
+            <p className="text-lg font-bold text-center">{loadingMsg}</p>
             <p className="text-sm text-gray-400">Please wait</p>
           </>
         ) : (
           <>
-            <p className="text-lg font-bold text-center">Drag and drop your notes here</p>
+            <p className="text-lg font-bold text-center">Drag and drop your file here</p>
             <p className="text-sm text-gray-400">or click to browse files</p>
             <button
               type="button"
@@ -129,11 +152,18 @@ const UploadNotes = () => {
         <input
           ref={inputRef}
           type="file"
-          accept=".txt,.md"
+          accept={ACCEPTED}
           className="hidden"
           onChange={handleFile}
         />
-        <p className="text-xs text-gray-400">Supports TXT and MD files</p>
+
+        <div className="flex gap-3 mt-1">
+          {["PDF", "PPTX", "TXT", "MD"].map((fmt) => (
+            <span key={fmt} className="text-xs font-semibold text-(--mint-700) bg-(--mint-100) rounded-lg px-2.5 py-1">
+              {fmt}
+            </span>
+          ))}
+        </div>
       </div>
     </InnerAppPageLayout>
   );
