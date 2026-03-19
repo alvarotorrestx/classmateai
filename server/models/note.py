@@ -20,3 +20,4 @@ class Note(TimestampMixin, Base):
     # passive_deletes=True lets the DB handle SET NULL on study_sets.note_id
     # so study sets survive when their course is deleted
     study_sets = relationship("StudySet", back_populates="note", cascade="save-update, merge", passive_deletes=True)
+    course_study_guide = relationship("CourseStudyGuide", back_populates="note", cascade="all, delete-orphan", uselist=False)

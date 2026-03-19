@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
-import { createNote, getNote, extractTextFromFile } from "../../services/noteService";
+import { createNote, getNote, extractTextFromFile, addContentToNote } from "../../services/noteService";
 
 const ACCEPTED = ".txt,.md,.pdf,.pptx";
 const PLAIN_TEXT_TYPES = ["text/plain", "text/markdown", "text/x-markdown"];
@@ -10,20 +10,29 @@ const UploadNotes = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const isExistingCourse = courseId && courseId !== "new";
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loadingMsg, setLoadingMsg] = useState("Uploading...");
+  const [loadingMsg, setLoadingMsg] = useState("");
   const [error, setError] = useState("");
   const [courseTitle, setCourseTitle] = useState(location.state?.title || "");
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (!location.state?.title && courseId !== "new") {
+    if (!location.state?.title && isExistingCourse) {
       getNote(courseId)
         .then((n) => setCourseTitle(n.title))
         .catch(() => {});
     }
   }, [courseId, location.state?.title]);
+
+  const readFileAsText = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
 
   const processFile = async (file) => {
     if (!file) return;
@@ -43,18 +52,12 @@ const UploadNotes = () => {
 
     try {
       let content;
-
       if (isPlain) {
-        content = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.onerror = reject;
-          reader.readAsText(file);
-        });
+        setLoadingMsg("Reading file…");
+        content = await readFileAsText(file);
       } else {
         setLoadingMsg(isPdf ? "Extracting text from PDF…" : "Extracting text from PowerPoint…");
         content = await extractTextFromFile(file);
-        setLoadingMsg("Uploading...");
       }
 
       if (!content || !content.trim()) {
@@ -63,9 +66,18 @@ const UploadNotes = () => {
         return;
       }
 
-      const title = courseTitle || "My Notes";
-      const note = await createNote(title, content);
-      navigate(`/courses/${note.id}/processing`);
+      if (isExistingCourse) {
+        // Adding more content to an existing course — generate new study set + update course guide
+        setLoadingMsg("Generating study materials…");
+        await addContentToNote(courseId, content);
+        navigate(`/courses/${courseId}`);
+      } else {
+        // New course — create the note then let the processing page handle generation
+        setLoadingMsg("Uploading…");
+        const title = courseTitle || "My Notes";
+        const note = await createNote(title, content);
+        navigate(`/courses/${note.id}/processing`);
+      }
     } catch (err) {
       const msg = err?.response?.data?.detail;
       setError(msg || "Failed to process file. Please try again.");
@@ -85,10 +97,10 @@ const UploadNotes = () => {
 
   return (
     <InnerAppPageLayout>
-      <h3 className="mb-1">Upload Lecture Notes</h3>
+      <h3 className="mb-1">{isExistingCourse ? "Add More Notes" : "Upload Lecture Notes"}</h3>
       <p className="text-sm text-gray-400 mb-6">
         {courseTitle
-          ? `${courseTitle} · Your notes will be transformed into flashcards and quizzes`
+          ? `${courseTitle} · ${isExistingCourse ? "New content will generate fresh flashcards and update your study guide" : "Your notes will be transformed into flashcards and quizzes"}`
           : "Your notes will be transformed into flashcards and quizzes"}
       </p>
 
@@ -112,17 +124,8 @@ const UploadNotes = () => {
         onClick={() => !loading && inputRef.current?.click()}
       >
         <div className="w-14 h-14 rounded-full border-2 border-dashed border-(--mint-600) flex items-center justify-center">
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-(--mint-700)"
-          >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-(--mint-700)">
             <rect x="3" y="3" width="18" height="18" rx="3" ry="3" fill="var(--mint-600)" stroke="none" />
             <path d="M12 8v8M8 12l4-4 4 4" stroke="white" />
           </svg>
@@ -132,7 +135,7 @@ const UploadNotes = () => {
           <>
             <div className="w-6 h-6 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
             <p className="text-lg font-bold text-center">{loadingMsg}</p>
-            <p className="text-sm text-gray-400">Please wait</p>
+            <p className="text-sm text-gray-400">This may take a minute — please don't close this tab</p>
           </>
         ) : (
           <>
@@ -149,13 +152,7 @@ const UploadNotes = () => {
           </>
         )}
 
-        <input
-          ref={inputRef}
-          type="file"
-          accept={ACCEPTED}
-          className="hidden"
-          onChange={handleFile}
-        />
+        <input ref={inputRef} type="file" accept={ACCEPTED} className="hidden" onChange={handleFile} />
 
         <div className="flex gap-3 mt-1">
           {["PDF", "PPTX", "TXT", "MD"].map((fmt) => (

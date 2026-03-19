@@ -12,6 +12,7 @@ from models.study_set import StudySet
 from models.summary import Summary
 from models.user import User
 from schemas.study_set import StudySetResponse
+from models.course_study_guide import CourseStudyGuide
 from services.ai import generate_study_materials, generate_flashcards, generate_quiz
 from utils.deps import get_current_user
 
@@ -56,6 +57,10 @@ def generate(note_id: uuid.UUID, db: Session = Depends(get_db), current_user: Us
 
     db.add(Summary(study_set_id=study_set.id, content=data["summary"]))
     db.add(StudyGuide(study_set_id=study_set.id, content=data["study_guide"]))
+
+    # Create course-level study guide from the initial generation
+    if not db.query(CourseStudyGuide).filter(CourseStudyGuide.note_id == note.id).first():
+        db.add(CourseStudyGuide(note_id=note.id, content=data["study_guide"]))
 
     db.commit()
     db.refresh(study_set)

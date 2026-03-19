@@ -8,6 +8,7 @@ from models.summary import Summary
 from models.study_guide import StudyGuide
 from models.quiz_attempt import QuizAttempt
 from models.flashcard_review import FlashcardReview
+from models.course_study_guide import CourseStudyGuide
 
 __all__ = [
     "Base",
@@ -20,4 +21,5 @@ __all__ = [
     "StudyGuide",
     "QuizAttempt",
     "FlashcardReview",
+    "CourseStudyGuide",
 ]

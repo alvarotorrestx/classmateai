@@ -77,6 +77,31 @@ def generate_flashcards(note_content: str, max_flashcards: int = 100) -> dict:
     return _call_gemini(FLASHCARDS_ONLY_PROMPT, user_prompt)
 
 
+def generate_course_study_guide(full_content: str) -> str:
+    """Generate a comprehensive plain-text study guide from the full accumulated course content."""
+    content = full_content[:_MAX_CONTENT_CHARS]
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=(
+            f"Create a comprehensive, well-organized study guide from all the following course notes. "
+            f"Include key concepts, definitions, main topics with thorough explanations, and important "
+            f"relationships between ideas. Use clear section headers and bullet points.\n\n"
+            f"Notes:\n{content}"
+        ),
+        config=types.GenerateContentConfig(
+            system_instruction=(
+                "You are a study assistant. Write a comprehensive study guide in plain text with "
+                "clear sections and organized content. Do not return JSON."
+            )
+        ),
+    )
+    text = getattr(response, "text", None)
+    if not text or not text.strip():
+        raise ValueError("Gemini returned an empty study guide")
+    return text.strip()
+
+
 def generate_quiz(note_content: str, max_questions: int = 25) -> dict:
     content = note_content[:_MAX_CONTENT_CHARS]
     user_prompt = (

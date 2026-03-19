@@ -20,6 +20,12 @@ export const getStudySets = (noteId) =>
 export const generateStudyMaterials = (noteId) =>
   api.post(`/notes/${noteId}/generate`).then((r) => r.data);
 
+export const addContentToNote = (noteId, content) =>
+  api.post(`/notes/${noteId}/add-content`, { content }).then((r) => r.data);
+
+export const getCourseStudyGuide = (noteId) =>
+  api.get(`/notes/${noteId}/study-guide`).then((r) => r.data);
+
 export const generateNewFlashcards = (noteId, studySetId = null) =>
   api.post(`/notes/${noteId}/generate/flashcards`, null, {
     params: studySetId ? { study_set_id: studySetId } : {},
