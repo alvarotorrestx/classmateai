@@ -120,6 +120,13 @@ def add_content_to_note(
     if not note or note.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
 
+    word_count = len(body.content.split())
+    if word_count < 150:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Not enough content to generate a study set. Your file contains only {word_count} word{'s' if word_count != 1 else ''} — please upload at least 150 words of notes.",
+        )
+
     # Append new content to the note so the full history is preserved
     note.content = note.content + "\n\n---\n\n" + body.content
     db.flush()

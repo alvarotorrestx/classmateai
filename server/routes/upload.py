@@ -30,7 +30,15 @@ async def extract_text_from_file(
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Could not parse file: {e}")
 
-    if not text or not text.strip():
+    text = text.strip()
+    if not text:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="No text could be extracted from this file")
 
-    return {"text": text.strip()}
+    word_count = len(text.split())
+    if word_count < 150:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Not enough content to generate a study set. Your file contains only {word_count} word{'s' if word_count != 1 else ''} — please upload at least 150 words of notes, such as a full lecture handout or chapter summary.",
+        )
+
+    return {"text": text}

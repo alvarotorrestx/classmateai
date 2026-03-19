@@ -66,6 +66,15 @@ const UploadNotes = () => {
         return;
       }
 
+      const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+      if (wordCount < 150) {
+        setError(
+          `Not enough content to generate a study set. Your file contains only ${wordCount} word${wordCount !== 1 ? "s" : ""} — please upload at least 150 words of notes, such as a full lecture handout or chapter summary.`
+        );
+        setLoading(false);
+        return;
+      }
+
       if (isExistingCourse) {
         // Adding more content to an existing course — generate new study set + update course guide
         setLoadingMsg("Generating study materials…");
