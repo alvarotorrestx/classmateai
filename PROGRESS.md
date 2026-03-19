@@ -1030,3 +1030,107 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 - Fixed the `Processing.jsx` screen where the progress bar stayed at 0% and never completed after a teammate’s update.
 - Root cause: an extra `hasFired` guard around the `useEffect` prevented the real interval + API call from running under React 18 StrictMode, so the backend completed but the UI never saw the result.
 - Resolution: removed the `hasFired` guard and relied on the existing `cancelled` flag for safe cleanup, restoring the animated 0→100% progress and automatic navigation to the Study Materials Ready screen.
+
+---
+
+## Phase 9 — Cookie-Based Auth + Session Persistence ✅ COMPLETE (3/18/26)
+
+### Goal
+Migrate authentication from **localStorage + Authorization Bearer headers** to a more secure and scalable
+**cookie-based access/refresh token** model with automatic session restoration and refresh.
+
+---
+
+### Backend — Access + Refresh Tokens (HttpOnly cookies)
+
+#### JWT utilities (`server/utils/auth.py`)
+- Added support for **two token types**:
+  - `type="access"` (short-lived)
+  - `type="refresh"` (long-lived)
+- Implemented separate create/decode helpers for each token type.
+- Token durations controlled by env vars:
+  - `ACCESS_TOKEN_EXPIRE_MINUTES`
+  - `REFRESH_TOKEN_EXPIRE_MINUTES`
+
+#### Auth routes (`server/routes/auth.py`)
+- Updated `/auth/register` and `/auth/login` to:
+  - Generate both access + refresh JWTs
+  - Set them as **HttpOnly cookies**:
+    - `access_token` cookie scoped to `/`
+    - `refresh_token` cookie scoped to `/auth`
+  - Return `AuthResponse` with `user` + `message` (tokens no longer sent to frontend JS)
+- Added `/auth/refresh`:
+  - Rotates both tokens using the `refresh_token` cookie
+  - Fix: correctly treats the JWT `sub` claim as a **UUID** (not `int`)
+- Added `/auth/logout`:
+  - Clears both cookies
+
+#### Auth dependency (`server/utils/deps.py`)
+- Updated `get_current_user` to accept auth from:
+  - `Authorization: Bearer <token>` (backward compatible)
+  - OR `access_token` cookie (new default path)
+- Fix: `HTTPBearer(auto_error=False)` so cookie fallback works when no Authorization header is present.
+
+#### Session endpoint (`/auth/session`)
+- Added `GET /auth/session` to return the current authenticated user (via cookie/header).
+- Used by the frontend to restore session state after a page refresh.
+
+---
+
+### Frontend — Remove localStorage tokens, rely on cookies + session hydration
+
+#### Axios (`client/src/services/api.js`)
+- Enabled `withCredentials: true` so cookies are sent automatically.
+- Added a global **401 interceptor**:
+  - On 401, attempts `POST /auth/refresh` once
+  - Retries the original request after refresh
+  - If refresh fails, triggers a global logout (clears auth + redirects)
+- Added `sessionClient` (no interceptors) for `/auth/session` bootstrap to avoid logged-out users being forced to `/login`.
+
+#### Auth state (`client/src/context/AuthContext.jsx`)
+- Removed **localStorage persistence entirely**.
+- Added `authLoading` hydration state:
+  - Calls `GET /auth/session` on startup via `sessionClient`
+  - If successful: sets `auth.user`
+  - Always marks hydration complete (`authLoading=false`)
+- Registered a global logout handler used by Axios interceptor to:
+  - Clear auth
+  - Navigate to `/login`
+
+#### Route guards
+- Updated `RequireAuth` and `RedirectIfAuth` to use `auth.user` (not access token).
+- Added hydration gating to avoid flicker:
+  - While `authLoading` is true, guards render a small loading UI instead of redirecting.
+- New component: `client/src/components/auth/AuthLoading.jsx` for consistent session-check UX.
+
+#### Login/Register pages
+- Updated to store only `{ user }` in `AuthContext`.
+- Tokens are no longer read from the response body (cookies handle auth).
+
+#### Logout behavior
+- Updated logout handlers in:
+  - `client/src/components/layout/MainAppPageLayout.jsx`
+  - `client/src/components/layout/InnerAppPageLayout.jsx`
+- Logout now:
+  - Calls `POST /auth/logout` to clear cookies
+  - Clears `auth`
+  - Redirects to `/login`
+
+---
+
+### Results / UX Improvements
+- **Secure tokens**: No JWTs stored in localStorage or accessible to JS (HttpOnly cookies).
+- **Automatic refresh**: Expired access tokens are refreshed transparently when possible.
+- **Hard logout**: Deleting cookies or failing refresh causes a true logout (auth cleared + redirect).
+- **Session persistence**: Refreshing the browser restores the user session via `/auth/session`.
+- **No login flash**: Hydration gating prevents briefly seeing `/login` while already authenticated.
+- **Logged-out refresh**: Public routes (like `/`) remain on the same page when logged out; no forced redirect.
+
+---
+
+### Tested / verification
+- Confirmed login/register set cookies and authenticated routes work.
+- Confirmed protected API calls succeed with cookie auth.
+- Confirmed 401 handling triggers refresh and retries requests.
+- Confirmed logout clears cookies, clears auth state, and redirects correctly.
+- Confirmed browser refresh restores session via `/auth/session` and avoids `/login` flicker.

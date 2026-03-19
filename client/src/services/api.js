@@ -10,6 +10,15 @@ const api = axios.create({
   },
 });
 
+// Helps prevent 401 refresh/logout side effects
+export const sessionClient = axios.create({
+  baseURL,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 // Separate client for refresh to avoid interceptor recursion
 const refreshClient = axios.create({
   baseURL,
