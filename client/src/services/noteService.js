@@ -20,6 +20,19 @@ export const getStudySets = (noteId) =>
 export const generateStudyMaterials = (noteId) =>
   api.post(`/notes/${noteId}/generate`).then((r) => r.data);
 
+export const generateNewFlashcards = (noteId, studySetId = null) =>
+  api.post(`/notes/${noteId}/generate/flashcards`, null, {
+    params: studySetId ? { study_set_id: studySetId } : {},
+  }).then((r) => r.data);
+
+export const generateNewQuiz = (noteId, studySetId = null) =>
+  api.post(`/notes/${noteId}/generate/quiz`, null, {
+    params: studySetId ? { study_set_id: studySetId } : {},
+  }).then((r) => r.data);
+
+export const deleteStudySet = (studySetId) =>
+  api.delete(`/study-sets/${studySetId}`);
+
 export const getFlashcards = (studySetId) =>
   api.get(`/study-sets/${studySetId}/flashcards`).then((r) => r.data);
 

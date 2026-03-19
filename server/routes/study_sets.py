@@ -1,5 +1,6 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from db import get_db
@@ -85,10 +86,20 @@ def get_study_guide(study_set_id: uuid.UUID, db: Session = Depends(get_db), curr
     return study_set.study_guide
 
 
+@router.delete("/study-sets/{study_set_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_study_set(study_set_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    study_set = _get_owned_study_set(study_set_id, db, current_user)
+    db.delete(study_set)
+    db.commit()
+
+
 @router.delete("/study-sets/{study_set_id}/flashcards", status_code=status.HTTP_204_NO_CONTENT)
 def delete_study_set_flashcards(study_set_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     study_set = _get_owned_study_set(study_set_id, db, current_user)
     db.query(Flashcard).filter(Flashcard.study_set_id == study_set.id).delete(synchronize_session=False)
+    remaining = db.query(func.count(QuizQuestion.id)).filter(QuizQuestion.study_set_id == study_set.id).scalar()
+    if remaining == 0:
+        db.delete(study_set)
     db.commit()
 
 
@@ -96,4 +107,7 @@ def delete_study_set_flashcards(study_set_id: uuid.UUID, db: Session = Depends(g
 def delete_study_set_quiz(study_set_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     study_set = _get_owned_study_set(study_set_id, db, current_user)
     db.query(QuizQuestion).filter(QuizQuestion.study_set_id == study_set.id).delete(synchronize_session=False)
+    remaining = db.query(func.count(Flashcard.id)).filter(Flashcard.study_set_id == study_set.id).scalar()
+    if remaining == 0:
+        db.delete(study_set)
     db.commit()
