@@ -1,32 +1,53 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
-import { getAllStudySets, getNotes } from "../../services/noteService";
+import { getAllStudySets, getNotes, deleteStudySetQuiz } from "../../services/noteService";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
-import DeleteCourseModal from "../../components/modals/DeleteCourseModal";
+
+const TrashIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6M14 11v6" />
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+  </svg>
+);
 
 const AllQuizzes = () => {
-  const [allSets, setAllSets] = useState([]);
   const [sets, setSets] = useState([]);
-  const [notes, setNotes] = useState([]);
   const [noteMap, setNoteMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState([]);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [confirmingId, setConfirmingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     setHistory(getQuizHistory());
     Promise.all([getAllStudySets(), getNotes()])
       .then(([data, notes]) => {
-        const map = Object.fromEntries(notes.map((n) => [n.id, n.title]));
-        setNotes(notes);
-        setNoteMap(map);
-        setAllSets(data);
+        setNoteMap(Object.fromEntries(notes.map((n) => [n.id, n.title])));
         setSets(data.filter((s) => s.quiz_questions.length > 0));
       })
       .catch(() => setSets([]))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDelete = async (setId) => {
+    setDeletingId(setId);
+    try {
+      await deleteStudySetQuiz(setId);
+      setConfirmingId(null);
+      setSets((prev) => prev.filter((s) => s.id !== setId));
+    } catch {
+      // keep card visible on failure
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const setTitle = (set) =>
+    (set.note_id && noteMap[set.note_id]) || set.label || "Deleted Course";
 
   return (
     <InnerAppPageLayout>
@@ -52,38 +73,45 @@ const AllQuizzes = () => {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {sets.map((set, i) => (
+          {sets.map((set) => (
             <div key={set.id} className="group relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              {/* Hover delete icon */}
-              {set.note_id && (
+              {confirmingId === set.id ? (
+                <div className="absolute top-3 right-3 flex items-center gap-2">
+                  <span className="text-xs text-gray-500 font-medium">Delete quiz?</span>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingId(null)}
+                    className="text-xs text-gray-400 hover:text-gray-600 font-medium px-2 py-1 rounded-lg hover:bg-gray-100 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(set.id)}
+                    disabled={deletingId === set.id}
+                    className="text-xs text-white bg-red-500 hover:bg-red-600 font-semibold px-2 py-1 rounded-lg transition disabled:opacity-50 flex items-center gap-1"
+                  >
+                    {deletingId === set.id && (
+                      <div className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    )}
+                    Delete
+                  </button>
+                </div>
+              ) : (
                 <button
                   type="button"
-                  title="Delete course or study materials"
-                  onClick={() => {
-                    const note = notes.find((n) => n.id === set.note_id);
-                    if (!note) return;
-                    setDeleteTarget({
-                      note,
-                      decks: allSets.filter((s) => s.note_id === set.note_id),
-                    });
-                  }}
+                  title="Delete quiz"
+                  onClick={() => setConfirmingId(set.id)}
                   className="absolute top-3 right-3 w-9 h-9 rounded-lg flex items-center justify-center text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
                 >
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                    <path d="M10 11v6M14 11v6" />
-                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                  </svg>
+                  <TrashIcon />
                 </button>
               )}
-              <p className="font-bold text-base mb-1">{(set.note_id && noteMap[set.note_id]) || set.label || "Deleted Course"}</p>
-              <p className="text-sm text-gray-400 mb-4">
-                {set.quiz_questions.length} questions
-              </p>
+
+              <p className="font-bold text-base mb-1">{setTitle(set)}</p>
+              <p className="text-sm text-gray-400 mb-4">{set.quiz_questions.length} questions</p>
               <Link
-                to={`/quizzes/${set.note_id}/session/${set.id}`}
+                to={set.note_id ? `/quizzes/${set.note_id}/session/${set.id}` : `/quizzes`}
                 className="border border-(--mint-600) text-(--mint-700) rounded-xl px-5 py-2 text-sm font-semibold hover:bg-(--mint-50) transition"
               >
                 Start Quiz →
@@ -91,29 +119,6 @@ const AllQuizzes = () => {
             </div>
           ))}
         </div>
-      )}
-
-      {deleteTarget?.note && (
-        <DeleteCourseModal
-          note={deleteTarget.note}
-          decks={deleteTarget.decks}
-          onCancel={() => setDeleteTarget(null)}
-          onSuccess={() => {
-            setDeleteTarget(null);
-            setLoading(true);
-            setHistory(getQuizHistory());
-            Promise.all([getAllStudySets(), getNotes()])
-              .then(([data, notes]) => {
-                const map = Object.fromEntries(notes.map((n) => [n.id, n.title]));
-                setNotes(notes);
-                setNoteMap(map);
-                setAllSets(data);
-                setSets(data.filter((s) => s.quiz_questions.length > 0));
-              })
-              .catch(() => {})
-              .finally(() => setLoading(false));
-          }}
-        />
       )}
 
       {/* Quiz History */}

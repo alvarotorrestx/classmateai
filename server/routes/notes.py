@@ -87,7 +87,7 @@ def delete_note(
         if study_set_ids:
             db.query(StudySet).filter(
                 StudySet.id.in_(study_set_ids)
-            ).update({"note_id": None}, synchronize_session=False)
+            ).update({"note_id": None, "label": note.title}, synchronize_session=False)
         db.flush()  # commit the NULLs before the note DELETE
         db.delete(note)
 

@@ -21,7 +21,11 @@ const Flashcards = () => {
     getStudySet(deckId)
       .then((set) => {
         setCourseId(set.note_id);
-        getNote(set.note_id).then((note) => setCourseTitle(note.title)).catch(() => {});
+        if (set.note_id) {
+          getNote(set.note_id).then((note) => setCourseTitle(note.title)).catch(() => {});
+        } else if (set.label) {
+          setCourseTitle(set.label);
+        }
         const sorted = [...set.flashcards].sort((a, b) => a.display_order - b.display_order);
         setCards(sorted);
         sessionStartRef.current = Date.now();

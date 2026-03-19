@@ -26,6 +26,12 @@ export const getFlashcards = (studySetId) =>
 export const getQuiz = (studySetId) =>
   api.get(`/study-sets/${studySetId}/quiz`).then((r) => r.data);
 
+export const deleteStudySetFlashcards = (studySetId) =>
+  api.delete(`/study-sets/${studySetId}/flashcards`);
+
+export const deleteStudySetQuiz = (studySetId) =>
+  api.delete(`/study-sets/${studySetId}/quiz`);
+
 export const deleteNote = (noteId, { deleteCourse = true, deleteFlashcards = true, deleteQuizzes = true } = {}) =>
   api.delete(`/notes/${noteId}`, {
     params: {

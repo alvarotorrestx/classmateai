@@ -16,12 +16,13 @@ Return ONLY valid JSON with no additional text, matching exactly this structure:
 }"""
 
 
-def generate_study_materials(note_content: str, num_flashcards: int = 10, num_questions: int = 5) -> dict:
+def generate_study_materials(note_content: str, max_flashcards: int = 100, max_questions: int = 25) -> dict:
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     user_prompt = (
-        f"Generate {num_flashcards} flashcards and {num_questions} multiple-choice quiz questions "
-        f"from the following notes. Also write a concise summary and a detailed study guide.\n\n"
+        f"Generate as many flashcards as needed to fully cover the material (up to {max_flashcards}), "
+        f"and as many multiple-choice quiz questions as needed to thoroughly test the material (up to {max_questions}). "
+        f"Also write a concise summary and a detailed study guide from the following notes.\n\n"
         f"Notes:\n{note_content}"
     )
 

@@ -1,29 +1,53 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
-import { getAllStudySets, getNotes } from "../../services/noteService";
-import DeleteCourseModal from "../../components/modals/DeleteCourseModal";
+import { getAllStudySets, getNotes, deleteStudySetFlashcards } from "../../services/noteService";
+
+const TrashIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6M14 11v6" />
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+  </svg>
+);
 
 const AllFlashcards = () => {
-  const [allSets, setAllSets] = useState([]);
   const [decks, setDecks] = useState([]);
-  const [notes, setNotes] = useState([]);
   const [noteMap, setNoteMap] = useState({});
   const [loading, setLoading] = useState(true);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [confirmingId, setConfirmingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
-  useEffect(() => {
-    Promise.all([getAllStudySets(), getNotes()])
+  const load = () => {
+    return Promise.all([getAllStudySets(), getNotes()])
       .then(([sets, notes]) => {
-        const map = Object.fromEntries(notes.map((n) => [n.id, n.title]));
-        setNotes(notes);
-        setNoteMap(map);
-        setAllSets(sets);
+        setNoteMap(Object.fromEntries(notes.map((n) => [n.id, n.title])));
         setDecks(sets.filter((s) => s.flashcards.length > 0));
       })
-      .catch(() => setDecks([]))
-      .finally(() => setLoading(false));
+      .catch(() => setDecks([]));
+  };
+
+  useEffect(() => {
+    load().finally(() => setLoading(false));
   }, []);
+
+  const handleDelete = async (deckId) => {
+    setDeletingId(deckId);
+    try {
+      await deleteStudySetFlashcards(deckId);
+      setConfirmingId(null);
+      setDecks((prev) => prev.filter((d) => d.id !== deckId));
+    } catch {
+      // keep card visible on failure
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const deckTitle = (deck) =>
+    (deck.note_id && noteMap[deck.note_id]) || deck.label || "Deleted Course";
 
   return (
     <InnerAppPageLayout>
@@ -49,36 +73,43 @@ const AllFlashcards = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {decks.map((deck, i) => (
+          {decks.map((deck) => (
             <div key={deck.id} className="group relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col">
-              {/* Hover delete icon */}
-              {deck.note_id && (
+              {confirmingId === deck.id ? (
+                <div className="absolute top-3 right-3 flex items-center gap-2">
+                  <span className="text-xs text-gray-500 font-medium">Delete deck?</span>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingId(null)}
+                    className="text-xs text-gray-400 hover:text-gray-600 font-medium px-2 py-1 rounded-lg hover:bg-gray-100 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(deck.id)}
+                    disabled={deletingId === deck.id}
+                    className="text-xs text-white bg-red-500 hover:bg-red-600 font-semibold px-2 py-1 rounded-lg transition disabled:opacity-50 flex items-center gap-1"
+                  >
+                    {deletingId === deck.id && (
+                      <div className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    )}
+                    Delete
+                  </button>
+                </div>
+              ) : (
                 <button
                   type="button"
-                  title="Delete course or study materials"
-                  onClick={() => {
-                    const note = notes.find((n) => n.id === deck.note_id);
-                    if (!note) return;
-                    setDeleteTarget({
-                      note,
-                      decks: allSets.filter((s) => s.note_id === deck.note_id),
-                    });
-                  }}
+                  title="Delete flashcard deck"
+                  onClick={() => setConfirmingId(deck.id)}
                   className="absolute top-3 right-3 w-9 h-9 rounded-lg flex items-center justify-center text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
                 >
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                    <path d="M10 11v6M14 11v6" />
-                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                  </svg>
+                  <TrashIcon />
                 </button>
               )}
-              <p className="font-bold text-base mb-1">{(deck.note_id && noteMap[deck.note_id]) || deck.label || "Deleted Course"}</p>
-              <p className="text-sm text-gray-400 mb-5">
-                {deck.flashcards.length} cards
-              </p>
+
+              <p className="font-bold text-base mb-1">{deckTitle(deck)}</p>
+              <p className="text-sm text-gray-400 mb-5">{deck.flashcards.length} cards</p>
               <Link
                 to={`/flashcards/${deck.id}`}
                 className="mt-auto text-center bg-(--mint-600) text-white rounded-xl px-4 py-2.5 text-sm font-semibold hover:bg-(--mint-700) transition"
@@ -88,28 +119,6 @@ const AllFlashcards = () => {
             </div>
           ))}
         </div>
-      )}
-
-      {deleteTarget?.note && (
-        <DeleteCourseModal
-          note={deleteTarget.note}
-          decks={deleteTarget.decks}
-          onCancel={() => setDeleteTarget(null)}
-          onSuccess={() => {
-            setDeleteTarget(null);
-            setLoading(true);
-            Promise.all([getAllStudySets(), getNotes()])
-              .then(([sets, notes]) => {
-                const map = Object.fromEntries(notes.map((n) => [n.id, n.title]));
-                setNotes(notes);
-                setNoteMap(map);
-                setAllSets(sets);
-                setDecks(sets.filter((s) => s.flashcards.length > 0));
-              })
-              .catch(() => {})
-              .finally(() => setLoading(false));
-          }}
-        />
       )}
     </InnerAppPageLayout>
   );

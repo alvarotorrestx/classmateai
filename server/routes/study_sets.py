@@ -3,7 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from db import get_db
+from models.flashcard import Flashcard
 from models.note import Note
+from models.quiz_question import QuizQuestion
 from models.study_set import StudySet
 from models.user import User
 from schemas.study_set import (
@@ -81,3 +83,17 @@ def get_study_guide(study_set_id: uuid.UUID, db: Session = Depends(get_db), curr
     if not study_set.study_guide:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No study guide found")
     return study_set.study_guide
+
+
+@router.delete("/study-sets/{study_set_id}/flashcards", status_code=status.HTTP_204_NO_CONTENT)
+def delete_study_set_flashcards(study_set_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    study_set = _get_owned_study_set(study_set_id, db, current_user)
+    db.query(Flashcard).filter(Flashcard.study_set_id == study_set.id).delete(synchronize_session=False)
+    db.commit()
+
+
+@router.delete("/study-sets/{study_set_id}/quiz", status_code=status.HTTP_204_NO_CONTENT)
+def delete_study_set_quiz(study_set_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    study_set = _get_owned_study_set(study_set_id, db, current_user)
+    db.query(QuizQuestion).filter(QuizQuestion.study_set_id == study_set.id).delete(synchronize_session=False)
+    db.commit()

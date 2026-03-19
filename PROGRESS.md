@@ -912,7 +912,7 @@ cd client && npm install && npm run dev
 DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/classmateai
 SECRET_KEY=<32-byte hex string>
 ACCESS_TOKEN_EXPIRE_MINUTES=30
-# ANTHROPIC_API_KEY=<your key>   # needed for Phase 4
+GEMINI_API_KEY=<your key>
 ```
 
 ---
