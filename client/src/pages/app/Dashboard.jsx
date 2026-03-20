@@ -4,6 +4,7 @@ import MainAppPageLayout from "../../components/layout/MainAppPageLayout";
 import useAuth from "../../hooks/useAuth";
 import { getNotes, getAllStudySets } from "../../services/noteService";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
+import { hasStudyContent, getStudyRecommendations } from "../../utils/studyRecommendations";
 
 const StatCard = ({ label, value, sub }) => (
   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-1">
@@ -41,7 +42,7 @@ const Dashboard = () => {
         setCourses(notes);
         setStudySets(sets);
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
@@ -59,8 +60,13 @@ const Dashboard = () => {
     setByNoteId[s.note_id].quizzes += s.quiz_questions.length;
   }
 
-  // Build best quiz score per course from local quiz history
   const quizHistory = getQuizHistory();
+  const studyRecommendations =
+    !loading && hasStudyContent(courses, studySets)
+      ? getStudyRecommendations({ notes: courses, studySets, quizHistory })
+      : [];
+
+  // Build best quiz score per course from local quiz history
   const bestScoreByCourse = {};
   for (const entry of quizHistory) {
     if (!entry.courseId) continue;
@@ -100,6 +106,37 @@ const Dashboard = () => {
         />
         <StatCard label="Study Streak" value="0" sub="days" />
       </div>
+
+      {/* Suggested for you cards based on the notes, study sets, and quiz history */}
+      {!loading &&
+        hasStudyContent(courses, studySets) &&
+        studyRecommendations.length > 0 && (
+          <div className="mb-6">
+            <p className="text-xl font-bold mb-3">Suggested for you</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {studyRecommendations.map((rec, i) => (
+                <Link
+                  key={`${rec.type}-${rec.courseId}-${i}`}
+                  to={rec.href}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition flex flex-col gap-2"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wide text-(--mint-700)">
+                    {rec.type === "quiz" ? "Quiz" : "Flashcards"}
+                  </span>
+                  <span className="font-bold text-base text-(--text-emphasis) line-clamp-2">
+                    {rec.courseTitle}
+                  </span>
+                  <span className="text-sm text-gray-500 line-clamp-3 flex-1">
+                    {rec.reason}
+                  </span>
+                  <span className="text-sm font-semibold text-(--mint-700) mt-1">
+                    {rec.type === "quiz" ? "Start quiz →" : "Study flashcards →"}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
       {/* Your Courses */}
       <div className="flex items-center justify-between mb-4">
@@ -154,56 +191,56 @@ const Dashboard = () => {
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
             .slice(0, 3)
             .map((course) => {
-            const counts = setByNoteId[course.id] || { flashcards: 0, quizzes: 0 };
-            const mastery = bestScoreByCourse[course.id];
-            return (
-              <Link
-                key={course.id}
-                to={`/courses/${course.id}`}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition block"
-              >
-                {/* Title + badge */}
-                <div className="flex items-start justify-between mb-1">
-                  <p className="font-bold text-base leading-snug">{course.title}</p>
-                  <span className="ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold bg-(--mint-100) text-(--mint-800)">
-                    Active
-                  </span>
-                </div>
+              const counts = setByNoteId[course.id] || { flashcards: 0, quizzes: 0 };
+              const mastery = bestScoreByCourse[course.id];
+              return (
+                <Link
+                  key={course.id}
+                  to={`/courses/${course.id}`}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition block"
+                >
+                  {/* Title + badge */}
+                  <div className="flex items-start justify-between mb-1">
+                    <p className="font-bold text-base leading-snug">{course.title}</p>
+                    <span className="ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold bg-(--mint-100) text-(--mint-800)">
+                      Active
+                    </span>
+                  </div>
 
-                {/* Date */}
-                <p className="text-xs text-gray-400 mb-3">
-                  Added{" "}
-                  {new Date(course.created_at).toLocaleDateString("en-US", {
-                    month: "short", day: "numeric", year: "numeric",
-                  })}
-                </p>
+                  {/* Date */}
+                  <p className="text-xs text-gray-400 mb-3">
+                    Added{" "}
+                    {new Date(course.created_at).toLocaleDateString("en-US", {
+                      month: "short", day: "numeric", year: "numeric",
+                    })}
+                  </p>
 
-                {/* Flashcards + Quizzes row */}
-                <div className="flex gap-4 mb-3 text-sm text-gray-500">
-                  <span>
-                    <span className="font-semibold text-(--text-emphasis)">{counts.flashcards}</span> flashcards
-                  </span>
-                  <span>
-                    <span className="font-semibold text-(--text-emphasis)">{counts.quizzes}</span> questions
-                  </span>
-                </div>
+                  {/* Flashcards + Quizzes row */}
+                  <div className="flex gap-4 mb-3 text-sm text-gray-500">
+                    <span>
+                      <span className="font-semibold text-(--text-emphasis)">{counts.flashcards}</span> flashcards
+                    </span>
+                    <span>
+                      <span className="font-semibold text-(--text-emphasis)">{counts.quizzes}</span> questions
+                    </span>
+                  </div>
 
-                {/* Mastery progress bar — placeholder until quiz scores are tracked */}
-                <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-                  <span>Mastery</span>
-                  <span className="font-semibold text-(--text-emphasis)">
-                    {typeof mastery === "number" ? `${mastery}%` : "—%"}
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-(--mint-500) rounded-full"
-                    style={{ width: typeof mastery === "number" ? `${mastery}%` : "0%" }}
-                  />
-                </div>
-              </Link>
-            );
-          })}
+                  {/* Mastery progress bar — placeholder until quiz scores are tracked */}
+                  <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                    <span>Mastery</span>
+                    <span className="font-semibold text-(--text-emphasis)">
+                      {typeof mastery === "number" ? `${mastery}%` : "—%"}
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-(--mint-500) rounded-full"
+                      style={{ width: typeof mastery === "number" ? `${mastery}%` : "0%" }}
+                    />
+                  </div>
+                </Link>
+              );
+            })}
         </div>
       )}
     </MainAppPageLayout>

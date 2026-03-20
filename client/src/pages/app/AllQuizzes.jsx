@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
+import RecommendationNudge from "../../components/study/RecommendationNudge";
 import { getAllStudySets, getNotes, deleteStudySetQuiz } from "../../services/noteService";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
+import { getStudyRecommendations, getTopRecommendationByType } from "../../utils/studyRecommendations";
 
 const TrashIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
@@ -16,6 +18,8 @@ const TrashIcon = () => (
 
 const AllQuizzes = () => {
   const [sets, setSets] = useState([]);
+  const [allStudySets, setAllStudySets] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [noteMap, setNoteMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState([]);
@@ -25,8 +29,10 @@ const AllQuizzes = () => {
   useEffect(() => {
     setHistory(getQuizHistory());
     Promise.all([getAllStudySets(), getNotes()])
-      .then(([data, notes]) => {
-        setNoteMap(Object.fromEntries(notes.map((n) => [n.id, n.title])));
+      .then(([data, notesList]) => {
+        setNotes(notesList);
+        setAllStudySets(data);
+        setNoteMap(Object.fromEntries(notesList.map((n) => [n.id, n.title])));
         setSets(data.filter((s) => s.quiz_questions.length > 0));
       })
       .catch(() => setSets([]))
@@ -48,6 +54,16 @@ const AllQuizzes = () => {
 
   const setTitle = (set) =>
     (set.note_id && noteMap[set.note_id]) || set.label || "Deleted Course";
+
+  const recommendations = getStudyRecommendations({
+    notes,
+    studySets: allStudySets,
+    quizHistory: getQuizHistory(),
+  });
+  const quizNudge =
+    !loading && sets.length > 0
+      ? getTopRecommendationByType(recommendations, "quiz")
+      : null;
 
   return (
     <InnerAppPageLayout>
@@ -154,13 +170,12 @@ const AllQuizzes = () => {
                 </div>
                 <div className="shrink-0 flex flex-col items-center">
                   <p
-                    className={`text-2xl font-bold ${
-                      entry.scorePercent >= 80
+                    className={`text-2xl font-bold ${entry.scorePercent >= 80
                         ? "text-green-600"
                         : entry.scorePercent >= 60
-                        ? "text-(--mint-600)"
-                        : "text-red-500"
-                    }`}
+                          ? "text-(--mint-600)"
+                          : "text-red-500"
+                      }`}
                   >
                     {entry.scorePercent}%
                   </p>
@@ -176,6 +191,8 @@ const AllQuizzes = () => {
           </div>
         </div>
       )}
+
+      <RecommendationNudge recommendation={quizNudge} />
     </InnerAppPageLayout>
   );
 };

@@ -213,4 +213,26 @@
     color: #00241B;
   }
 
+  /* Animation for the recommendation nudge floating button */
+  @keyframes recommendation-nudge-bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    45% {
+      transform: translateY(-6px);
+    }
+    60% {
+      transform: translateY(-2px);
+    }
+  }
+
+  .recommendation-nudge-fab {
+    animation: recommendation-nudge-bounce 2.4s ease-in-out infinite;
+  }
+
+  .recommendation-nudge-fab:hover {
+    animation-play-state: paused;
+  }
+
 }
