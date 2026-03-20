@@ -928,6 +928,9 @@ GEMINI_API_KEY=<your key>
 | 5 — Study content routes | ✅ Done | Fetch content, record quiz attempts and flashcard reviews |
 | 6 — Frontend | ✅ Done | Full React SPA — all pages, layouts, auth, study flows |
 | 7 — Polish & enhancements | ✅ Done | Quiz results review, history, analytics, nav fixes, courses page |
+| 8 — Study UX + analytics | ✅ Done | Flashcard completion, DB reviews, mastery, analytics UX, delete modals |
+| 9 — Cookie auth | ✅ Done | HttpOnly access/refresh cookies, `/auth/session`, Axios refresh, logout |
+| 10 — Study recommendations | ✅ Done | Client-side ranking, Dashboard “Suggested”, flash/quiz nudges (3/19/26) |
 
 ---
 
@@ -1134,3 +1137,78 @@ Migrate authentication from **localStorage + Authorization Bearer headers** to a
 - Confirmed 401 handling triggers refresh and retries requests.
 - Confirmed logout clears cookies, clears auth state, and redirects correctly.
 - Confirmed browser refresh restores session via `/auth/session` and avoids `/login` flicker.
+
+---
+
+## Phase 10 — Client-Side Study Recommendations ✅ COMPLETE (3/19/26)
+
+### Goal
+Surface **personalized study suggestions** using data already on the client: courses + study sets
+(from the API) and **local quiz history** (`useQuizHistory` / localStorage). No new backend endpoints.
+
+---
+
+### Core utility — `client/src/utils/studyRecommendations.js`
+
+- **`hasStudyContent(notes, studySets)`** — `true` only when there is at least one course and at least one
+  study set with flashcards or quiz questions (used to hide empty recommendation UI).
+- **`getStudyRecommendations({ notes, studySets, quizHistory })`** — returns up to **3** ranked items
+  (`quiz` or `flashcards`) with `courseTitle`, `reason`, and `href` for dashboard cards.
+  - Fills **quiz** recommendations first for courses that need quiz focus, then **flashcards** for
+    mastered-quiz reinforcement and flash-only courses.
+- **`getTopRecommendationByType(recommendations, type)`** — first item of a given type (used on **All Quizzes**).
+- **`getBestFlashcardNudge({ notes, studySets, quizHistory })`** — **dedicated** top pick for **All Flashcards**.
+  - Needed because the mixed 3-item list prioritizes quizzes; the flash page was often missing a
+    `flashcards` entry. This ranks only courses that have a flash deck (weak quiz scores first,
+    then “before first quiz,” then stronger scores / flash-only).
+
+### Quiz ranking tweak
+- **Low scores are prioritized over “never taken”** for quiz-focused ordering: courses with a poor best
+  score surface before courses where the user hasn’t taken a quiz yet (then never-taken, then higher scores,
+  then mastered).
+
+---
+
+### Dashboard — `client/src/pages/app/Dashboard.jsx`
+
+- After stats load, if `hasStudyContent` and there is at least one recommendation, renders **“Suggested for you”**
+  as a responsive row of up to **3** link cards (quiz vs flashcards labels, reason text, CTA).
+
+---
+
+### Floating nudge — `client/src/components/study/RecommendationNudge.jsx`
+
+- Used on **All Flashcards** and **All Quizzes** (not on Dashboard).
+- **FAB** (sparkle) bottom-right: larger control, white ring, shadow.
+- **Panel** opens on **hover** or **click** (click toggles “pinned”; click-outside dismisses when pinned).
+- **Glass-style panel**: semi-transparent white + `backdrop-blur`, softer border/shadow; slightly higher opacity
+  when pinned vs hover-only so content stays readable without dominating the page.
+- **Bounce animation** (`.recommendation-nudge-fab` in `client/src/App.css`) — continuous gentle bounce;
+  **pauses on hover** so it doesn’t fight the hover scale/interaction.
+
+---
+
+### Page wiring
+
+| Page | Behavior |
+|------|----------|
+| `AllFlashcards.jsx` | Loads notes + all study sets; nudge = `getBestFlashcardNudge(...)` when at least one deck exists. |
+| `AllQuizzes.jsx` | Nudge = top **quiz** from `getStudyRecommendations` via `getTopRecommendationByType(..., "quiz")` when quizzes exist. |
+
+---
+
+### Repo / file notes
+
+- Added `client/src/components/study/` (contains `RecommendationNudge.jsx`).
+- Added `client/src/utils/studyRecommendations.js` (removed placeholder `client/src/utils/.gitkeep`).
+- Styling: `client/src/App.css` (nudge keyframes + animation classes).
+
+---
+
+### Tested / verification
+
+- Dashboard shows “Suggested for you” when there is study content and at least one recommendation.
+- All Quizzes shows the quiz nudge when applicable; All Flashcards shows the flash nudge when decks exist
+  (including courses where recommendations were previously quiz-only).
+- Quiz ordering reflects “struggling courses” before “never taken.”
+- Nudge: hover and click behavior, glass panel, bounce visible and calmer on hover.

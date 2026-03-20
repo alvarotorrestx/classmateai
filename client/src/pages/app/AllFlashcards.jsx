@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
+import RecommendationNudge from "../../components/study/RecommendationNudge";
 import { getAllStudySets, getNotes, deleteStudySetFlashcards } from "../../services/noteService";
+import { getQuizHistory } from "../../hooks/useQuizHistory";
+import { getBestFlashcardNudge } from "../../utils/studyRecommendations";
 
 const TrashIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
@@ -15,6 +18,8 @@ const TrashIcon = () => (
 
 const AllFlashcards = () => {
   const [decks, setDecks] = useState([]);
+  const [allStudySets, setAllStudySets] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [noteMap, setNoteMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [confirmingId, setConfirmingId] = useState(null);
@@ -22,8 +27,10 @@ const AllFlashcards = () => {
 
   const load = () => {
     return Promise.all([getAllStudySets(), getNotes()])
-      .then(([sets, notes]) => {
-        setNoteMap(Object.fromEntries(notes.map((n) => [n.id, n.title])));
+      .then(([sets, notesList]) => {
+        setNotes(notesList);
+        setAllStudySets(sets);
+        setNoteMap(Object.fromEntries(notesList.map((n) => [n.id, n.title])));
         setDecks(sets.filter((s) => s.flashcards.length > 0));
       })
       .catch(() => setDecks([]));
@@ -48,6 +55,16 @@ const AllFlashcards = () => {
 
   const deckTitle = (deck) =>
     (deck.note_id && noteMap[deck.note_id]) || deck.label || "Deleted Course";
+
+  const quizHistory = getQuizHistory();
+  const flashNudge =
+    !loading && decks.length > 0
+      ? getBestFlashcardNudge({
+          notes,
+          studySets: allStudySets,
+          quizHistory,
+        })
+      : null;
 
   return (
     <InnerAppPageLayout>
@@ -120,6 +137,8 @@ const AllFlashcards = () => {
           ))}
         </div>
       )}
+
+      <RecommendationNudge recommendation={flashNudge} />
     </InnerAppPageLayout>
   );
 };
