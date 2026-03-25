@@ -127,7 +127,8 @@ const QuizSession = () => {
     const correct = questions.filter(
       (q, i) => answers[i] === q.correct_index
     ).length;
-    const incorrect = total - correct;
+    const skipped = questions.filter((_, i) => answers[i] === undefined).length;
+    const incorrect = total - correct - skipped;
     const scorePercent = Math.round((correct / total) * 100);
 
     const reviewQuestions = questions.map((q, i) => ({
@@ -166,6 +167,12 @@ const QuizSession = () => {
                 <p className="text-2xl font-bold text-red-500">{incorrect}</p>
                 <p className="text-xs text-red-600 font-medium mt-0.5">Incorrect</p>
               </div>
+              {skipped > 0 && (
+                <div className="flex-1 bg-gray-50 rounded-xl p-4 text-center">
+                  <p className="text-2xl font-bold text-gray-400">{skipped}</p>
+                  <p className="text-xs text-gray-500 font-medium mt-0.5">Skipped</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -331,21 +338,22 @@ const QuizSession = () => {
             &lt; Previous
           </button>
 
-          {isLast ? (
+          <div className="flex gap-3">
+            {!isLast && (
+              <button
+                onClick={() => saveAndGo(1)}
+                className="border border-(--mint-600) text-(--mint-700) rounded-xl px-5 py-2.5 text-sm font-semibold hover:bg-(--mint-50) transition"
+              >
+                Next &gt;
+              </button>
+            )}
             <button
               onClick={handleFinish}
               className="bg-(--mint-600) text-white rounded-xl px-8 py-2.5 text-sm font-semibold hover:bg-(--mint-700) transition"
             >
               Finish Quiz
             </button>
-          ) : (
-            <button
-              onClick={() => saveAndGo(1)}
-              className="bg-(--mint-600) text-white rounded-xl px-5 py-2.5 text-sm font-semibold hover:bg-(--mint-700) transition"
-            >
-              Next &gt;
-            </button>
-          )}
+          </div>
         </div>
       </div>
     </InnerAppPageLayout>
