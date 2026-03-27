@@ -9,6 +9,7 @@ import {
   deleteStudySet,
   getCourseStudyGuide,
 } from "../../services/noteService";
+import { DeckGridSkeleton, StudyGuideSkeleton } from "../../components/loading/PageSkeletons";
 
 const TrashIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -182,9 +183,7 @@ const Courses = () => {
       <p className="text-sm text-gray-400 mb-8">Choose a deck to study</p>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
-        </div>
+        <DeckGridSkeleton count={3} />
       ) : decks.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 flex flex-col items-center justify-center text-center mb-8">
           <div className="w-14 h-14 rounded-full bg-(--mint-100) flex items-center justify-center mb-4">
@@ -334,9 +333,7 @@ const Courses = () => {
         {guideOpen && (
           <div className="mt-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             {guideLoading ? (
-              <div className="flex justify-center py-6">
-                <div className="w-6 h-6 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
-              </div>
+              <StudyGuideSkeleton />
             ) : studyGuide === false ? (
               <p className="text-sm text-gray-400 text-center py-4">
                 No study guide yet — upload notes to generate one.

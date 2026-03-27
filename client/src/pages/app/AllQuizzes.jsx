@@ -5,6 +5,7 @@ import RecommendationNudge from "../../components/study/RecommendationNudge";
 import { getAllStudySets, getNotes, deleteStudySetQuiz } from "../../services/noteService";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
 import { getStudyRecommendations, getTopRecommendationByType } from "../../utils/studyRecommendations";
+import { QuizListSkeleton } from "../../components/loading/PageSkeletons";
 
 const TrashIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
@@ -71,9 +72,7 @@ const AllQuizzes = () => {
       <p className="text-sm text-gray-400 mb-8">All your available quizzes</p>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
-        </div>
+        <QuizListSkeleton count={5} />
       ) : sets.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 flex flex-col items-center justify-center text-center">
           <p className="font-bold text-base mb-1">No quizzes yet</p>

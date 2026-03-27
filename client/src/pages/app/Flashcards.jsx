@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { getStudySet, getNote } from "../../services/noteService";
 import { reviewFlashcard } from "../../services/progressService";
+import { FlashcardSessionSkeleton } from "../../components/loading/PageSkeletons";
 
 const Flashcards = () => {
   const { deckId } = useParams();
@@ -66,9 +67,7 @@ const Flashcards = () => {
   if (loading) {
     return (
       <InnerAppPageLayout>
-        <div className="max-w-lg mx-auto flex justify-center py-12">
-          <div className="w-8 h-8 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
-        </div>
+        <FlashcardSessionSkeleton />
       </InnerAppPageLayout>
     );
   }
