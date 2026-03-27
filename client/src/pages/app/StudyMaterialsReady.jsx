@@ -1,5 +1,7 @@
 import { Link, useParams, useLocation } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
+import flashcardIcon from "../../assets/icons/core/flashcard.svg";
+import quizIcon from "../../assets/icons/core/quiz.svg";
 
 const StudyMaterialsReady = () => {
   const { courseId } = useParams();
@@ -31,7 +33,7 @@ const StudyMaterialsReady = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-2xl border-2 border-(--mint-200) p-6 flex flex-col items-start gap-2">
-          <div className="w-10 h-10 rounded-xl border-2 border-(--mint-200)" />
+          <div className="w-12 h-12"><img src={flashcardIcon} alt="Flashcards" /></div>
           <p className="text-(--mint-700) font-semibold mt-1">Flashcards</p>
           <p className="text-sm text-gray-400">Ready to review</p>
           <Link
@@ -43,7 +45,7 @@ const StudyMaterialsReady = () => {
         </div>
 
         <div className="bg-white rounded-2xl border-2 border-(--mint-200) p-6 flex flex-col items-start gap-2">
-          <div className="w-10 h-10 rounded-xl border-2 border-(--mint-200)" />
+          <div className="w-12 h-12"><img src={quizIcon} alt="Quiz" /></div>
           <p className="text-(--mint-700) font-semibold mt-1">Practice Quiz</p>
           <p className="text-sm text-gray-400">Questions ready</p>
           <Link
