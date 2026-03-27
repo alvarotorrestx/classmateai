@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { getQuiz, getStudySet, getNote } from "../../services/noteService";
 import { saveQuizResult } from "../../hooks/useQuizHistory";
+import { QuizSessionSkeleton } from "../../components/loading/PageSkeletons";
 
 const LETTERS = ["A", "B", "C", "D"];
 
@@ -80,9 +81,7 @@ const QuizSession = () => {
   if (loading) {
     return (
       <InnerAppPageLayout>
-        <div className="flex items-center justify-center py-24">
-          <div className="w-8 h-8 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
-        </div>
+        <QuizSessionSkeleton />
       </InnerAppPageLayout>
     );
   }

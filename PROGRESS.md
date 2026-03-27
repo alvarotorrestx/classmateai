@@ -931,6 +931,7 @@ GEMINI_API_KEY=<your key>
 | 8 — Study UX + analytics | ✅ Done | Flashcard completion, DB reviews, mastery, analytics UX, delete modals |
 | 9 — Cookie auth | ✅ Done | HttpOnly access/refresh cookies, `/auth/session`, Axios refresh, logout |
 | 10 — Study recommendations | ✅ Done | Client-side ranking, Dashboard “Suggested”, flash/quiz nudges (3/19/26) |
+| 11 — Loading skeleton system | ✅ Done | Reusable page-shaped skeletons + UI polish updates (3/26/26) |
 
 ---
 
@@ -1212,3 +1213,57 @@ Surface **personalized study suggestions** using data already on the client: cou
   (including courses where recommendations were previously quiz-only).
 - Quiz ordering reflects “struggling courses” before “never taken.”
 - Nudge: hover and click behavior, glass panel, bounce visible and calmer on hover.
+
+---
+
+## Phase 11 — Universal Loading Skeleton + UI Polish ✅ COMPLETE (3/26/26)
+
+### Goal
+Replace repeated page-level loading spinners with reusable, shape-matched skeleton loading states,
+while preserving existing empty/error states and transactional button feedback.
+
+---
+
+### Reusable loading system
+
+- Added shared loading components:
+  - `client/src/components/loading/SkeletonBlock.jsx`
+  - `client/src/components/loading/PageSkeletons.jsx`
+- New skeleton variants include:
+  - `DashboardSkeleton`
+  - `CourseGridSkeleton`
+  - `DeckGridSkeleton`
+  - `QuizListSkeleton`
+  - `FlashcardSessionSkeleton`
+  - `QuizSessionSkeleton`
+  - `StudyGuideSkeleton`
+- Skeletons are designed to match each page’s final layout (card/list/header structure) for lower visual
+  layout shift and better perceived performance.
+
+---
+
+### Page integrations
+
+- Replaced loading spinners with skeletons in:
+  - `client/src/pages/app/Dashboard.jsx`
+  - `client/src/pages/app/AllCourses.jsx`
+  - `client/src/pages/app/Courses.jsx`
+  - `client/src/pages/app/Flashcards.jsx`
+  - `client/src/pages/app/Quizzes.jsx`
+  - `client/src/pages/app/AllFlashcards.jsx`
+  - `client/src/pages/app/AllQuizzes.jsx`
+  - `client/src/pages/app/QuizSession.jsx`
+- Replaced section-level `guideLoading` spinner in `client/src/pages/app/Courses.jsx`
+  with `StudyGuideSkeleton`.
+- Kept inline action spinners for generating/deleting actions (button-level transactional feedback).
+
+---
+
+### Additional UI updates included
+
+- `client/src/pages/app/StudyMaterialsReady.jsx`
+  - Replaced empty placeholder squares with actual study-tool icons:
+    - `client/src/assets/icons/core/quiz.svg`
+    - `client/src/assets/icons/core/flashcard.svg`
+- `client/src/pages/app/Dashboard.jsx` and `client/src/pages/app/Flashcards.jsx`
+  - Added card hover polish with border/transition animation for clearer interactivity and improved visual feedback.

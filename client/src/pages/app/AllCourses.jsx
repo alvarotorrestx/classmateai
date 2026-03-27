@@ -5,6 +5,7 @@ import useAuth from "../../hooks/useAuth";
 import { getNotes, getAllStudySets, deleteNote } from "../../services/noteService";
 import DeleteCourseModal from "../../components/modals/DeleteCourseModal";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
+import { CourseGridSkeleton } from "../../components/loading/PageSkeletons";
 
 const AllCourses = () => {
   const { auth } = useAuth();
@@ -164,9 +165,7 @@ const AllCourses = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
-        </div>
+        <CourseGridSkeleton count={6} />
       ) : sortedCourses.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 rounded-full bg-(--mint-100) flex items-center justify-center mb-4">
@@ -290,7 +289,7 @@ const AllCourses = () => {
               <Link
                 key={course.id}
                 to={`/courses/${course.id}`}
-                className="group bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition block"
+                className="group bg-white rounded-2xl border border-gray-100 shadow-sm p-4 block transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)"
               >
                 {cardContent}
               </Link>

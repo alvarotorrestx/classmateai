@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { getNote, getStudySets } from "../../services/noteService";
+import { QuizListSkeleton } from "../../components/loading/PageSkeletons";
 
 const Quizzes = () => {
   const { courseId } = useParams();
@@ -25,9 +26,7 @@ const Quizzes = () => {
       <p className="text-sm text-gray-400 mb-8">{note?.title || "Test your knowledge"}</p>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
-        </div>
+        <QuizListSkeleton />
       ) : studySets.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 flex flex-col items-center justify-center text-center">
           <div className="w-14 h-14 rounded-full bg-(--mint-100) flex items-center justify-center mb-4">

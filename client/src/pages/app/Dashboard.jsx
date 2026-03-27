@@ -5,6 +5,7 @@ import useAuth from "../../hooks/useAuth";
 import { getNotes, getAllStudySets } from "../../services/noteService";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
 import { hasStudyContent, getStudyRecommendations } from "../../utils/studyRecommendations";
+import { DashboardSkeleton } from "../../components/loading/PageSkeletons";
 
 const StatCard = ({ label, value, sub }) => (
   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-1">
@@ -87,6 +88,10 @@ const Dashboard = () => {
           : "Ready to study? Create your first course to get started."
       }
     >
+      {loading ? (
+        <DashboardSkeleton />
+      ) : (
+        <>
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <StatCard
@@ -118,7 +123,7 @@ const Dashboard = () => {
                 <Link
                   key={`${rec.type}-${rec.courseId}-${i}`}
                   to={rec.href}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition flex flex-col gap-2"
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-2 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)"
                 >
                   <span className="text-xs font-semibold uppercase tracking-wide text-(--mint-700)">
                     {rec.type === "quiz" ? "Quiz" : "Flashcards"}
@@ -159,11 +164,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
-        </div>
-      ) : courses.length === 0 ? (
+      {courses.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 rounded-full bg-(--mint-100) flex items-center justify-center mb-4">
             <svg
@@ -197,8 +198,8 @@ const Dashboard = () => {
                 <Link
                   key={course.id}
                   to={`/courses/${course.id}`}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition block"
-                >
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 block
+                  transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)">
                   {/* Title + badge */}
                   <div className="flex items-start justify-between mb-1">
                     <p className="font-bold text-base leading-snug">{course.title}</p>
@@ -242,6 +243,8 @@ const Dashboard = () => {
               );
             })}
         </div>
+      )}
+        </>
       )}
     </MainAppPageLayout>
   );
