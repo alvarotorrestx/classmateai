@@ -118,7 +118,7 @@ const Dashboard = () => {
                 <Link
                   key={`${rec.type}-${rec.courseId}-${i}`}
                   to={rec.href}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition flex flex-col gap-2"
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-2 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)"
                 >
                   <span className="text-xs font-semibold uppercase tracking-wide text-(--mint-700)">
                     {rec.type === "quiz" ? "Quiz" : "Flashcards"}
@@ -197,8 +197,8 @@ const Dashboard = () => {
                 <Link
                   key={course.id}
                   to={`/courses/${course.id}`}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition block"
-                >
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 block
+                  transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)">
                   {/* Title + badge */}
                   <div className="flex items-start justify-between mb-1">
                     <p className="font-bold text-base leading-snug">{course.title}</p>

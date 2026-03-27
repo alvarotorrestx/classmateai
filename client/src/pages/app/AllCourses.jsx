@@ -290,7 +290,7 @@ const AllCourses = () => {
               <Link
                 key={course.id}
                 to={`/courses/${course.id}`}
-                className="group bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition block"
+                className="group bg-white rounded-2xl border border-gray-100 shadow-sm p-4 block transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)"
               >
                 {cardContent}
               </Link>
