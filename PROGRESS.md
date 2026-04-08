@@ -932,6 +932,7 @@ GEMINI_API_KEY=<your key>
 | 9 — Cookie auth | ✅ Done | HttpOnly access/refresh cookies, `/auth/session`, Axios refresh, logout |
 | 10 — Study recommendations | ✅ Done | Client-side ranking, Dashboard “Suggested”, flash/quiz nudges (3/19/26) |
 | 11 — Loading skeleton system | ✅ Done | Reusable page-shaped skeletons + UI polish updates (3/26/26) |
+| 12 — Email verification (Brevo) | ✅ Done | `is_verified`, verify/resend endpoints, register no auto-login (4/7/26) |
 
 ---
 
@@ -1267,3 +1268,89 @@ while preserving existing empty/error states and transactional button feedback.
     - `client/src/assets/icons/core/flashcard.svg`
 - `client/src/pages/app/Dashboard.jsx` and `client/src/pages/app/Flashcards.jsx`
   - Added card hover polish with border/transition animation for clearer interactivity and improved visual feedback.
+
+---
+
+## Phase 12 — Email Verification (Brevo) ✅ COMPLETE (4/7/26)
+
+### Goal
+Require **email verification** before a new account can log in, using **Brevo** transactional email, without
+rewriting the existing cookie-based JWT auth architecture.
+
+---
+
+### Database
+
+- **`users.is_verified`**
+  - Added to [server/models/user.py](server/models/user.py): `Boolean`, default `False`, `nullable=False`
+- **Alembic migration**
+  - [server/alembic/versions/4e082d4ca43f_add_is_verified_to_users.py](server/alembic/versions/4e082d4ca43f_add_is_verified_to_users.py)
+  - Adds column with a temporary server default for existing rows, then drops the server default
+
+---
+
+### Backend — JWT helpers (same module as access/refresh)
+
+- Extended [server/utils/auth.py](server/utils/auth.py):
+  - `EMAIL_VERIFY_EXPIRE_MINUTES` from env
+  - `create_email_verification_token(data, expires_delta=None)` — payload includes `type: "email_verification"`
+  - `decode_email_verification_token(token)` — validates token type
+
+---
+
+### Backend — Brevo email utility
+
+- Added [server/utils/email.py](server/utils/email.py):
+  - `send_verification_email(email, full_name, token)`
+  - Sends via Brevo `POST https://api.brevo.com/v3/smtp/email`
+  - Verification link: `{FRONTEND_URL}/verify-email?token=...`
+  - HTML email with button + plain link fallback
+- Dependency: `httpx` added to [server/requirements.txt](server/requirements.txt)
+
+---
+
+### Backend — Auth routes and schemas
+
+- Updated [server/schemas/auth.py](server/schemas/auth.py):
+  - `UserResponse` includes **`is_verified`**
+  - `MessageResponse`, `VerifyEmailRequest`, `ResendVerificationRequest`
+- Updated [server/routes/auth.py](server/routes/auth.py):
+  - **`POST /auth/register`**
+    - Creates user with `is_verified=False`
+    - Sends verification email; **does not** set auth cookies
+    - Returns **`MessageResponse`** (no authenticated session)
+  - **`POST /auth/login`**
+    - If credentials valid but `not user.is_verified` → **403** with message to verify email first
+    - Otherwise unchanged (access + refresh cookies)
+  - **`POST /auth/verify-email`** — body `{ "token": "..." }`; marks user verified; idempotent if already verified
+  - **`POST /auth/resend-verification`** — body `{ "email": "..." }`; **always** returns a generic success message
+    (anti–account enumeration)
+
+---
+
+### Environment variables
+
+Documented / used (see [server/.env.example](server/.env.example)):
+
+- `BREVO_API_KEY`
+- `EMAIL_FROM`
+- `FRONTEND_URL`
+- `EMAIL_VERIFY_EXPIRE_MINUTES`
+
+---
+
+### Frontend
+
+- New page [client/src/pages/auth/VerifyEmail.jsx](client/src/pages/auth/VerifyEmail.jsx):
+  - Reads `?token=`, calls `POST /auth/verify-email`
+  - Uses `DefaultPageLayout` + `Button` and existing mint / gray styling
+  - On failure, optional resend form calling `POST /auth/resend-verification`
+- [client/src/App.jsx](client/src/App.jsx): public route `/verify-email`
+- [client/src/pages/auth/Register.jsx](client/src/pages/auth/Register.jsx):
+  - No auto-login or redirect to dashboard; shows success message and link to login
+- [client/src/pages/auth/Login.jsx](client/src/pages/auth/Login.jsx):
+  - Handles **403** (verify required) with copy + resend verification action
+- [client/src/services/authService.js](client/src/services/authService.js): `resendVerification(email)`
+
+`RequireAuth`, `RedirectIfAuth`, and cookie session hydration remain the same; users only get a session after
+email verification and successful login.
