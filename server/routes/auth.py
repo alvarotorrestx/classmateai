@@ -1,13 +1,15 @@
 import os
 import uuid
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
 from sqlalchemy.orm import Session
 
 from db import get_db
 from models.user import User
-from schemas.auth import AuthResponse, UserLogin, UserRegister, UserResponse, SessionResponse
-from utils.auth import create_access_token, create_refresh_token, hash_password, verify_password, decode_refresh_token
+from schemas.auth import AuthResponse, UserLogin, UserRegister, UserResponse, SessionResponse, MessageResponse, VerifyEmailRequest, ResendVerificationRequest
+from utils.auth import create_access_token, create_refresh_token, hash_password, verify_password, decode_refresh_token, create_email_verification_token, decode_email_verification_token
 from utils.deps import get_current_user
+from utils.email import send_verification_email
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_MINUTES = int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES", "10080")) # 7 days
@@ -16,6 +18,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax")
+logger = logging.getLogger(__name__)
 
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
     response.set_cookie(
@@ -43,7 +46,7 @@ def clear_auth_cookies(response: Response):
     response.delete_cookie(key="refresh_token", path="/auth")
 
 
-@router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
 def register(body: UserRegister, response: Response, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == body.email).first():
         raise HTTPException(
@@ -54,17 +57,20 @@ def register(body: UserRegister, response: Response, db: Session = Depends(get_d
         email=body.email,
         password_hash=hash_password(body.password),
         full_name=body.full_name,
+        is_verified=False,
     )
     db.add(user)
     db.commit()
     db.refresh(user)
-    
-    access_token = create_access_token({"sub": str(user.id)})
-    refresh_token = create_refresh_token({"sub": str(user.id)})
 
-    set_auth_cookies(response, access_token, refresh_token)
+    token = create_email_verification_token({"sub": str(user.id), "email": user.email})
+    try:
+        send_verification_email(user.email, user.full_name, token)
+    except Exception:
+        # Avoid blocking account creation if email fails; allow resend endpoint.
+        logger.exception("Failed to send verification email")
 
-    return AuthResponse(user=UserResponse.model_validate(user), message="Account created successfully")
+    return MessageResponse(message="Account created. Please verify your email to log in.")
 
 @router.post("/login", response_model=AuthResponse)
 def login(body: UserLogin, response: Response, db: Session = Depends(get_db)):
@@ -78,6 +84,11 @@ def login(body: UserLogin, response: Response, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Account is inactive",
+        )
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Please verify your email before logging in",
         )
         
     access_token = create_access_token({"sub": str(user.id)})
@@ -130,3 +141,53 @@ def logout(response: Response):
 @router.get("/session", response_model=SessionResponse)
 def get_session(current_user: User = Depends(get_current_user)):
     return SessionResponse(user=UserResponse.model_validate(current_user))
+
+
+@router.post("/verify-email", response_model=MessageResponse)
+def verify_email(body: VerifyEmailRequest, db: Session = Depends(get_db)):
+    payload = decode_email_verification_token(body.token)
+    if not payload:
+        raise HTTPException(status_code=400, detail="Invalid or expired verification token")
+
+    user_id = payload.get("sub")
+    token_email = payload.get("email")
+    if not user_id or not token_email:
+        raise HTTPException(status_code=400, detail="Invalid verification token")
+
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Invalid verification token")
+
+    user = db.query(User).filter(User.id == user_uuid).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.email.lower() != str(token_email).lower():
+        raise HTTPException(status_code=400, detail="Invalid verification token")
+
+    if user.is_verified:
+        return MessageResponse(message="Email already verified.")
+
+    user.is_verified = True
+    db.commit()
+
+    return MessageResponse(message="Email verified successfully. You can now log in.")
+
+
+@router.post("/resend-verification", response_model=MessageResponse)
+def resend_verification(body: ResendVerificationRequest, db: Session = Depends(get_db)):
+    generic = MessageResponse(message="If an account exists, a verification email has been sent.")
+
+    user = db.query(User).filter(User.email == body.email).first()
+    if not user or user.is_verified is True:
+        return generic
+
+    token = create_email_verification_token({"sub": str(user.id), "email": user.email})
+    try:
+        send_verification_email(user.email, user.full_name, token)
+    except Exception:
+        logger.exception("Failed to resend verification email")
+        return generic
+
+    return generic

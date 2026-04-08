@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import Landing from "./pages/public/Landing";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import VerifyEmail from "./pages/auth/VerifyEmail";
 
 // App pages (protected)
 import Dashboard from "./pages/app/Dashboard";
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
       </Route>
 
       <Route element={<RequireAuth />}>

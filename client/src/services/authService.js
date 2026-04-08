@@ -18,3 +18,8 @@ export const loginUser = async ({ email, password }) => {
 
   return response.data;
 };
+
+export const resendVerification = async (email) => {
+  const response = await api.post("/auth/resend-verification", { email });
+  return response.data;
+};

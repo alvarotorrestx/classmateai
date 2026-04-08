@@ -19,6 +19,7 @@ class UserResponse(BaseModel):
     email: str
     full_name: str
     is_active: bool
+    is_verified: bool
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -31,3 +32,15 @@ class AuthResponse(BaseModel):
 
 class SessionResponse(BaseModel):
     user: UserResponse
+
+
+class MessageResponse(BaseModel):
+    message: str
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str
+
+
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr

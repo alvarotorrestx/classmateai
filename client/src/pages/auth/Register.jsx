@@ -16,11 +16,13 @@ const Register = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
+    setSuccess("")
     setLoading(true)
 
     try {
@@ -30,9 +32,8 @@ const Register = () => {
         password
       })
 
-      setAuth({ user: data.user })
-
-      navigate("/dashboard")
+      setAuth(null)
+      setSuccess(data?.message || "Account created. Please verify your email to log in.")
 
     } catch (err) {
       if (!err?.response) {
@@ -141,6 +142,15 @@ const Register = () => {
         {error && (
           <div className="text-error body-small sm:text-right">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="text-(--mint-700) body-small sm:text-right">
+            {success}{" "}
+            <Link to="/login" className="font-semibold underline underline-offset-2">
+              Go to login
+            </Link>
           </div>
         )}
       </form>
