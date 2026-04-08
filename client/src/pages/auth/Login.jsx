@@ -4,7 +4,7 @@ import { useState } from "react"
 import DefaultPageLayout from "../../components/layout/DefaultPageLayout"
 import Button from "../../components/ui/Button"
 
-import { loginUser } from "../../services/authService"
+import { loginUser, resendVerification } from "../../services/authService"
 import useAuth from "../../hooks/useAuth"
 
 const Login = () => {
@@ -15,11 +15,14 @@ const Login = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [info, setInfo] = useState("")
   const [loading, setLoading] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
+    setInfo("")
     setLoading(true)
 
     try {
@@ -35,6 +38,9 @@ const Login = () => {
     } catch (err) {
       if (!err?.response) {
         setError("No Server Response");
+      } else if (err.response?.status === 403) {
+        setError(err.response?.data?.detail || "Please verify your email before logging in.");
+        setInfo("Didn’t get the email? Resend verification below.");
       } else if (err.response?.status === 401 || err.response?.status === 400) {
         setError(err.response?.data?.detail || "Invalid email or password.");
       } else {
@@ -42,6 +48,19 @@ const Login = () => {
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleResend = async () => {
+    setResendLoading(true)
+    setInfo("")
+    try {
+      const res = await resendVerification(email)
+      setInfo(res?.message || "If an account exists, a verification email has been sent.")
+    } catch {
+      setInfo("If an account exists, a verification email has been sent.")
+    } finally {
+      setResendLoading(false)
     }
   }
 
@@ -128,6 +147,26 @@ const Login = () => {
         {error && (
           <div className="text-error body-small sm:text-right">
             {error}
+          </div>
+        )}
+
+        {info && (
+          <div className="text-gray-500 body-small sm:text-right">
+            {info}
+          </div>
+        )}
+
+        {error && error.toLowerCase().includes("verify") && (
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full sm:w-auto sm:min-w-56"
+              disabled={loading || resendLoading || !email}
+              onClick={handleResend}
+            >
+              {resendLoading ? "Sending..." : "Resend verification email"}
+            </Button>
           </div>
         )}
 
