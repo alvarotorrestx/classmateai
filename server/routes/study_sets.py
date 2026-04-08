@@ -1,7 +1,7 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from db import get_db
 from models.flashcard import Flashcard
@@ -29,10 +29,24 @@ def _get_owned_study_set(study_set_id: uuid.UUID, db: Session, current_user: Use
     return study_set
 
 
+def _study_set_load_options():
+    return [
+        selectinload(StudySet.flashcards),
+        selectinload(StudySet.quiz_questions),
+        selectinload(StudySet.summary),
+        selectinload(StudySet.study_guide),
+    ]
+
+
 @router.get("/study-sets", response_model=list[StudySetResponse])
 def list_all_study_sets(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     # Query by user_id directly so orphaned study sets (course deleted) are still included
-    return db.query(StudySet).filter(StudySet.user_id == current_user.id).all()
+    return (
+        db.query(StudySet)
+        .filter(StudySet.user_id == current_user.id)
+        .options(*_study_set_load_options())
+        .all()
+    )
 
 
 @router.get("/notes/{note_id}/study-sets", response_model=list[StudySetResponse])
@@ -40,7 +54,12 @@ def list_study_sets(note_id: uuid.UUID, db: Session = Depends(get_db), current_u
     note = db.get(Note, note_id)
     if not note or note.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
-    return note.study_sets
+    return (
+        db.query(StudySet)
+        .filter(StudySet.note_id == note_id)
+        .options(*_study_set_load_options())
+        .all()
+    )
 
 
 @router.get("/study-sets/{study_set_id}", response_model=StudySetResponse)

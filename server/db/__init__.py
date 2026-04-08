@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import NullPool
 import os
 from dotenv import load_dotenv
 from models.base import Base
@@ -11,7 +10,9 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(
     DATABASE_URL,
-    poolclass=NullPool,
+    pool_size=5,
+    max_overflow=2,
+    pool_pre_ping=True,
     connect_args={
         "connect_timeout": 10,
     }
