@@ -45,12 +45,14 @@ classmateai/
 │       │   └── ui/
 │       │       ├── Badge.jsx
 │       │       ├── Button.jsx
-│       │       └── Icon.jsx
+│       │       ├── Icon.jsx
+│       │       └── ThemeToggle.jsx   # account-menu light/dark switch
 │       ├── context/
 │       │   └── AuthContext.jsx
 │       ├── hooks/
 │       │   ├── useAuth.js
-│       │   └── useQuizHistory.js  # localStorage quiz history (max 20)
+│       │   ├── useQuizHistory.js  # localStorage quiz history (max 20)
+│       │   └── useTheme.js        # theme init, persist, toggle (.dark on <html>)
 │       ├── pages/
 │       │   ├── NotFound.jsx
 │       │   ├── app/
@@ -69,7 +71,8 @@ classmateai/
 │       │   │   └── UploadNotes.jsx
 │       │   ├── auth/
 │       │   │   ├── Login.jsx
-│       │   │   └── Register.jsx
+│       │   │   ├── Register.jsx
+│       │   │   └── VerifyEmail.jsx
 │       │   └── public/
 │       │       └── Landing.jsx
 │       ├── services/
@@ -933,6 +936,7 @@ GEMINI_API_KEY=<your key>
 | 10 — Study recommendations | ✅ Done | Client-side ranking, Dashboard “Suggested”, flash/quiz nudges (3/19/26) |
 | 11 — Loading skeleton system | ✅ Done | Reusable page-shaped skeletons + UI polish updates (3/26/26) |
 | 12 — Email verification (Brevo) | ✅ Done | `is_verified`, verify/resend endpoints, register no auto-login (4/7/26) |
+| 13 — Dark mode + theme toggle | ✅ Done | CSS `.dark`, anti-flash script, `useTheme`, UI sweep, pill `ThemeToggle` (4/8/26) |
 
 ---
 
@@ -1354,3 +1358,63 @@ Documented / used (see [server/.env.example](server/.env.example)):
 
 `RequireAuth`, `RedirectIfAuth`, and cookie session hydration remain the same; users only get a session after
 email verification and successful login.
+
+---
+
+## Phase 13 — Dark Mode + Theme Toggle ✅ COMPLETE (4/8/26)
+
+### Goal
+Ship a consistent **light/dark** experience across the React app using existing design tokens, persist the
+user’s choice, avoid a flash of the wrong theme on load, and expose a polished control in the account menu.
+
+---
+
+### Design tokens (`client/src/App.css`)
+
+- **Light** (`:root`) and **dark** (`.dark` on `document.documentElement`) sets of:
+  `--bg`, `--surface`, `--surface-muted`, `--border`, `--text`, `--text-emphasis`, `--text-muted`, brand/button
+  colors, and semantic status colors tuned for contrast on dark backgrounds.
+- **Utility classes** used across the UI: `bg-app`, `bg-surface`, `bg-surface-muted`, `text-base-theme`,
+  `text-muted`, `text-em`, `border-theme`.
+
+---
+
+### Anti-flash + hydration
+
+- **`client/index.html`** — small inline script **before** the Vite bundle runs: reads
+  `localStorage` key `classmateai-theme` (`light` / `dark`), else falls back to
+  `prefers-color-scheme: dark`, and adds or removes the `dark` class on `<html>` immediately.
+- **`client/src/main.jsx`** — imports `initTheme` from `useTheme.js` and runs it before `createRoot` so React
+  and the inline script stay aligned.
+
+---
+
+### Theme API — `client/src/hooks/useTheme.js`
+
+- **`THEME_STORAGE_KEY`** — `classmateai-theme`.
+- **`initTheme`**, **`getTheme`**, **`setTheme`**, **`toggleTheme`** — sync `.dark` on `<html>` and persist when
+  possible.
+- **`useTheme()`** — `useSyncExternalStore` + a `classmateai-theme-change` document event so UI (e.g. the
+  toggle) updates when theme changes.
+
+---
+
+### Theme toggle UI — `client/src/components/ui/ThemeToggle.jsx`
+
+- Placed in **both** account dropdowns (**above Logout**) in:
+  - `client/src/components/layout/MainAppPageLayout.jsx`
+  - `client/src/components/layout/InnerAppPageLayout.jsx`
+- **Visual design (4/8/26):** iOS-style **pill track** with inset shadow, **sliding thumb** (warm
+  orange/yellow gradient + white sun in light mode; cool slate gradient + white moon in dark mode), **outline**
+  inactive icon on the opposite side, subtle thumb shadow and smooth `translate` transition. Row layout:
+  **“Light mode” / “Dark mode”** label + switch; full-width button with focus ring for accessibility
+  (`aria-label`, `aria-pressed`).
+
+---
+
+### Layout + shared UI theming
+
+- Main/inner layouts: account menus and sidebars use `bg-surface`, `border-theme`, `text-muted` / `text-base-theme`
+  where appropriate; **logo image chips** stay **`bg-white`** for brand contrast (intentional).
+- **`client/src/components/loading/SkeletonBlock.jsx`** / **`PageSkeletons.jsx`** — skeleton fills and card shells
+  use surface/border tokens so placeholders work in dark mode.
