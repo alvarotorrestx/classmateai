@@ -11,6 +11,7 @@ import analyticsIcon from "../../assets/icons/study_tools/chart.svg";
 import useAuth from "../../hooks/useAuth";
 import api from "../../services/api";
 import ThemeToggle from "../ui/ThemeToggle";
+import { useToast } from "../../context/ToastContext";
 
 const InnerPageLayout = ({
     headerTitle = "Welcome back!",
@@ -27,6 +28,7 @@ const InnerPageLayout = ({
 
     const navigate = useNavigate();
     const { setAuth } = useAuth();
+    const { addToast } = useToast();
 
     const handleLogout = async () => {
         try {
@@ -34,6 +36,7 @@ const InnerPageLayout = ({
         } catch {
             // ignore logout API errors; clear client state
         }
+        addToast("Logged out", "info");
         setAuth(null);
         navigate("/");
     };

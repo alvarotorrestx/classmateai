@@ -6,6 +6,7 @@ import { getAllStudySets, getNotes, deleteStudySetFlashcards } from "../../servi
 import { getQuizHistory } from "../../hooks/useQuizHistory";
 import { getBestFlashcardNudge } from "../../utils/studyRecommendations";
 import { DeckGridSkeleton } from "../../components/loading/PageSkeletons";
+import { useToast } from "../../context/ToastContext";
 
 const TrashIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
@@ -25,6 +26,7 @@ const AllFlashcards = () => {
   const [loading, setLoading] = useState(true);
   const [confirmingId, setConfirmingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const { addToast } = useToast();
 
   const load = () => {
     return Promise.all([getAllStudySets(), getNotes()])
@@ -47,8 +49,9 @@ const AllFlashcards = () => {
       await deleteStudySetFlashcards(deckId);
       setConfirmingId(null);
       setDecks((prev) => prev.filter((d) => d.id !== deckId));
+      addToast("Flashcards deleted");
     } catch {
-      // keep card visible on failure
+      addToast("Failed to delete. Please try again.", "error");
     } finally {
       setDeletingId(null);
     }

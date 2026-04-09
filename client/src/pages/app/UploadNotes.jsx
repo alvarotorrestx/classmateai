@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { createNote, getNote, extractTextFromFile, addContentToNote } from "../../services/noteService";
+import { useToast } from "../../context/ToastContext";
 
 const ACCEPTED = ".txt,.md,.pdf,.pptx";
 const PLAIN_TEXT_TYPES = ["text/plain", "text/markdown", "text/x-markdown"];
@@ -10,6 +11,7 @@ const UploadNotes = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { addToast } = useToast();
   const isExistingCourse = courseId && courseId !== "new";
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -85,6 +87,7 @@ const UploadNotes = () => {
         setLoadingMsg("Uploading…");
         const title = courseTitle || "My Notes";
         const note = await createNote(title, content);
+        addToast("Course created");
         navigate(`/courses/${note.id}/processing`);
       }
     } catch (err) {

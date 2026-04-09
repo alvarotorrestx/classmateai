@@ -5,6 +5,7 @@ import './App.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { initTheme } from './hooks/useTheme.js'
+import { ToastProvider } from './context/ToastContext.jsx'
 
 initTheme()
 
@@ -12,7 +13,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <ToastProvider>
+          <App />
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

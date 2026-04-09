@@ -10,6 +10,7 @@ import {
   getCourseStudyGuide,
 } from "../../services/noteService";
 import { DeckGridSkeleton, StudyGuideSkeleton } from "../../components/loading/PageSkeletons";
+import { useToast } from "../../context/ToastContext";
 
 const TrashIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -102,6 +103,7 @@ const GenerateModal = ({ type, decks, onConfirm, onCancel, generating }) => {
 const Courses = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [note,          setNote]          = useState(null);
   const [decks,         setDecks]         = useState([]);
   const [loading,       setLoading]       = useState(true);
@@ -132,8 +134,9 @@ const Courses = () => {
       await deleteStudySet(deckId);
       setConfirmingId(null);
       setDecks((prev) => prev.filter((d) => d.id !== deckId));
+      addToast("Study set deleted");
     } catch {
-      // keep visible on failure
+      addToast("Failed to delete. Please try again.", "error");
     } finally {
       setDeletingId(null);
     }
@@ -162,13 +165,15 @@ const Courses = () => {
     try {
       if (generateModal === "flashcards") {
         await generateNewFlashcards(courseId, studySetId);
+        addToast("New flashcards added!");
       } else {
         await generateNewQuiz(courseId, studySetId);
+        addToast("New quiz questions added!");
       }
       setGenerateModal(null);
       fetchData();
     } catch {
-      // silent
+      addToast("Generation failed. Please try again.", "error");
     } finally {
       setGenerating(false);
     }

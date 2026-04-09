@@ -6,6 +6,7 @@ import { getAllStudySets, getNotes, deleteStudySetQuiz } from "../../services/no
 import { getQuizHistory } from "../../hooks/useQuizHistory";
 import { getStudyRecommendations, getTopRecommendationByType } from "../../utils/studyRecommendations";
 import { QuizListSkeleton } from "../../components/loading/PageSkeletons";
+import { useToast } from "../../context/ToastContext";
 
 const TrashIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
@@ -26,6 +27,7 @@ const AllQuizzes = () => {
   const [history, setHistory] = useState([]);
   const [confirmingId, setConfirmingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const { addToast } = useToast();
 
   useEffect(() => {
     setHistory(getQuizHistory());
@@ -46,8 +48,9 @@ const AllQuizzes = () => {
       await deleteStudySetQuiz(setId);
       setConfirmingId(null);
       setSets((prev) => prev.filter((s) => s.id !== setId));
+      addToast("Quiz questions deleted");
     } catch {
-      // keep card visible on failure
+      addToast("Failed to delete. Please try again.", "error");
     } finally {
       setDeletingId(null);
     }

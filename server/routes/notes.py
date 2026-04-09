@@ -12,7 +12,7 @@ from models.study_guide import StudyGuide
 from models.study_set import StudySet
 from models.summary import Summary
 from models.user import User
-from schemas.note import NoteCreate, NoteResponse, NoteUpdate
+from schemas.note import NoteCreate, NoteListResponse, NoteResponse, NoteUpdate
 from schemas.study_set import StudySetResponse
 from services.ai import generate_study_materials, generate_course_study_guide
 from utils.deps import get_current_user
@@ -29,7 +29,7 @@ class CourseStudyGuideResponse(BaseModel):
 router = APIRouter(prefix="/notes", tags=["notes"])
 
 
-@router.get("", response_model=list[NoteResponse])
+@router.get("", response_model=list[NoteListResponse])
 def list_notes(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return db.query(Note).filter(Note.user_id == current_user.id).all()
 
