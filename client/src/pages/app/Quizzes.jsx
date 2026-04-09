@@ -23,12 +23,12 @@ const Quizzes = () => {
   return (
     <InnerAppPageLayout>
       <h3 className="mb-1">Available Quizzes</h3>
-      <p className="text-sm text-gray-400 mb-8">{note?.title || "Test your knowledge"}</p>
+      <p className="text-sm text-muted mb-8">{note?.title || "Test your knowledge"}</p>
 
       {loading ? (
         <QuizListSkeleton />
       ) : studySets.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 flex flex-col items-center justify-center text-center">
+        <div className="bg-surface rounded-2xl border border-theme shadow-sm p-10 flex flex-col items-center justify-center text-center">
           <div className="w-14 h-14 rounded-full bg-(--mint-100) flex items-center justify-center mb-4">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-(--mint-600)">
               <circle cx="12" cy="12" r="9" />
@@ -36,7 +36,7 @@ const Quizzes = () => {
             </svg>
           </div>
           <p className="font-bold text-base mb-1">No quizzes yet</p>
-          <p className="text-sm text-gray-400 mb-5">
+          <p className="text-sm text-muted mb-5">
             Upload lecture notes to generate practice quizzes for this course
           </p>
           <Link
@@ -50,9 +50,9 @@ const Quizzes = () => {
       ) : (
         <div className="flex flex-col gap-4">
           {studySets.map((set, i) => (
-            <div key={set.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div key={set.id} className="bg-surface rounded-2xl border border-theme shadow-sm p-5">
               <p className="font-bold text-base mb-1">{set.label || `Quiz ${i + 1}`}</p>
-              <p className="text-sm text-gray-400 mb-1">
+              <p className="text-sm text-muted mb-1">
                 {set.quiz_questions.length} questions
               </p>
               <div className="flex flex-wrap gap-3 mt-3">

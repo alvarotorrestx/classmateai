@@ -66,29 +66,29 @@ const Analytics = () => {
   return (
     <InnerAppPageLayout>
       <h3 className="mb-1">Performance Analytics</h3>
-      <p className="text-sm text-gray-400 mb-8">
+      <p className="text-sm text-muted mb-8">
         Track your progress and identify areas for improvement
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Weekly bar chart */}
-        <div className="bg-white rounded-2xl border-2 border-(--mint-200) p-5">
+        <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
           <p className="text-(--mint-700) font-bold text-base mb-0.5">
             Weekly Quiz Performance
           </p>
-          <p className="text-xs text-gray-400 italic mb-4">Average score by day</p>
+          <p className="text-xs text-muted italic mb-4">Average score by day</p>
 
           {weeklyData.every((d) => d.score === null) ? (
-            <div className="bg-gray-50 rounded-xl p-8 flex flex-col items-center justify-center text-center" style={{ height: "180px" }}>
-              <p className="text-sm text-gray-400">No quiz data yet</p>
-              <p className="text-xs text-gray-300 mt-1">Complete quizzes to see your performance</p>
+            <div className="bg-surface-muted rounded-xl p-8 flex flex-col items-center justify-center text-center" style={{ height: "180px" }}>
+              <p className="text-sm text-muted">No quiz data yet</p>
+              <p className="text-xs text-muted mt-1 opacity-90">Complete quizzes to see your performance</p>
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-xl p-4">
+            <div className="bg-surface-muted rounded-xl p-4">
               <div className="flex gap-2 items-stretch">
                 {/* Y-axis: 0–100% */}
                 <div
-                  className="flex flex-col justify-between text-xs text-gray-500 font-medium tabular-nums shrink-0 pr-1"
+                  className="flex flex-col justify-between text-xs text-muted font-medium tabular-nums shrink-0 pr-1"
                   style={{ height: "144px" }}
                 >
                   <span>100%</span>
@@ -128,7 +128,7 @@ const Analytics = () => {
                             </span>
                           )}
                           <div
-                            className={`w-full rounded-t-md transition-all ${barColor ?? "bg-gray-200"}`}
+                            className={`w-full rounded-t-md transition-all ${barColor ?? "bg-surface-muted"}`}
                             style={{ height: d.score !== null ? `${barHeight}px` : "4px", opacity: d.score !== null ? 1 : 0.3 }}
                           />
                         </div>
@@ -138,7 +138,7 @@ const Analytics = () => {
                   {/* Day labels */}
                   <div className="flex gap-1.5 mt-2">
                     {weeklyData.map((d) => (
-                      <div key={d.label} className="flex-1 text-center text-xs text-gray-400">
+                      <div key={d.label} className="flex-1 text-center text-xs text-muted">
                         {d.label}
                       </div>
                     ))}
@@ -150,14 +150,14 @@ const Analytics = () => {
         </div>
 
         {/* Topics mastery */}
-        <div className="bg-white rounded-2xl border-2 border-(--mint-200) p-5">
+        <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
           <p className="text-(--mint-700) font-bold text-base mb-0.5">Topics Mastery</p>
-          <p className="text-xs text-gray-400 italic mb-4">Best quiz score per course — tap to open course or retake</p>
+          <p className="text-xs text-muted italic mb-4">Best quiz score per course — tap to open course or retake</p>
 
           {topicsData.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center" style={{ height: "144px" }}>
-              <p className="text-sm text-gray-400">No mastery data yet</p>
-              <p className="text-xs text-gray-300 mt-1">Take quizzes to see your best score per course</p>
+              <p className="text-sm text-muted">No mastery data yet</p>
+              <p className="text-xs text-muted mt-1 opacity-90">Take quizzes to see your best score per course</p>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
@@ -178,7 +178,7 @@ const Analytics = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+                  <div className="h-2 w-full rounded-full bg-surface-muted overflow-hidden">
                     <div
                       className={`h-2 rounded-full transition-all ${
                         t.isMastered ? "bg-green-500" : t.mastery >= 60 ? "bg-(--mint-600)" : "bg-(--warning)"

@@ -41,7 +41,7 @@ const RecommendationNudge = ({ recommendation }) => {
     >
       {showPanel && (
         <div
-          className="w-[min(20rem,calc(100vw-3rem))] rounded-2xl border border-gray-200/40 bg-white/65 backdrop-blur-md shadow-lg shadow-gray-400/15 p-4 text-left transition-opacity duration-200"
+          className="w-[min(20rem,calc(100vw-3rem))] rounded-2xl border border-theme/40 bg-surface/65 backdrop-blur-md shadow-lg shadow-black/10 p-4 text-left transition-opacity duration-200"
           style={{ opacity: pinned ? 0.92 : 0.78 }}
         >
           <p className="text-xs font-semibold uppercase tracking-wide text-(--mint-700)/90 mb-1">
@@ -50,7 +50,7 @@ const RecommendationNudge = ({ recommendation }) => {
           <p className="font-bold text-sm text-(--text-emphasis)/90 mb-1 line-clamp-2">
             {recommendation.courseTitle}
           </p>
-          <p className="text-xs text-gray-500/95 mb-3 line-clamp-4 leading-relaxed">
+          <p className="text-xs text-muted/95 mb-3 line-clamp-4 leading-relaxed">
             {recommendation.reason}
           </p>
           <Link

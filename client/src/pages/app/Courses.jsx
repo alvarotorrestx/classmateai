@@ -29,13 +29,13 @@ const GenerateModal = ({ type, decks, onConfirm, onCancel, generating }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-sm p-6">
         <p className="font-bold text-base text-(--text-emphasis) mb-1">Generate New {label}</p>
-        <p className="text-sm text-gray-400 mb-5">Where would you like to add the new content?</p>
+        <p className="text-sm text-muted mb-5">Where would you like to add the new content?</p>
 
         <div className="flex flex-col gap-2 mb-6">
           <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition ${
-            selectedSetId === "new" ? "border-(--mint-600) bg-(--mint-50)" : "border-gray-100 hover:border-gray-200"
+            selectedSetId === "new" ? "border-(--mint-600) bg-(--mint-50)" : "border-theme hover:border-(--mint-300)"
           }`}>
             <input
               type="radio"
@@ -47,13 +47,13 @@ const GenerateModal = ({ type, decks, onConfirm, onCancel, generating }) => {
             />
             <div>
               <p className="text-sm font-semibold">New Study Set</p>
-              <p className="text-xs text-gray-400">Creates a separate deck</p>
+              <p className="text-xs text-muted">Creates a separate deck</p>
             </div>
           </label>
 
           {decks.map((deck, i) => (
             <label key={deck.id} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition ${
-              selectedSetId === deck.id ? "border-(--mint-600) bg-(--mint-50)" : "border-gray-100 hover:border-gray-200"
+              selectedSetId === deck.id ? "border-(--mint-600) bg-(--mint-50)" : "border-theme hover:border-(--mint-300)"
             }`}>
               <input
                 type="radio"
@@ -65,7 +65,7 @@ const GenerateModal = ({ type, decks, onConfirm, onCancel, generating }) => {
               />
               <div>
                 <p className="text-sm font-semibold">{deck.label || `Study Set ${i + 1}`}</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted">
                   {deck.flashcards.length} flashcards · {deck.quiz_questions.length} quiz questions
                 </p>
               </div>
@@ -78,7 +78,7 @@ const GenerateModal = ({ type, decks, onConfirm, onCancel, generating }) => {
             type="button"
             onClick={onCancel}
             disabled={generating}
-            className="border border-gray-200 text-(--text) rounded-xl px-5 py-2 text-sm font-semibold hover:bg-gray-50 transition disabled:opacity-50"
+            className="border border-theme text-(--text) rounded-xl px-5 py-2 text-sm font-semibold hover:bg-surface-muted transition disabled:opacity-50"
           >
             Cancel
           </button>
@@ -180,12 +180,12 @@ const Courses = () => {
         <h3 className="leading-snug">{note?.title || "Course Materials"}</h3>
       </div>
 
-      <p className="text-sm text-gray-400 mb-8">Choose a deck to study</p>
+      <p className="text-sm text-muted mb-8">Choose a deck to study</p>
 
       {loading ? (
         <DeckGridSkeleton count={3} />
       ) : decks.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 flex flex-col items-center justify-center text-center mb-8">
+        <div className="bg-surface rounded-2xl border border-theme shadow-sm p-10 flex flex-col items-center justify-center text-center mb-8">
           <div className="w-14 h-14 rounded-full bg-(--mint-100) flex items-center justify-center mb-4">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-(--mint-600)">
               <rect x="2" y="4" width="20" height="16" rx="2" />
@@ -193,7 +193,7 @@ const Courses = () => {
             </svg>
           </div>
           <p className="font-bold text-base mb-1">No decks yet</p>
-          <p className="text-sm text-gray-400 mb-5">
+          <p className="text-sm text-muted mb-5">
             Upload your lecture notes to generate flashcard decks
           </p>
           <Link
@@ -209,18 +209,18 @@ const Courses = () => {
           {decks.map((deck, i) => (
             <div
               key={deck.id}
-              className={`group relative rounded-2xl border-2 p-5 flex flex-col bg-white ${
-                i === 0 ? "border-(--mint-600)" : "border-gray-100"
+              className={`group relative rounded-2xl border-2 p-5 flex flex-col bg-surface ${
+                i === 0 ? "border-(--mint-600)" : "border-theme"
               }`}
             >
               {/* Inline delete confirm */}
               {confirmingId === deck.id ? (
                 <div className="absolute top-3 right-3 flex items-center gap-2">
-                  <span className="text-xs text-gray-500 font-medium">Delete set?</span>
+                  <span className="text-xs text-muted font-medium">Delete set?</span>
                   <button
                     type="button"
                     onClick={() => setConfirmingId(null)}
-                    className="text-xs text-gray-400 hover:text-gray-600 font-medium px-2 py-1 rounded-lg hover:bg-gray-100 transition"
+                    className="text-xs text-muted hover:text-base-theme font-medium px-2 py-1 rounded-lg hover:bg-surface-muted transition"
                   >
                     Cancel
                   </button>
@@ -250,12 +250,12 @@ const Courses = () => {
               <p className="font-bold text-base mb-1">
                 {deck.label || `Study Set ${i + 1}`}
               </p>
-              <div className="flex flex-wrap gap-x-4 text-sm text-gray-500 mb-5">
+              <div className="flex flex-wrap gap-x-4 text-sm text-muted mb-5">
                 <span>
-                  <span className="font-semibold text-black">{deck.flashcards.length}</span> flashcards
+                  <span className="font-semibold text-em">{deck.flashcards.length}</span> flashcards
                 </span>
                 <span>
-                  <span className="font-semibold text-black">{deck.quiz_questions.length}</span> quiz questions
+                  <span className="font-semibold text-em">{deck.quiz_questions.length}</span> quiz questions
                 </span>
               </div>
               <Link
@@ -290,14 +290,14 @@ const Courses = () => {
         <button
           type="button"
           onClick={() => setGenerateModal("flashcards")}
-          className="border border-gray-200 text-gray-600 rounded-xl px-5 py-2.5 text-sm font-semibold hover:bg-gray-50 transition"
+          className="border border-theme text-base-theme rounded-xl px-5 py-2.5 text-sm font-semibold hover:bg-surface-muted transition"
         >
           New Flashcard Deck
         </button>
         <button
           type="button"
           onClick={() => setGenerateModal("quiz")}
-          className="border border-gray-200 text-gray-600 rounded-xl px-5 py-2.5 text-sm font-semibold hover:bg-gray-50 transition"
+          className="border border-theme text-base-theme rounded-xl px-5 py-2.5 text-sm font-semibold hover:bg-surface-muted transition"
         >
           New Quiz Deck
         </button>
@@ -308,7 +308,7 @@ const Courses = () => {
         <button
           type="button"
           onClick={toggleStudyGuide}
-          className="w-full flex items-center justify-between bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 hover:bg-gray-50 transition"
+          className="w-full flex items-center justify-between bg-surface rounded-2xl border border-theme shadow-sm px-5 py-4 hover:bg-surface-muted transition"
         >
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-(--mint-100) flex items-center justify-center">
@@ -325,21 +325,21 @@ const Courses = () => {
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            className={`text-gray-400 transition-transform ${guideOpen ? "rotate-180" : ""}`}>
+            className={`text-muted transition-transform ${guideOpen ? "rotate-180" : ""}`}>
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </button>
 
         {guideOpen && (
-          <div className="mt-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="mt-2 bg-surface rounded-2xl border border-theme shadow-sm p-6">
             {guideLoading ? (
               <StudyGuideSkeleton />
             ) : studyGuide === false ? (
-              <p className="text-sm text-gray-400 text-center py-4">
+              <p className="text-sm text-muted text-center py-4">
                 No study guide yet — upload notes to generate one.
               </p>
             ) : (
-              <pre className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap font-sans">
+              <pre className="text-sm text-base-theme leading-relaxed whitespace-pre-wrap font-sans">
                 {studyGuide}
               </pre>
             )}

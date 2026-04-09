@@ -8,8 +8,8 @@ import { hasStudyContent, getStudyRecommendations } from "../../utils/studyRecom
 import { DashboardSkeleton } from "../../components/loading/PageSkeletons";
 
 const StatCard = ({ label, value, sub }) => (
-  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-1">
-    <p className="text-xs text-gray-400 font-medium">{label}</p>
+  <div className="bg-surface rounded-2xl border border-theme shadow-sm p-4 flex flex-col gap-1">
+    <p className="text-xs text-muted font-medium">{label}</p>
     <p className="text-2xl font-bold text-(--text-emphasis)">{value}</p>
     {sub && <p className="text-xs text-(--mint-600) font-medium">{sub}</p>}
   </div>
@@ -123,7 +123,7 @@ const Dashboard = () => {
                 <Link
                   key={`${rec.type}-${rec.courseId}-${i}`}
                   to={rec.href}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-2 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)"
+                  className="bg-surface rounded-2xl border border-theme shadow-sm p-4 flex flex-col gap-2 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)"
                 >
                   <span className="text-xs font-semibold uppercase tracking-wide text-(--mint-700)">
                     {rec.type === "quiz" ? "Quiz" : "Flashcards"}
@@ -131,7 +131,7 @@ const Dashboard = () => {
                   <span className="font-bold text-base text-(--text-emphasis) line-clamp-2">
                     {rec.courseTitle}
                   </span>
-                  <span className="text-sm text-gray-500 line-clamp-3 flex-1">
+                  <span className="text-sm text-muted line-clamp-3 flex-1">
                     {rec.reason}
                   </span>
                   <span className="text-sm font-semibold text-(--mint-700) mt-1">
@@ -165,7 +165,7 @@ const Dashboard = () => {
       </div>
 
       {courses.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 flex flex-col items-center justify-center text-center">
+        <div className="bg-surface rounded-2xl border border-theme shadow-sm p-12 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 rounded-full bg-(--mint-100) flex items-center justify-center mb-4">
             <svg
               width="28" height="28" viewBox="0 0 24 24" fill="none"
@@ -176,7 +176,7 @@ const Dashboard = () => {
             </svg>
           </div>
           <p className="font-bold text-base mb-1">No courses yet</p>
-          <p className="text-sm text-gray-400 mb-5">
+          <p className="text-sm text-muted mb-5">
             Create your first course and upload your notes to get started
           </p>
           <Link
@@ -198,7 +198,7 @@ const Dashboard = () => {
                 <Link
                   key={course.id}
                   to={`/courses/${course.id}`}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 block
+                  className="bg-surface rounded-2xl border border-theme shadow-sm p-4 block
                   transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)">
                   {/* Title + badge */}
                   <div className="flex items-start justify-between mb-1">
@@ -209,7 +209,7 @@ const Dashboard = () => {
                   </div>
 
                   {/* Date */}
-                  <p className="text-xs text-gray-400 mb-3">
+                  <p className="text-xs text-muted mb-3">
                     Added{" "}
                     {new Date(course.created_at).toLocaleDateString("en-US", {
                       month: "short", day: "numeric", year: "numeric",
@@ -217,7 +217,7 @@ const Dashboard = () => {
                   </p>
 
                   {/* Flashcards + Quizzes row */}
-                  <div className="flex gap-4 mb-3 text-sm text-gray-500">
+                  <div className="flex gap-4 mb-3 text-sm text-muted">
                     <span>
                       <span className="font-semibold text-(--text-emphasis)">{counts.flashcards}</span> flashcards
                     </span>
@@ -227,13 +227,13 @@ const Dashboard = () => {
                   </div>
 
                   {/* Mastery progress bar — placeholder until quiz scores are tracked */}
-                  <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                  <div className="flex items-center justify-between text-xs text-muted mb-1">
                     <span>Mastery</span>
                     <span className="font-semibold text-(--text-emphasis)">
                       {typeof mastery === "number" ? `${mastery}%` : "—%"}
                     </span>
                   </div>
-                  <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-surface-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-(--mint-500) rounded-full"
                       style={{ width: typeof mastery === "number" ? `${mastery}%` : "0%" }}

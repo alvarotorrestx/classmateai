@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 @layer base {
+
+  /* Default light mode */
   :root {
     /* Primary Colors */
     --mint-50: #e5fff9;
@@ -28,18 +30,40 @@
     /* UI specific cases (see utilities below) */
     --bg: var(--white);
     --surface: var(--white);
+    --surface-muted: #f3f4f6;
     --border: var(--mint-300);
     --brand: var(--mint-600);
     --btn-brand: var(--mint-600);
     --btn-brand-hover: var(--mint-700);
     --text: var(--black);
     --text-emphasis: var(--mint-900);
+    --text-muted: #6b7280;
+  }
+
+  /* Dark mode */
+  .dark {
+    --bg: #111827;
+    --surface: #111827;
+    --surface-muted: #1f2937;
+    --border: #2b3a37;
+    --brand: var(--mint-600);
+    --btn-brand: var(--mint-500);
+    --btn-brand-hover: var(--mint-400);
+    --text: #f3f4f6;
+    --text-emphasis: #ffffff;
+    --text-muted: #9ca3af;
+
+    --success: #34d399;
+    --warning: #fbbf24;
+    --error: #f87171;
+    --info: #60a5fa;
   }
 
   body {
     font-family: Poppins, system-ui, sans-serif;
     font-size: 16px;
-    color: #000;
+    color: var(--text);
+    background: var(--bg);
   }
 
   h1 {
@@ -112,6 +136,30 @@
     background-color: var(--info);
   }
 
+  .bg-app {
+    background-color: var(--bg);
+  }
+
+  .bg-surface {
+    background-color: var(--surface);
+  }
+
+  .bg-surface-muted {
+    background-color: var(--surface-muted);
+  }
+
+  .text-base-theme {
+    color: var(--text);
+  }
+
+  .text-muted {
+    color: var(--text-muted);
+  }
+
+  .border-theme {
+    border-color: var(--border);
+  }
+
   .text-success {
     color: var(--success);
   }
@@ -148,14 +196,14 @@
   /* Secondary Button */
   .btn-secondary {
     @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition border;
-    background: var(--white);
+    background: var(--surface);
     color: var(--brand);
     border-radius: .7rem;
     cursor: pointer;
   }
 
   .btn-secondary:hover {
-    background: var(--mint-100);
+    background: var(--surface-muted);
   }
 
 
@@ -163,13 +211,13 @@
   .btn-ghost {
     @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition;
     background: transparent;
-    color: var(--white);
+    color: var(--text);
     border-radius: .7rem;
     cursor: pointer;
   }
 
   .btn-ghost:hover {
-    background: var(--mint-50);
+    background: var(--surface-muted);
   }
 
   /* Button sizing */
@@ -215,13 +263,16 @@
 
   /* Animation for the recommendation nudge floating button */
   @keyframes recommendation-nudge-bounce {
+
     0%,
     100% {
       transform: translateY(0);
     }
+
     45% {
       transform: translateY(-6px);
     }
+
     60% {
       transform: translateY(-2px);
     }

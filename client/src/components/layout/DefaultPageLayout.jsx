@@ -10,7 +10,7 @@ const DefaultPageLayout = ({ pageTitle, title, subtitle, children }) => {
                             className="w-15 h-12 rounded-md bg-white p-1"
                         />
 
-                        <span className="text-white font-medium flex justify-center items-center gap-1">
+                        <span className="text-(--surface-muted) font-medium flex justify-center items-center gap-1">
                             {pageTitle}
                         </span>
                     </div>

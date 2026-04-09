@@ -107,7 +107,7 @@ const QuizSession = () => {
       <InnerAppPageLayout>
         <div className="max-w-lg mx-auto text-center py-16">
           <p className="font-bold text-base mb-2">No questions available</p>
-          <p className="text-sm text-gray-400 mb-6">
+          <p className="text-sm text-muted mb-6">
             This quiz does not have any questions yet.
           </p>
           <button
@@ -150,13 +150,13 @@ const QuizSession = () => {
               </svg>
             </div>
             <h3 className="mb-1">Quiz Complete!</h3>
-            <p className="text-sm text-gray-400">Here's how you did</p>
+            <p className="text-sm text-muted">Here's how you did</p>
           </div>
 
           {/* Score card */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6 flex flex-col items-center">
+          <div className="bg-surface rounded-2xl border border-theme shadow-sm p-6 mb-6 flex flex-col items-center">
             <p className="text-5xl font-bold text-(--mint-600) mb-1">{scorePercent}%</p>
-            <p className="text-sm text-gray-400 mb-5">{correct} of {total} correct</p>
+            <p className="text-sm text-muted mb-5">{correct} of {total} correct</p>
             <div className="w-full flex gap-4">
               <div className="flex-1 bg-green-50 rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-green-600">{correct}</p>
@@ -167,9 +167,9 @@ const QuizSession = () => {
                 <p className="text-xs text-red-600 font-medium mt-0.5">Incorrect</p>
               </div>
               {skipped > 0 && (
-                <div className="flex-1 bg-gray-50 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold text-gray-400">{skipped}</p>
-                  <p className="text-xs text-gray-500 font-medium mt-0.5">Skipped</p>
+                <div className="flex-1 bg-surface-muted rounded-xl p-4 text-center">
+                  <p className="text-2xl font-bold text-muted">{skipped}</p>
+                  <p className="text-xs text-muted font-medium mt-0.5">Skipped</p>
                 </div>
               )}
             </div>
@@ -182,7 +182,7 @@ const QuizSession = () => {
               {reviewQuestions.map(({ q, i, isCorrect }) => (
                 <div
                   key={i}
-                  className={`bg-white rounded-2xl border-2 shadow-sm p-5 ${
+                  className={`bg-surface rounded-2xl border-2 shadow-sm p-5 ${
                     isCorrect ? "border-green-100" : "border-red-100"
                   }`}
                 >
@@ -210,11 +210,11 @@ const QuizSession = () => {
                         </span>
                         <div>
                           <p className="text-xs text-red-500 font-medium">Your answer</p>
-                          <p className="text-sm text-gray-700">{q.options[answers[i]]}</p>
+                          <p className="text-sm text-base-theme">{q.options[answers[i]]}</p>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 mb-2 italic">Not answered</p>
+                      <p className="text-xs text-muted mb-2 italic">Not answered</p>
                     )
                   )}
 
@@ -227,13 +227,13 @@ const QuizSession = () => {
                       <p className="text-xs text-green-600 font-medium">
                         {isCorrect ? "Your answer" : "Correct answer"}
                       </p>
-                      <p className="text-sm text-gray-700">{q.options[q.correct_index]}</p>
+                      <p className="text-sm text-base-theme">{q.options[q.correct_index]}</p>
                     </div>
                   </div>
 
                   {/* Explanation */}
                   {q.explanation && (
-                    <p className="mt-3 text-xs text-gray-400 border-t border-gray-100 pt-3">
+                    <p className="mt-3 text-xs text-muted border-t border-theme pt-3">
                       {q.explanation}
                     </p>
                   )}
@@ -271,14 +271,14 @@ const QuizSession = () => {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-muted">
             Question{" "}
-            <span className="font-semibold text-black">{current + 1}</span> of{" "}
-            <span className="font-semibold text-black">{questions.length}</span>
+            <span className="font-semibold text-em">{current + 1}</span> of{" "}
+            <span className="font-semibold text-em">{questions.length}</span>
           </p>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-muted">
             Answered:{" "}
-            <span className="font-semibold text-black">
+            <span className="font-semibold text-em">
               {Object.keys(answers).length +
                 (selected !== null && answers[current] === undefined ? 1 : 0)}
             </span>
@@ -286,7 +286,7 @@ const QuizSession = () => {
         </div>
 
         {/* Progress bar */}
-        <div className="w-full bg-gray-100 rounded-full h-1.5 mb-8">
+        <div className="w-full bg-surface-muted rounded-full h-1.5 mb-8">
           <div
             className="bg-(--mint-500) h-1.5 rounded-full transition-all"
             style={{ width: `${((current + 1) / questions.length) * 100}%` }}
@@ -294,7 +294,7 @@ const QuizSession = () => {
         </div>
 
         {/* Question */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+        <div className="bg-surface rounded-2xl border border-theme shadow-sm p-6 mb-6">
           <p className="text-(--mint-700) font-semibold text-sm mb-3">
             Question {current + 1}
           </p>
@@ -310,14 +310,14 @@ const QuizSession = () => {
               className={`flex items-center gap-4 text-left w-full rounded-2xl border-2 px-5 py-4 font-medium text-sm transition ${
                 selected === i
                   ? "border-(--mint-600) bg-(--mint-50) text-(--mint-700)"
-                  : "border-gray-100 bg-white hover:border-(--mint-300) hover:bg-(--mint-50)"
+                  : "border-theme bg-surface hover:border-(--mint-300) hover:bg-(--mint-50) hover:text-(--mint-900)"
               }`}
             >
               <span
                 className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${
                   selected === i
                     ? "bg-(--mint-600) text-white"
-                    : "bg-gray-100 text-gray-500"
+                    : "bg-surface-muted text-muted"
                 }`}
               >
                 {LETTERS[i]}
@@ -332,7 +332,7 @@ const QuizSession = () => {
           <button
             onClick={() => saveAndGo(-1)}
             disabled={isFirst}
-            className="border border-gray-200 rounded-xl px-5 py-2.5 text-sm font-semibold disabled:opacity-40 hover:bg-gray-50 transition"
+            className="border border-theme rounded-xl px-5 py-2.5 text-sm font-semibold disabled:opacity-40 hover:bg-surface-muted transition"
           >
             &lt; Previous
           </button>

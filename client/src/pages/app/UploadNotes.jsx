@@ -107,7 +107,7 @@ const UploadNotes = () => {
   return (
     <InnerAppPageLayout>
       <h3 className="mb-1">{isExistingCourse ? "Add More Notes" : "Upload Lecture Notes"}</h3>
-      <p className="text-sm text-gray-400 mb-6">
+      <p className="text-sm text-muted mb-6">
         {courseTitle
           ? `${courseTitle} · ${isExistingCourse ? "New content will generate fresh flashcards and update your study guide" : "Your notes will be transformed into flashcards and quizzes"}`
           : "Your notes will be transformed into flashcards and quizzes"}
@@ -127,8 +127,8 @@ const UploadNotes = () => {
           loading
             ? "opacity-60 cursor-not-allowed"
             : dragging
-            ? "cursor-pointer border-(--mint-600) bg-(--mint-100)"
-            : "cursor-pointer border-(--mint-300) bg-(--mint-50)"
+            ? "cursor-pointer border-(--mint-600) bg-(--mint-100) text-(--mint-900)"
+            : "cursor-pointer border-(--mint-300) bg-(--surface-muted)"
         }`}
         onClick={() => !loading && inputRef.current?.click()}
       >
@@ -144,12 +144,12 @@ const UploadNotes = () => {
           <>
             <div className="w-6 h-6 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
             <p className="text-lg font-bold text-center">{loadingMsg}</p>
-            <p className="text-sm text-gray-400">This may take a minute — please don't close this tab</p>
+            <p className="text-sm text-muted">This may take a minute — please don't close this tab</p>
           </>
         ) : (
           <>
             <p className="text-lg font-bold text-center">Drag and drop your file here</p>
-            <p className="text-sm text-gray-400">or click to browse files</p>
+            <p className="text-sm text-muted">or click to browse files</p>
             <button
               type="button"
               disabled={loading}

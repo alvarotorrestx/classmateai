@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import api from "../../services/api";
+import ThemeToggle from "../ui/ThemeToggle";
 
 const InnerAppPageLayout = ({ children }) => {
     const { auth, setAuth } = useAuth();
@@ -49,7 +50,7 @@ const InnerAppPageLayout = ({ children }) => {
                             alt="ClassmateAI logo"
                             className="w-15 h-12 rounded-md bg-white p-1"
                         />
-                        <Link to="/dashboard" className="text-white font-medium flex items-center gap-2">
+                        <Link to="/dashboard" className="text-(--surface-muted) font-medium flex items-center gap-2">
                             <span>←</span> Back to Dashboard
                         </Link>
                     </div>
@@ -65,11 +66,12 @@ const InnerAppPageLayout = ({ children }) => {
                         </button>
 
                         {menuOpen && (
-                            <div className="absolute right-0 mt-2 min-w-36 rounded-xl border border-(--mint-100) bg-white shadow-lg py-2 z-50">
+                            <div className="absolute right-0 mt-2 min-w-40 rounded-xl border border-theme bg-surface shadow-lg py-2 z-50">
+                                <ThemeToggle />
                                 <button
                                     type="button"
                                     onClick={() => { setMenuOpen(false); handleLogout(); }}
-                                    className="w-full px-4 py-2 text-left text-sm font-medium text-(--text) hover:bg-(--mint-50) transition cursor-pointer"
+                                    className="w-full px-4 py-2 text-left text-sm font-medium text-base-theme hover:bg-surface-muted transition cursor-pointer"
                                 >
                                     Logout
                                 </button>

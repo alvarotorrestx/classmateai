@@ -77,10 +77,10 @@ const Flashcards = () => {
       <InnerAppPageLayout>
         <div className="max-w-lg mx-auto text-center">
           <p className="text-xl font-bold mb-1">{courseTitle || "Flashcards"}</p>
-          <p className="text-sm text-gray-400 mb-8">Study your generated cards</p>
-          <div className="bg-white rounded-2xl border-2 border-(--mint-200) p-12 flex flex-col items-center justify-center">
+          <p className="text-sm text-muted mb-8">Study your generated cards</p>
+          <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-12 flex flex-col items-center justify-center">
             <p className="font-bold text-base mb-1">No cards available</p>
-            <p className="text-sm text-gray-400">This deck has no flashcards yet</p>
+            <p className="text-sm text-muted">This deck has no flashcards yet</p>
           </div>
         </div>
       </InnerAppPageLayout>
@@ -98,13 +98,13 @@ const Flashcards = () => {
           <p className="text-xl font-bold mb-1">
             {courseTitle || "Flashcards complete"}
           </p>
-          <p className="text-sm text-gray-400 mb-6">
+          <p className="text-sm text-muted mb-6">
             You&apos;ve reached the end of this deck.
           </p>
 
-          <div className="bg-white rounded-2xl border-2 border-(--mint-200) p-8 mb-6">
+          <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-8 mb-6">
             <p className="text-base font-semibold mb-2">Nice work!</p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted">
               {reviewedCount > 0 && (
                 <>
                   You reviewed <span className="font-semibold">{reviewedCount}</span>{" "}
@@ -151,7 +151,7 @@ const Flashcards = () => {
     <InnerAppPageLayout>
       <div className="max-w-lg mx-auto">
         <p className="text-xl font-bold text-center mb-1">{courseTitle || "Flashcards"}</p>
-        <p className="text-sm text-gray-400 mb-6 text-center">
+        <p className="text-sm text-muted mb-6 text-center">
           Card {index + 1} of {cards.length}
         </p>
 
@@ -162,13 +162,13 @@ const Flashcards = () => {
               markReviewed(card);
             }
           }}
-          className="bg-white rounded-2xl border-2 border-(--mint-200) p-8 min-h-64 flex flex-col items-center justify-center cursor-pointer select-none text-center mb-6 transition-all"
+          className="bg-surface rounded-2xl border-2 border-(--mint-200) p-8 min-h-64 flex flex-col items-center justify-center cursor-pointer select-none text-center mb-6 transition-all"
         >
           {!flipped ? (
             <>
               <p className="text-(--mint-700) font-semibold text-sm mb-5">Question</p>
               <p className="text-lg font-bold leading-snug">{card.front}</p>
-              <p className="text-xs text-gray-400 mt-5 italic">Click to reveal answer</p>
+              <p className="text-xs text-muted mt-5 italic">Click to reveal answer</p>
             </>
           ) : (
             <>
@@ -182,7 +182,7 @@ const Flashcards = () => {
           <button
             onClick={() => go(index - 1)}
             disabled={index === 0}
-            className="border border-gray-200 rounded-xl px-5 py-2.5 text-sm font-semibold disabled:opacity-40 hover:bg-gray-50 transition"
+            className="border border-theme rounded-xl px-5 py-2.5 text-sm font-semibold disabled:opacity-40 hover:bg-surface-muted transition"
           >
             &lt; Previous
           </button>
