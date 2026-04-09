@@ -6,6 +6,7 @@ import { getNotes, getAllStudySets, deleteNote } from "../../services/noteServic
 import DeleteCourseModal from "../../components/modals/DeleteCourseModal";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
 import { CourseGridSkeleton } from "../../components/loading/PageSkeletons";
+import { useToast } from "../../context/ToastContext";
 
 const AllCourses = () => {
   const { auth } = useAuth();
@@ -19,6 +20,7 @@ const AllCourses = () => {
   const [bulkConfirm, setBulkConfirm] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
+  const { addToast } = useToast();
   const fullName = auth?.user?.full_name || "Student";
   const initials = fullName
     .split(" ")
@@ -66,6 +68,7 @@ const AllCourses = () => {
 
   const handleBulkDelete = async () => {
     setBulkDeleting(true);
+    const count = selectedIds.size;
     try {
       await Promise.all(
         [...selectedIds].map((id) =>
@@ -74,9 +77,11 @@ const AllCourses = () => {
       );
       exitSelectMode();
       refresh();
+      addToast(`${count} course${count !== 1 ? "s" : ""} deleted`);
     } catch {
       setBulkDeleting(false);
       setBulkConfirm(false);
+      addToast("Failed to delete. Please try again.", "error");
     }
   };
 
@@ -304,9 +309,13 @@ const AllCourses = () => {
           note={deleteTarget.note}
           decks={deleteTarget.decks}
           onCancel={() => setDeleteTarget(null)}
-          onSuccess={() => {
+          onSuccess={({ courseDeleted, flashcardsDeleted, quizzesDeleted }) => {
             setDeleteTarget(null);
             refresh();
+            if (courseDeleted) addToast("Course deleted");
+            else if (flashcardsDeleted && quizzesDeleted) addToast("Flashcards and quiz questions deleted");
+            else if (flashcardsDeleted) addToast("Flashcards deleted");
+            else if (quizzesDeleted) addToast("Quiz questions deleted");
           }}
         />
       )}

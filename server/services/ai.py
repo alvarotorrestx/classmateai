@@ -1,5 +1,6 @@
 import os
 import json
+import time
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
@@ -43,17 +44,25 @@ def _parse_response(response) -> dict:
     return json.loads(raw)
 
 
-def _call_gemini(system_prompt: str, user_prompt: str) -> dict:
+def _call_gemini(system_prompt: str, user_prompt: str, retries: int = 2) -> dict:
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=user_prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=system_prompt,
-            response_mime_type="application/json",
-        ),
-    )
-    return _parse_response(response)
+    last_error: Exception = None
+    for attempt in range(retries + 1):
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=user_prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                    response_mime_type="application/json",
+                ),
+            )
+            return _parse_response(response)
+        except Exception as e:
+            last_error = e
+            if attempt < retries:
+                time.sleep(1.5 * (attempt + 1))  # 1.5s, then 3s
+    raise last_error
 
 
 def generate_study_materials(note_content: str, max_flashcards: int = 100, max_questions: int = 25) -> dict:

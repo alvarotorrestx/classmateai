@@ -6,11 +6,13 @@ import Button from "../../components/ui/Button"
 
 import { loginUser, resendVerification } from "../../services/authService"
 import useAuth from "../../hooks/useAuth"
+import { useToast } from "../../context/ToastContext"
 
 const Login = () => {
 
   const navigate = useNavigate()
   const { setAuth } = useAuth()
+  const { addToast } = useToast()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -32,7 +34,8 @@ const Login = () => {
       })
 
       setAuth({ user: data.user })
-
+      const firstName = data.user?.full_name?.split(" ")[0] || "back"
+      addToast(`Welcome back, ${firstName}!`)
       navigate("/dashboard")
 
     } catch (err) {
@@ -57,8 +60,10 @@ const Login = () => {
     try {
       const res = await resendVerification(email)
       setInfo(res?.message || "If an account exists, a verification email has been sent.")
+      addToast("Verification email sent", "info")
     } catch {
       setInfo("If an account exists, a verification email has been sent.")
+      addToast("Verification email sent", "info")
     } finally {
       setResendLoading(false)
     }

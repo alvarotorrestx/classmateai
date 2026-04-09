@@ -16,7 +16,16 @@ const Processing = () => {
   const [progress, setProgress] = useState(0);
   const [doneSteps, setDoneSteps] = useState(0);
   const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
   const studySetRef = useRef(null);
+
+  const handleRetry = () => {
+    studySetRef.current = null;
+    setError(null);
+    setProgress(0);
+    setDoneSteps(0);
+    setRetryCount((c) => c + 1);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -29,7 +38,7 @@ const Processing = () => {
         if (!cancelled) studySetRef.current = data;
       })
       .catch(() => {
-        if (!cancelled) setError("Failed to generate study materials. Please try again.");
+        if (!cancelled) setError("Generation failed. Please try again.");
       });
 
     // Animate: 0->90 slowly (waiting for API), then 90->100 fast once API resolves
@@ -59,7 +68,7 @@ const Processing = () => {
       cancelled = true;
       clearInterval(intervalId);
     };
-  }, [courseId, navigate]);
+  }, [courseId, navigate, retryCount]);
 
   if (error) {
     return (
@@ -75,10 +84,10 @@ const Processing = () => {
             <h3 className="mb-2">Generation Failed</h3>
             <p className="text-sm text-gray-400 mb-6">{error}</p>
             <button
-              onClick={() => navigate(-1)}
+              onClick={handleRetry}
               className="bg-(--mint-600) text-white rounded-xl px-6 py-2.5 text-sm font-semibold hover:bg-(--mint-700) transition"
             >
-              Go Back
+              Try Again
             </button>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import api from "../../services/api";
+import { useToast } from "../../context/ToastContext";
 
 const InnerAppPageLayout = ({ children }) => {
     const { auth, setAuth } = useAuth();
@@ -15,6 +16,7 @@ const InnerAppPageLayout = ({ children }) => {
         .toUpperCase();
 
     const navigate = useNavigate();
+    const { addToast } = useToast();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
@@ -24,6 +26,7 @@ const InnerAppPageLayout = ({ children }) => {
         } catch {
             // ignore logout API errors; clear client state
         }
+        addToast("Logged out", "info");
         setAuth(null);
         navigate("/");
     };

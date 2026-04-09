@@ -78,7 +78,7 @@ const DeleteCourseModal = ({ note, decks = [], onCancel, onSuccess }) => {
         deleteFlashcards,
         deleteQuizzes,
       });
-      onSuccess?.({ courseDeleted: deleteCourse });
+      onSuccess?.({ courseDeleted: deleteCourse, flashcardsDeleted: deleteFlashcards, quizzesDeleted: deleteQuizzes });
     } catch {
       setError("Something went wrong. Please try again.");
       setDeleting(false);

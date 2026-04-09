@@ -5,11 +5,13 @@ import DefaultPageLayout from "../../components/layout/DefaultPageLayout";
 import Button from "../../components/ui/Button";
 import api from "../../services/api";
 import { resendVerification } from "../../services/authService";
+import { useToast } from "../../context/ToastContext";
 
 const VerifyEmail = () => {
   const [params] = useSearchParams();
   const token = params.get("token");
 
+  const { addToast } = useToast();
   const [status, setStatus] = useState("idle"); // idle | loading | success | error
   const [message, setMessage] = useState("");
 
@@ -32,6 +34,7 @@ const VerifyEmail = () => {
       .then((res) => {
         setStatus("success");
         setMessage(res?.data?.message || "Email verified successfully.");
+        addToast("Email verified! You can now log in.")
       })
       .catch((err) => {
         setStatus("error");
@@ -51,8 +54,10 @@ const VerifyEmail = () => {
       setResendMessage(
         res?.message || "If an account exists, a verification email has been sent."
       );
+      addToast("Verification email sent", "info");
     } catch {
       setResendMessage("If an account exists, a verification email has been sent.");
+      addToast("Verification email sent", "info");
     } finally {
       setResendLoading(false);
     }
