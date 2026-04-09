@@ -128,14 +128,14 @@ const AllCourses = () => {
               {sortedCourses.length > 0 && (
                 <button
                   onClick={toggleSelectAll}
-                  className="text-sm font-semibold text-gray-500 hover:text-gray-700 px-3 py-2 transition"
+                  className="text-sm font-semibold text-muted hover:text-base-theme px-3 py-2 transition"
                 >
                   {selectedIds.size === courses.length ? "Deselect All" : "Select All"}
                 </button>
               )}
               <button
                 onClick={exitSelectMode}
-                className="border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold hover:bg-gray-50 transition"
+                className="border border-theme rounded-xl px-4 py-2 text-sm font-semibold hover:bg-surface-muted transition"
               >
                 Cancel
               </button>
@@ -153,7 +153,7 @@ const AllCourses = () => {
               {sortedCourses.length > 0 && (
                 <button
                   onClick={() => setSelectMode(true)}
-                  className="border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold hover:bg-gray-50 transition"
+                  className="border border-theme rounded-xl px-4 py-2 text-sm font-semibold hover:bg-surface-muted transition"
                 >
                   Select
                 </button>
@@ -172,7 +172,7 @@ const AllCourses = () => {
       {loading ? (
         <CourseGridSkeleton count={6} />
       ) : sortedCourses.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 flex flex-col items-center justify-center text-center">
+        <div className="bg-surface rounded-2xl border border-theme shadow-sm p-12 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 rounded-full bg-(--mint-100) flex items-center justify-center mb-4">
             <svg
               width="28" height="28" viewBox="0 0 24 24" fill="none"
@@ -183,7 +183,7 @@ const AllCourses = () => {
             </svg>
           </div>
           <p className="font-bold text-base mb-1">No courses yet</p>
-          <p className="text-sm text-gray-400 mb-5">
+          <p className="text-sm text-muted mb-5">
             Create your first course and upload your notes to get started
           </p>
           <Link
@@ -208,7 +208,7 @@ const AllCourses = () => {
                   {selectMode ? (
                     <span
                       className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition ${
-                        isSelected ? "border-red-500 bg-red-500" : "border-gray-300"
+                        isSelected ? "border-red-500 bg-red-500" : "border-theme"
                       }`}
                     >
                       {isSelected && (
@@ -245,14 +245,14 @@ const AllCourses = () => {
                   )}
                 </div>
 
-                <p className="text-xs text-gray-400 mb-3">
+                <p className="text-xs text-muted mb-3">
                   Added{" "}
                   {new Date(course.created_at).toLocaleDateString("en-US", {
                     month: "short", day: "numeric", year: "numeric",
                   })}
                 </p>
 
-                <div className="flex gap-4 mb-3 text-sm text-gray-500">
+                <div className="flex gap-4 mb-3 text-sm text-muted">
                   <span>
                     <span className="font-semibold text-(--text-emphasis)">{counts.flashcards}</span> flashcards
                   </span>
@@ -261,13 +261,13 @@ const AllCourses = () => {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                <div className="flex items-center justify-between text-xs text-muted mb-1">
                   <span>Mastery</span>
                   <span className="font-semibold text-(--text-emphasis)">
                     {typeof mastery === "number" ? `${mastery}%` : "—%"}
                   </span>
                 </div>
-                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-surface-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-(--mint-500) rounded-full"
                     style={{ width: typeof mastery === "number" ? `${mastery}%` : "0%" }}
@@ -281,8 +281,8 @@ const AllCourses = () => {
                 <div
                   key={course.id}
                   onClick={() => toggleSelected(course.id)}
-                  className={`group bg-white rounded-2xl border-2 shadow-sm p-4 cursor-pointer transition ${
-                    isSelected ? "border-red-400 bg-red-50/30" : "border-gray-100 hover:shadow-md"
+                  className={`group bg-surface rounded-2xl border-2 shadow-sm p-4 cursor-pointer transition ${
+                    isSelected ? "border-red-400 bg-red-50/30" : "border-theme hover:shadow-md"
                   }`}
                 >
                   {cardContent}
@@ -294,7 +294,7 @@ const AllCourses = () => {
               <Link
                 key={course.id}
                 to={`/courses/${course.id}`}
-                className="group bg-white rounded-2xl border border-gray-100 shadow-sm p-4 block transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)"
+                className="group bg-surface rounded-2xl border border-theme shadow-sm p-4 block transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)"
               >
                 {cardContent}
               </Link>
@@ -323,7 +323,7 @@ const AllCourses = () => {
       {/* Bulk delete confirmation modal */}
       {bulkConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+          <div className="bg-surface rounded-2xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-start gap-4 mb-5">
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5 text-red-500">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -338,7 +338,7 @@ const AllCourses = () => {
                 <p className="font-bold text-base text-(--text-emphasis) leading-snug">
                   Delete {selectedIds.size} course{selectedIds.size !== 1 ? "s" : ""}?
                 </p>
-                <p className="text-sm text-gray-400 mt-0.5">
+                <p className="text-sm text-muted mt-0.5">
                   This will permanently delete the selected courses along with all their flashcards and quiz questions. This cannot be undone.
                 </p>
               </div>
@@ -348,7 +348,7 @@ const AllCourses = () => {
                 type="button"
                 onClick={() => setBulkConfirm(false)}
                 disabled={bulkDeleting}
-                className="border border-gray-200 text-(--text) rounded-xl px-5 py-2 text-sm font-semibold hover:bg-gray-50 transition disabled:opacity-50"
+                className="border border-theme text-(--text) rounded-xl px-5 py-2 text-sm font-semibold hover:bg-surface-muted transition disabled:opacity-50"
               >
                 Cancel
               </button>

@@ -5,7 +5,7 @@ const CheckItem = ({ checked, onChange, label, description }) => (
   <label className="flex items-start gap-3 cursor-pointer select-none group">
     <span
       className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition ${
-        checked ? "border-red-500 bg-red-500" : "border-gray-300 group-hover:border-red-300"
+        checked ? "border-red-500 bg-red-500" : "border-theme group-hover:border-red-300"
       }`}
       onClick={() => onChange(!checked)}
     >
@@ -28,10 +28,10 @@ const CheckItem = ({ checked, onChange, label, description }) => (
       onChange={(e) => onChange(e.target.checked)}
     />
     <div>
-      <p className={`text-sm font-medium transition ${checked ? "text-(--text-emphasis)" : "text-gray-500"}`}>
+      <p className={`text-sm font-medium transition ${checked ? "text-(--text-emphasis)" : "text-muted"}`}>
         {label}
       </p>
-      {description && <p className="text-xs text-gray-400 mt-0.5">{description}</p>}
+      {description && <p className="text-xs text-muted mt-0.5">{description}</p>}
     </div>
   </label>
 );
@@ -87,7 +87,7 @@ const DeleteCourseModal = ({ note, decks = [], onCancel, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-md p-6">
         <div className="flex items-start gap-4 mb-5">
           <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5 text-red-500">
             <TrashIcon />
@@ -96,13 +96,13 @@ const DeleteCourseModal = ({ note, decks = [], onCancel, onSuccess }) => {
             <p className="font-bold text-base text-(--text-emphasis) leading-snug">
               Delete from &ldquo;{note.title}&rdquo;
             </p>
-            <p className="text-sm text-gray-400 mt-0.5">
+            <p className="text-sm text-muted mt-0.5">
               Choose what to delete. Unchecked items will be kept.
             </p>
           </div>
         </div>
 
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted mb-3">
           Select what to delete
         </p>
 
@@ -138,7 +138,7 @@ const DeleteCourseModal = ({ note, decks = [], onCancel, onSuccess }) => {
             type="button"
             onClick={onCancel}
             disabled={deleting}
-            className="border border-gray-200 text-(--text) rounded-xl px-5 py-2 text-sm font-semibold hover:bg-gray-50 transition disabled:opacity-50"
+            className="border border-theme text-(--text) rounded-xl px-5 py-2 text-sm font-semibold hover:bg-surface-muted transition disabled:opacity-50"
           >
             Cancel
           </button>

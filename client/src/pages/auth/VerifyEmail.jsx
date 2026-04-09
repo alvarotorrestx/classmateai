@@ -71,16 +71,16 @@ const VerifyEmail = () => {
     >
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
         {status === "loading" ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+          <div className="bg-surface rounded-2xl border border-theme shadow-sm p-8">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full border-2 border-(--mint-600) border-t-transparent animate-spin" />
-              <p className="text-sm text-gray-500">Verifying…</p>
+              <p className="text-sm text-muted">Verifying…</p>
             </div>
           </div>
         ) : status === "success" ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+          <div className="bg-surface rounded-2xl border border-theme shadow-sm p-8">
             <p className="font-semibold text-(--mint-700) mb-2">{message}</p>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-sm text-muted mb-6">
               You can now sign in to ClassmateAI.
             </p>
             <Link to="/login">
@@ -90,9 +90,9 @@ const VerifyEmail = () => {
             </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+          <div className="bg-surface rounded-2xl border border-theme shadow-sm p-8">
             <p className="font-semibold text-error mb-2">{message}</p>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-sm text-muted mb-6">
               If your link expired, you can request a new verification email.
             </p>
 
@@ -106,7 +106,7 @@ const VerifyEmail = () => {
                   name="email"
                   type="email"
                   placeholder="user@email.com"
-                  className="w-full rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-md outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
+                  className="w-full rounded-xl border border-theme bg-surface px-5 py-4 shadow-md outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -119,7 +119,7 @@ const VerifyEmail = () => {
               </Button>
 
               {resendMessage && (
-                <p className="text-sm text-gray-500">{resendMessage}</p>
+                <p className="text-sm text-muted">{resendMessage}</p>
               )}
             </form>
           </div>

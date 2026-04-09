@@ -17,7 +17,7 @@ const NewCourse = () => {
     <InnerAppPageLayout>
       <div className="max-w-lg mx-auto text-center">
         <h3 className="mb-2">Create New Course</h3>
-        <p className="text-sm text-gray-400 mb-8">
+        <p className="text-sm text-muted mb-8">
           Add a course to start generating study materials
         </p>
 
@@ -29,7 +29,7 @@ const NewCourse = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Machine Learning"
-              className="w-full rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
+              className="w-full rounded-xl border border-theme bg-surface px-5 py-4 shadow-sm outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
               required
             />
           </div>
@@ -43,7 +43,7 @@ const NewCourse = () => {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="e.g. CS 401"
-              className="w-full rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
+              className="w-full rounded-xl border border-theme bg-surface px-5 py-4 shadow-sm outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
             />
           </div>
 

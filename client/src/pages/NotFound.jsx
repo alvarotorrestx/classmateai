@@ -13,12 +13,12 @@ export default function NotFound() {
             subtitle="The page you&apos;re looking for doesn&apos;t exist or was moved."
         >
             <div className="mx-auto w-full max-w-3xl">
-                <div className="rounded-2xl border border-ui bg-white p-6 sm:p-8">
+                <div className="rounded-2xl border border-ui bg-(--surface-muted) p-6 sm:p-8">
                     <div className="inline-flex items-center rounded-full bg-(--error) px-4 py-1 font-semibold">
                         Error 404
                     </div>
 
-                    <p className="body-large mt-4 text-(--mint-950)">
+                    <p className="body-large mt-4">
                         Try going back, or head to the home page and we&apos;ll route you to the
                         right place.
                     </p>

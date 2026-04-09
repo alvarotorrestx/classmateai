@@ -73,14 +73,14 @@ const AllFlashcards = () => {
   return (
     <InnerAppPageLayout>
       <h3 className="mb-1">Flashcards</h3>
-      <p className="text-sm text-gray-400 mb-8">All your flashcard decks</p>
+      <p className="text-sm text-muted mb-8">All your flashcard decks</p>
 
       {loading ? (
         <DeckGridSkeleton count={6} />
       ) : decks.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 flex flex-col items-center justify-center text-center">
+        <div className="bg-surface rounded-2xl border border-theme shadow-sm p-10 flex flex-col items-center justify-center text-center">
           <p className="font-bold text-base mb-1">No flashcard decks yet</p>
-          <p className="text-sm text-gray-400 mb-5">
+          <p className="text-sm text-muted mb-5">
             Upload lecture notes to a course to generate flashcards
           </p>
           <Link
@@ -93,14 +93,14 @@ const AllFlashcards = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {decks.map((deck) => (
-            <div key={deck.id} className="group relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col">
+            <div key={deck.id} className="group relative bg-surface rounded-2xl border border-theme shadow-sm p-5 flex flex-col">
               {confirmingId === deck.id ? (
                 <div className="absolute top-3 right-3 flex items-center gap-2">
-                  <span className="text-xs text-gray-500 font-medium">Delete deck?</span>
+                  <span className="text-xs text-muted font-medium">Delete deck?</span>
                   <button
                     type="button"
                     onClick={() => setConfirmingId(null)}
-                    className="text-xs text-gray-400 hover:text-gray-600 font-medium px-2 py-1 rounded-lg hover:bg-gray-100 transition"
+                    className="text-xs text-muted hover:text-base-theme font-medium px-2 py-1 rounded-lg hover:bg-surface-muted transition"
                   >
                     Cancel
                   </button>
@@ -128,7 +128,7 @@ const AllFlashcards = () => {
               )}
 
               <p className="font-bold text-base mb-1">{deckTitle(deck)}</p>
-              <p className="text-sm text-gray-400 mb-5">{deck.flashcards.length} cards</p>
+              <p className="text-sm text-muted mb-5">{deck.flashcards.length} cards</p>
               <Link
                 to={`/flashcards/${deck.id}`}
                 className="mt-auto text-center bg-(--mint-600) text-white rounded-xl px-4 py-2.5 text-sm font-semibold hover:bg-(--mint-700) transition"
