@@ -52,6 +52,7 @@ classmateai/
 │       ├── hooks/
 │       │   ├── useAuth.js
 │       │   ├── useQuizHistory.js  # localStorage quiz history (max 20)
+│       │   ├── useStudyMetrics.js # localStorage study time + streak (completed sessions)
 │       │   └── useTheme.js        # theme init, persist, toggle (.dark on <html>)
 │       ├── pages/
 │       │   ├── NotFound.jsx
@@ -937,6 +938,7 @@ GEMINI_API_KEY=<your key>
 | 11 — Loading skeleton system | ✅ Done | Reusable page-shaped skeletons + UI polish updates (3/26/26) |
 | 12 — Email verification (Brevo) | ✅ Done | `is_verified`, verify/resend endpoints, register no auto-login (4/7/26) |
 | 13 — Dark mode + theme toggle | ✅ Done | CSS `.dark`, anti-flash script, `useTheme`, UI sweep, pill `ThemeToggle` (4/8/26) |
+| 14 — Study time + streak (client) | ✅ Done | `useStudyMetrics` localStorage, Flashcards/QuizSession record, Dashboard + Analytics (4/9/26) |
 
 ---
 
@@ -1418,3 +1420,46 @@ user’s choice, avoid a flash of the wrong theme on load, and expose a polished
   where appropriate; **logo image chips** stay **`bg-white`** for brand contrast (intentional).
 - **`client/src/components/loading/SkeletonBlock.jsx`** / **`PageSkeletons.jsx`** — skeleton fills and card shells
   use surface/border tokens so placeholders work in dark mode.
+
+---
+
+## Phase 14 — Study Time + Study Streak (Client, localStorage) ✅ COMPLETE (4/9/26)
+
+### Goal
+Track **study time** and a **study streak** without backend changes first, mirroring the **quiz history**
+pattern (`localStorage`), then surface metrics on **Analytics** and **Dashboard**.
+
+### Storage — [`client/src/hooks/useStudyMetrics.js`](client/src/hooks/useStudyMetrics.js)
+
+- **Key:** `classmateai-study-activities`
+- **Shape:** `{ v: 1, activities: [...] }` — each activity includes `id`, ISO `at`, `type` (`flashcards` |
+  `quiz`), `durationSec`, optional `courseId` / `deckId` / `quizId`
+- **Cap:** newest-first list trimmed to **500** entries
+- **Exports:**
+  - `recordStudyActivity(...)` — append one completed session
+  - `getStudyActivities()`, `getTotalStudySeconds()`
+  - `getCurrentStudyStreakDays()` — consecutive **local calendar** days with ≥1 activity, streak “alive” only
+    if **today or yesterday** has activity; otherwise `0`
+  - `formatStudyDuration(seconds)` — display helper (`30s`, `45m`, `2h 15m`)
+
+### What counts as a study day / time
+
+- **Recorded** only when the user **finishes a flashcard deck** or **finishes a quiz** (same moments as
+  meaningful completion, not partial sessions).
+- **Duration:** elapsed seconds from session start to that completion (flashcards already had session timing;
+  quizzes gained a `sessionStartRef` when questions load).
+
+### Instrumentation
+
+- [`client/src/pages/app/Flashcards.jsx`](client/src/pages/app/Flashcards.jsx) — on deck completion, calls
+  `recordStudyActivity({ type: "flashcards", durationSec, courseId, deckId })`
+- [`client/src/pages/app/QuizSession.jsx`](client/src/pages/app/QuizSession.jsx) — on `handleFinish` when
+  `questions.length > 0`, records `type: "quiz"` with duration; **retake** resets the session timer
+
+### UI
+
+- [`client/src/pages/app/Analytics.jsx`](client/src/pages/app/Analytics.jsx) — new **responsive** row **above**
+  “Weekly Quiz Performance” and “Topics Mastery”: **Study streak** + **Total study time** (mint-bordered
+  `bg-surface` cards, theme-aware copy; notes data is per browser / device)
+- [`client/src/pages/app/Dashboard.jsx`](client/src/pages/app/Dashboard.jsx) — **Study Streak** stat card shows
+  live streak; subtitle shows formatted **total study time** when `> 0`, else encouragement to finish a deck or quiz
