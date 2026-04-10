@@ -1,12 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { deleteNote } from "../../services/noteService";
 
 const CheckItem = ({ checked, onChange, label, description }) => (
   <label className="flex items-start gap-3 cursor-pointer select-none group">
     <span
-      className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition ${
-        checked ? "border-red-500 bg-red-500" : "border-theme group-hover:border-red-300"
-      }`}
+      className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition ${checked ? "border-red-500 bg-red-500" : "border-theme group-hover:border-red-300"
+        }`}
       onClick={() => onChange(!checked)}
     >
       {checked && (
@@ -55,6 +54,7 @@ const TrashIcon = () => (
 );
 
 const DeleteCourseModal = ({ note, decks = [], onCancel, onSuccess }) => {
+  const backdropRef = useRef(null);
   const { totalFlashcards, totalQuizzes } = useMemo(() => {
     const totalFlashcards = decks.reduce((sum, d) => sum + (d.flashcards?.length ?? 0), 0);
     const totalQuizzes = decks.reduce((sum, d) => sum + (d.quiz_questions?.length ?? 0), 0);
@@ -68,6 +68,21 @@ const DeleteCourseModal = ({ note, decks = [], onCancel, onSuccess }) => {
   const [error, setError] = useState(null);
 
   const nothingSelected = !deleteCourse && !deleteFlashcards && !deleteQuizzes;
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key !== "Escape") return;
+      if (deleting) return;
+      onCancel?.();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [deleting, onCancel]);
+
+  const handleBackdropMouseDown = (e) => {
+    if (deleting) return;
+    if (e.target === backdropRef.current) onCancel?.();
+  };
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -86,7 +101,11 @@ const DeleteCourseModal = ({ note, decks = [], onCancel, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div
+      ref={backdropRef}
+      onMouseDown={handleBackdropMouseDown}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+    >
       <div className="bg-surface rounded-2xl shadow-xl w-full max-w-md p-6">
         <div className="flex items-start gap-4 mb-5">
           <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5 text-red-500">
