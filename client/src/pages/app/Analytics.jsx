@@ -2,10 +2,19 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
+import { getCurrentStudyStreakDays, getTotalStudySeconds, formatStudyDuration } from "../../hooks/useStudyMetrics";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const Analytics = () => {
+  const { streakDays, totalStudyLabel } = useMemo(
+    () => ({
+      streakDays: getCurrentStudyStreakDays(),
+      totalStudyLabel: formatStudyDuration(getTotalStudySeconds()),
+    }),
+    []
+  );
+
   const { weeklyData, topicsData } = useMemo(() => {
     const history = getQuizHistory();
     const now = new Date();
@@ -70,6 +79,24 @@ const Analytics = () => {
         Track your progress and identify areas for improvement
       </p>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
+          <p className="text-(--mint-700) font-bold text-base mb-0.5">Study streak</p>
+          <p className="text-xs text-muted italic mb-4">
+            Consecutive local days with a finished flashcard deck or quiz
+          </p>
+          <p className="text-4xl font-bold text-(--text-emphasis) tabular-nums">{streakDays}</p>
+          <p className="text-sm text-muted mt-1">days in a row</p>
+        </div>
+        <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
+          <p className="text-(--mint-700) font-bold text-base mb-0.5">Total study time</p>
+          <p className="text-xs text-muted italic mb-4">
+            Time from completed flashcard decks and quizzes (this device)
+          </p>
+          <p className="text-4xl font-bold text-(--text-emphasis) tabular-nums">{totalStudyLabel}</p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Weekly bar chart */}
         <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
@@ -106,9 +133,9 @@ const Analytics = () => {
                         : 0;
                       const barColor =
                         d.score === null ? null
-                        : d.score >= 80 ? "bg-green-400"
-                        : d.score >= 60 ? "bg-(--mint-400)"
-                        : "bg-red-400";
+                          : d.score >= 80 ? "bg-green-400"
+                            : d.score >= 60 ? "bg-(--mint-400)"
+                              : "bg-red-400";
                       return (
                         <div
                           key={d.label}
@@ -180,9 +207,8 @@ const Analytics = () => {
                   </div>
                   <div className="h-2 w-full rounded-full bg-surface-muted overflow-hidden">
                     <div
-                      className={`h-2 rounded-full transition-all ${
-                        t.isMastered ? "bg-green-500" : t.mastery >= 60 ? "bg-(--mint-600)" : "bg-(--warning)"
-                      }`}
+                      className={`h-2 rounded-full transition-all ${t.isMastered ? "bg-green-500" : t.mastery >= 60 ? "bg-(--mint-600)" : "bg-(--warning)"
+                        }`}
                       style={{ width: `${t.mastery}%` }}
                     />
                   </div>

@@ -4,6 +4,7 @@ import MainAppPageLayout from "../../components/layout/MainAppPageLayout";
 import useAuth from "../../hooks/useAuth";
 import { getNotes, getAllStudySets } from "../../services/noteService";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
+import { getCurrentStudyStreakDays, getTotalStudySeconds, formatStudyDuration } from "../../hooks/useStudyMetrics";
 import { hasStudyContent, getStudyRecommendations } from "../../utils/studyRecommendations";
 import { DashboardSkeleton } from "../../components/loading/PageSkeletons";
 
@@ -77,6 +78,9 @@ const Dashboard = () => {
     }
   }
 
+  const studyStreakDays = getCurrentStudyStreakDays();
+  const totalStudySec = getTotalStudySeconds();
+
   return (
     <MainAppPageLayout
       headerTitle={`Welcome Back, ${firstName}!`}
@@ -92,158 +96,166 @@ const Dashboard = () => {
         <DashboardSkeleton />
       ) : (
         <>
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <StatCard
-          label="Active Courses"
-          value={activeCourseCount}
-          sub={activeCourseCount > 0 ? `${activeCourseCount} total` : null}
-        />
-        <StatCard
-          label="Flashcards"
-          value={totalFlashcards || "—"}
-          sub={totalFlashcards > 0 ? `across ${studySets.filter(s => s.flashcards.length > 0).length} deck${studySets.filter(s => s.flashcards.length > 0).length !== 1 ? "s" : ""}` : "Create a course first"}
-        />
-        <StatCard
-          label="Quiz Questions"
-          value={totalQuizQuestions || "—"}
-          sub={totalQuizQuestions > 0 ? "ready to practice" : "No quizzes yet"}
-        />
-        <StatCard label="Study Streak" value="0" sub="days" />
-      </div>
+          {/* Stat cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+            <StatCard
+              label="Active Courses"
+              value={activeCourseCount}
+              sub={activeCourseCount > 0 ? `${activeCourseCount} total` : null}
+            />
+            <StatCard
+              label="Flashcards"
+              value={totalFlashcards || "—"}
+              sub={totalFlashcards > 0 ? `across ${studySets.filter(s => s.flashcards.length > 0).length} deck${studySets.filter(s => s.flashcards.length > 0).length !== 1 ? "s" : ""}` : "Create a course first"}
+            />
+            <StatCard
+              label="Quiz Questions"
+              value={totalQuizQuestions || "—"}
+              sub={totalQuizQuestions > 0 ? "ready to practice" : "No quizzes yet"}
+            />
+            <StatCard
+              label="Study Streak"
+              value={studyStreakDays + " days"}
+              sub={
+                totalStudySec > 0
+                  ? `${formatStudyDuration(totalStudySec)} total`
+                  : "Finish a deck or quiz"
+              }
+            />
+          </div>
 
-      {/* Suggested for you cards based on the notes, study sets, and quiz history */}
-      {!loading &&
-        hasStudyContent(courses, studySets) &&
-        studyRecommendations.length > 0 && (
-          <div className="mb-6">
-            <p className="text-xl font-bold mb-3">Suggested for you</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {studyRecommendations.map((rec, i) => (
+          {/* Suggested for you cards based on the notes, study sets, and quiz history */}
+          {!loading &&
+            hasStudyContent(courses, studySets) &&
+            studyRecommendations.length > 0 && (
+              <div className="mb-6">
+                <p className="text-xl font-bold mb-3">Suggested for you</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {studyRecommendations.map((rec, i) => (
+                    <Link
+                      key={`${rec.type}-${rec.courseId}-${i}`}
+                      to={rec.href}
+                      className="bg-surface rounded-2xl border border-theme shadow-sm p-4 flex flex-col gap-2 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)"
+                    >
+                      <span className="text-xs font-semibold uppercase tracking-wide text-(--mint-700)">
+                        {rec.type === "quiz" ? "Quiz" : "Flashcards"}
+                      </span>
+                      <span className="font-bold text-base text-(--text-emphasis) line-clamp-2">
+                        {rec.courseTitle}
+                      </span>
+                      <span className="text-sm text-muted line-clamp-3 flex-1">
+                        {rec.reason}
+                      </span>
+                      <span className="text-sm font-semibold text-(--mint-700) mt-1">
+                        {rec.type === "quiz" ? "Start quiz →" : "Study flashcards →"}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          {/* Your Courses */}
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xl font-bold">Recent Courses</p>
+            <div className="flex gap-2">
+              {courses.length > 0 && (
                 <Link
-                  key={`${rec.type}-${rec.courseId}-${i}`}
-                  to={rec.href}
-                  className="bg-surface rounded-2xl border border-theme shadow-sm p-4 flex flex-col gap-2 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)"
+                  to="/courses"
+                  className="text-sm font-medium text-(--mint-700) hover:underline"
                 >
-                  <span className="text-xs font-semibold uppercase tracking-wide text-(--mint-700)">
-                    {rec.type === "quiz" ? "Quiz" : "Flashcards"}
-                  </span>
-                  <span className="font-bold text-base text-(--text-emphasis) line-clamp-2">
-                    {rec.courseTitle}
-                  </span>
-                  <span className="text-sm text-muted line-clamp-3 flex-1">
-                    {rec.reason}
-                  </span>
-                  <span className="text-sm font-semibold text-(--mint-700) mt-1">
-                    {rec.type === "quiz" ? "Start quiz →" : "Study flashcards →"}
-                  </span>
+                  View All
                 </Link>
-              ))}
+              )}
+              <Link
+                to="/courses/new"
+                className="border border-(--mint-600) text-(--mint-700) rounded-xl px-4 py-2 text-sm font-semibold hover:bg-(--mint-50) transition"
+              >
+                + New Course
+              </Link>
             </div>
           </div>
-        )}
 
-      {/* Your Courses */}
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-xl font-bold">Recent Courses</p>
-        <div className="flex gap-2">
-          {courses.length > 0 && (
-            <Link
-              to="/courses"
-              className="text-sm font-medium text-(--mint-700) hover:underline"
-            >
-              View All
-            </Link>
-          )}
-          <Link
-            to="/courses/new"
-            className="border border-(--mint-600) text-(--mint-700) rounded-xl px-4 py-2 text-sm font-semibold hover:bg-(--mint-50) transition"
-          >
-            + New Course
-          </Link>
-        </div>
-      </div>
-
-      {courses.length === 0 ? (
-        <div className="bg-surface rounded-2xl border border-theme shadow-sm p-12 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-full bg-(--mint-100) flex items-center justify-center mb-4">
-            <svg
-              width="28" height="28" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-              className="text-(--mint-600)"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </div>
-          <p className="font-bold text-base mb-1">No courses yet</p>
-          <p className="text-sm text-muted mb-5">
-            Create your first course and upload your notes to get started
-          </p>
-          <Link
-            to="/courses/new"
-            className="bg-(--mint-600) text-white rounded-xl px-6 py-2.5 text-sm font-semibold hover:bg-(--mint-700) transition"
-          >
-            + New Course
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...courses]
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            .slice(0, 3)
-            .map((course) => {
-              const counts = setByNoteId[course.id] || { flashcards: 0, quizzes: 0 };
-              const mastery = bestScoreByCourse[course.id];
-              return (
-                <Link
-                  key={course.id}
-                  to={`/courses/${course.id}`}
-                  className="bg-surface rounded-2xl border border-theme shadow-sm p-4 block
+          {courses.length === 0 ? (
+            <div className="bg-surface rounded-2xl border border-theme shadow-sm p-12 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 rounded-full bg-(--mint-100) flex items-center justify-center mb-4">
+                <svg
+                  width="28" height="28" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                  className="text-(--mint-600)"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </div>
+              <p className="font-bold text-base mb-1">No courses yet</p>
+              <p className="text-sm text-muted mb-5">
+                Create your first course and upload your notes to get started
+              </p>
+              <Link
+                to="/courses/new"
+                className="bg-(--mint-600) text-white rounded-xl px-6 py-2.5 text-sm font-semibold hover:bg-(--mint-700) transition"
+              >
+                + New Course
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...courses]
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(0, 3)
+                .map((course) => {
+                  const counts = setByNoteId[course.id] || { flashcards: 0, quizzes: 0 };
+                  const mastery = bestScoreByCourse[course.id];
+                  return (
+                    <Link
+                      key={course.id}
+                      to={`/courses/${course.id}`}
+                      className="bg-surface rounded-2xl border border-theme shadow-sm p-4 block
                   transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-(--mint-300)">
-                  {/* Title + badge */}
-                  <div className="flex items-start justify-between mb-1">
-                    <p className="font-bold text-base leading-snug">{course.title}</p>
-                    <span className="ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold bg-(--mint-100) text-(--mint-800)">
-                      Active
-                    </span>
-                  </div>
+                      {/* Title + badge */}
+                      <div className="flex items-start justify-between mb-1">
+                        <p className="font-bold text-base leading-snug">{course.title}</p>
+                        <span className="ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold bg-(--mint-100) text-(--mint-800)">
+                          Active
+                        </span>
+                      </div>
 
-                  {/* Date */}
-                  <p className="text-xs text-muted mb-3">
-                    Added{" "}
-                    {new Date(course.created_at).toLocaleDateString("en-US", {
-                      month: "short", day: "numeric", year: "numeric",
-                    })}
-                  </p>
+                      {/* Date */}
+                      <p className="text-xs text-muted mb-3">
+                        Added{" "}
+                        {new Date(course.created_at).toLocaleDateString("en-US", {
+                          month: "short", day: "numeric", year: "numeric",
+                        })}
+                      </p>
 
-                  {/* Flashcards + Quizzes row */}
-                  <div className="flex gap-4 mb-3 text-sm text-muted">
-                    <span>
-                      <span className="font-semibold text-(--text-emphasis)">{counts.flashcards}</span> flashcards
-                    </span>
-                    <span>
-                      <span className="font-semibold text-(--text-emphasis)">{counts.quizzes}</span> questions
-                    </span>
-                  </div>
+                      {/* Flashcards + Quizzes row */}
+                      <div className="flex gap-4 mb-3 text-sm text-muted">
+                        <span>
+                          <span className="font-semibold text-(--text-emphasis)">{counts.flashcards}</span> flashcards
+                        </span>
+                        <span>
+                          <span className="font-semibold text-(--text-emphasis)">{counts.quizzes}</span> questions
+                        </span>
+                      </div>
 
-                  {/* Mastery progress bar — placeholder until quiz scores are tracked */}
-                  <div className="flex items-center justify-between text-xs text-muted mb-1">
-                    <span>Mastery</span>
-                    <span className="font-semibold text-(--text-emphasis)">
-                      {typeof mastery === "number" ? `${mastery}%` : "—%"}
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 bg-surface-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-(--mint-500) rounded-full"
-                      style={{ width: typeof mastery === "number" ? `${mastery}%` : "0%" }}
-                    />
-                  </div>
-                </Link>
-              );
-            })}
-        </div>
-      )}
+                      {/* Mastery progress bar — placeholder until quiz scores are tracked */}
+                      <div className="flex items-center justify-between text-xs text-muted mb-1">
+                        <span>Mastery</span>
+                        <span className="font-semibold text-(--text-emphasis)">
+                          {typeof mastery === "number" ? `${mastery}%` : "—%"}
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-surface-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-(--mint-500) rounded-full"
+                          style={{ width: typeof mastery === "number" ? `${mastery}%` : "0%" }}
+                        />
+                      </div>
+                    </Link>
+                  );
+                })}
+            </div>
+          )}
         </>
       )}
     </MainAppPageLayout>
