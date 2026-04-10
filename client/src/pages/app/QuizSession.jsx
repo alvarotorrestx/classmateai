@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { getQuiz, getStudySet, getNote } from "../../services/noteService";
 import { saveQuizResult } from "../../hooks/useQuizHistory";
+import { recordStudyActivity } from "../../hooks/useStudyMetrics";
 import { QuizSessionSkeleton } from "../../components/loading/PageSkeletons";
 
 const LETTERS = ["A", "B", "C", "D"];
@@ -20,6 +21,7 @@ const QuizSession = () => {
   const [answers, setAnswers] = useState({});
   const [selected, setSelected] = useState(null);
   const [finished, setFinished] = useState(false);
+  const sessionStartRef = useRef(null);
 
   useEffect(() => {
     Promise.all([
@@ -32,6 +34,7 @@ const QuizSession = () => {
           (a, b) => a.display_order - b.display_order
         );
         setQuestions(sorted);
+        sessionStartRef.current = sorted.length > 0 ? Date.now() : null;
         setQuizMeta({
           quizLabel: set?.label || null,
           courseTitle: note?.title || null,
@@ -69,6 +72,15 @@ const QuizSession = () => {
       scorePercent: Math.round((correct / total) * 100),
       takenAt: new Date().toISOString(),
     });
+    if (total > 0 && sessionStartRef.current) {
+      const durationSec = Math.max(0, Math.round((Date.now() - sessionStartRef.current) / 1000));
+      recordStudyActivity({
+        type: "quiz",
+        durationSec,
+        courseId,
+        quizId,
+      });
+    }
   };
 
   const handleRetake = () => {
@@ -76,6 +88,7 @@ const QuizSession = () => {
     setSelected(null);
     setCurrent(0);
     setFinished(false);
+    sessionStartRef.current = questions.length > 0 ? Date.now() : null;
   };
 
   if (loading) {

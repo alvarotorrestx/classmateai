@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { getStudySet, getNote } from "../../services/noteService";
 import { reviewFlashcard } from "../../services/progressService";
+import { recordStudyActivity } from "../../hooks/useStudyMetrics";
 import { FlashcardSessionSkeleton } from "../../components/loading/PageSkeletons";
 
 const Flashcards = () => {
@@ -48,6 +49,12 @@ const Flashcards = () => {
       if (started) {
         const seconds = Math.max(0, Math.round((Date.now() - started) / 1000));
         setSessionSeconds(seconds);
+        recordStudyActivity({
+          type: "flashcards",
+          durationSec: seconds,
+          courseId: courseId ?? undefined,
+          deckId,
+        });
       }
       setFinished(true);
       return;
