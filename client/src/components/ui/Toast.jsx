@@ -53,13 +53,13 @@ const Toast = ({ id, message, type, onRemove }) => {
   const { border, icon, iconColor } = styles[type] || styles.success;
 
   return (
-    <div className={`toast-item flex items-start gap-3 bg-white rounded-2xl border border-gray-100 border-l-4 ${border} shadow-lg px-4 py-3 w-72`}>
+    <div className={`toast-item flex items-start gap-3 bg-(--surface) rounded-2xl border border-gray-100 border-l-4 ${border} shadow-lg px-4 py-3 w-72`}>
       <span className={`shrink-0 mt-0.5 ${iconColor}`}>{icon}</span>
       <p className="text-sm font-medium text-(--text-emphasis) flex-1 leading-snug">{message}</p>
       <button
         type="button"
         onClick={() => onRemove(id)}
-        className="shrink-0 text-gray-300 hover:text-gray-500 transition mt-0.5 cursor-pointer"
+        className="shrink-0 text-(--text-muted) hover:text-gray-500 transition mt-0.5 cursor-pointer"
         aria-label="Dismiss"
       >
         <XIcon />
