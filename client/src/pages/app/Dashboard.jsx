@@ -119,7 +119,7 @@ const Dashboard = () => {
             />
             <StatCard
               label="Study Streak"
-          value={studyStreakDays}
+          value={studyStreakDays + " days"}
               sub={
                 totalStudySec > 0
                   ? `${formatStudyDuration(totalStudySec)} total`

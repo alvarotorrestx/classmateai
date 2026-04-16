@@ -72,7 +72,7 @@ const Rewards = () => {
               key={f.id}
               type="button"
               onClick={() => setFilter(f.id)}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold transition border ${
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition border cursor-pointer ${
                 filter === f.id
                   ? "border-(--mint-600) bg-(--mint-50) text-(--mint-800)"
                   : "border-theme bg-surface hover:bg-surface-muted text-base-theme"
