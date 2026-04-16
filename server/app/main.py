@@ -10,6 +10,9 @@ from routes.generate import router as generate_router
 from routes.study_sets import router as study_sets_router
 from routes.progress import router as progress_router
 from routes.upload import router as upload_router
+from routes.users import router as users_router
+from routes.badges import router as badges_router
+from routes.quiz_sessions import router as quiz_sessions_router
 
 app = FastAPI()
 
@@ -33,6 +36,9 @@ app.include_router(generate_router)
 app.include_router(study_sets_router)
 app.include_router(progress_router)
 app.include_router(upload_router)
+app.include_router(users_router)
+app.include_router(badges_router)
+app.include_router(quiz_sessions_router)
 
 
 @app.get("/")

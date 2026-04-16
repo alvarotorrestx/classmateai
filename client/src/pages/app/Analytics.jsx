@@ -1,19 +1,27 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
-import { getCurrentStudyStreakDays, getTotalStudySeconds, formatStudyDuration } from "../../hooks/useStudyMetrics";
+import { getTotalStudySeconds, formatStudyDuration } from "../../hooks/useStudyMetrics";
+import { getMyGamification } from "../../services/gamificationService";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const Analytics = () => {
-  const { streakDays, totalStudyLabel } = useMemo(
-    () => ({
-      streakDays: getCurrentStudyStreakDays(),
-      totalStudyLabel: formatStudyDuration(getTotalStudySeconds()),
-    }),
-    []
-  );
+  const [gamiStats, setGamiStats] = useState(null);
+  const totalStudyLabel = useMemo(() => formatStudyDuration(getTotalStudySeconds()), []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getMyGamification()
+      .then((g) => {
+        if (!cancelled) setGamiStats(g?.stats || null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const { weeklyData, topicsData } = useMemo(() => {
     const history = getQuizHistory();
@@ -79,19 +87,26 @@ const Analytics = () => {
         Track your progress and identify areas for improvement
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
           <p className="text-(--mint-700) font-bold text-base mb-0.5">Study streak</p>
           <p className="text-xs text-muted italic mb-4">
-            Consecutive local days with a finished flashcard deck or quiz
+            Backend streak (UTC days) from reviews, attempts, and completions
           </p>
-          <p className="text-4xl font-bold text-(--text-emphasis) tabular-nums">{streakDays}</p>
+          <p className="text-4xl font-bold text-(--text-emphasis) tabular-nums">{gamiStats?.current_streak_days ?? 0}</p>
           <p className="text-sm text-muted mt-1">days in a row</p>
         </div>
         <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
-          <p className="text-(--mint-700) font-bold text-base mb-0.5">Total study time</p>
+          <p className="text-(--mint-700) font-bold text-base mb-0.5">Total points</p>
           <p className="text-xs text-muted italic mb-4">
-            Time from completed flashcard decks and quizzes (this device)
+            Earned from flashcard reviews, quiz attempts, and quiz completions
+          </p>
+          <p className="text-4xl font-bold text-(--text-emphasis) tabular-nums">{gamiStats?.total_points ?? 0}</p>
+        </div>
+        <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
+          <p className="text-(--mint-700) font-bold text-base mb-0.5">Study time (device)</p>
+          <p className="text-xs text-muted italic mb-4">
+            From completed flashcard decks and quizzes (local only)
           </p>
           <p className="text-4xl font-bold text-(--text-emphasis) tabular-nums">{totalStudyLabel}</p>
         </div>

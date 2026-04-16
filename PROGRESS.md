@@ -939,6 +939,7 @@ GEMINI_API_KEY=<your key>
 | 12 — Email verification (Brevo) | ✅ Done | `is_verified`, verify/resend endpoints, register no auto-login (4/7/26) |
 | 13 — Dark mode + theme toggle | ✅ Done | CSS `.dark`, anti-flash script, `useTheme`, UI sweep, pill `ThemeToggle` (4/8/26) |
 | 14 — Study time + streak (client) | ✅ Done | `useStudyMetrics` localStorage, Flashcards/QuizSession record, Dashboard + Analytics (4/9/26) |
+| 15 — Gamification + badges | ✅ Done | Backend stats/points/streak + badges + Rewards page, idempotent quiz completion, seed + backfill (4/16/26) |
 
 ---
 
@@ -1463,3 +1464,73 @@ pattern (`localStorage`), then surface metrics on **Analytics** and **Dashboard*
   `bg-surface` cards, theme-aware copy; notes data is per browser / device)
 - [`client/src/pages/app/Dashboard.jsx`](client/src/pages/app/Dashboard.jsx) — **Study Streak** stat card shows
   live streak; subtitle shows formatted **total study time** when `> 0`, else encouragement to finish a deck or quiz
+
+---
+
+## Phase 15 — Gamification + Badges ✅ COMPLETE (4/16/26)
+
+### Goal
+Add a backend-driven **gamification layer** that tracks user progression stats, awards badges automatically (no duplicates),
+and exposes a dedicated **Rewards** UI showing earned + locked badges with progress
+
+### Database + models
+
+- New tables (Alembic):
+  - `gamification_stats` — per-user counters, points, streak, last activity date
+  - `badges` — global badge definitions (includes `icon` as an **internal slug**)
+  - `user_badges` — earned badges, unique per (`user_id`, `badge_id`)
+  - `quiz_session_completions` — **idempotency** for quiz completion (unique per (`user_id`, `study_set_id`))
+- Migration: `server/alembic/versions/993ae03c4cd6_add_gamification_tables.py`
+- Models:
+  - `server/models/gamification_stats.py`
+  - `server/models/badge.py`
+  - `server/models/user_badge.py`
+  - `server/models/quiz_session_completion.py`
+
+### Service layer (centralized logic)
+
+- `server/services/gamification.py`
+  - Points defaults:
+    - flashcard review = 10
+    - quiz attempt = 15
+    - quiz completion bonus = 25
+  - Streak is backend source-of-truth (UTC calendar days)
+  - Badge awarding is duplicate-safe (unique constraint + idempotent checks)
+  - Badge progress calculation powers the rewards UI
+
+### Backend APIs + integration points
+
+- New endpoints:
+  - `GET /users/me/gamification` — returns `stats` + `earned_badges`
+  - `GET /badges` — returns all badge definitions merged with user state (earned/progress) when authenticated
+  - `POST /quiz-sessions/complete` — explicit quiz completion, **idempotent** via `quiz_session_completions`
+- Integration points (reuse existing activity writes):
+  - `server/routes/progress.py`
+    - flashcard review submission updates gamification
+    - quiz attempt submission updates gamification
+- Router wiring: `server/app/main.py` includes new routers (`users`, `badges`, `quiz_sessions`)
+
+### Seeding + one-time backfill
+
+- Default badge seed definitions live in `server/utils/badge_seed.py` and use **icon slugs** (e.g. `trophy`, `flame`, `sparkles`)
+- Scripts:
+  - `server/scripts/seed_badges.py`
+  - `server/scripts/backfill_gamification.py --award-badges`
+    - Backfills existing counts for: flashcard reviews + quiz attempts
+    - Retro-awards **non-streak** badges derivable from backfilled counts/points (streak badges excluded)
+
+### Frontend UI
+
+- New page: `client/src/pages/app/Rewards.jsx` (route: `/rewards`)
+- New components:
+  - `client/src/components/gamification/GamificationStats.jsx`
+  - `client/src/components/gamification/BadgeGrid.jsx`
+  - `client/src/components/gamification/BadgeCard.jsx`
+- Icon mapping (no static assets required): `client/src/components/gamification/badgeIcons.js`
+  - Uses `lucide-react`
+  - Unknown slugs fall back to the **trophy** icon
+- New service: `client/src/services/gamificationService.js`
+- Navigation: added “Rewards” to the main sidebar nav (`MainAppPageLayout.jsx`)
+- Small integrations:
+  - `QuizSession.jsx` calls `POST /quiz-sessions/complete` on finish (safe to retry)
+  - Dashboard/Analytics display backend streak/points/totals while keeping **study time** client-side for now

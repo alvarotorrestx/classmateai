@@ -7,6 +7,7 @@ import courseIcon from "../../assets/icons/navigation/course.svg";
 import flashcardIcon from "../../assets/icons/core/flashcard.svg";
 import quizIcon from "../../assets/icons/core/quiz.svg";
 import analyticsIcon from "../../assets/icons/study_tools/chart.svg";
+import trophyIcon from "../../assets/icons/status_and_feedback/trophy.svg";
 
 import useAuth from "../../hooks/useAuth";
 import api from "../../services/api";
@@ -195,6 +196,11 @@ const InnerPageLayout = ({
                                     <Icon src={analyticsIcon} size={24} />
                                     <span>Analytics</span>
                                 </NavLink>
+
+                                <NavLink to="/rewards" className={navLinkClass} onClick={closeSidebar}>
+                                    <Icon src={trophyIcon} size={24} />
+                                    <span>Rewards</span>
+                                </NavLink>
                             </aside>
                         </div>
                     )}
@@ -224,6 +230,11 @@ const InnerPageLayout = ({
                         <NavLink to="/analytics" className={navLinkClass}>
                             <Icon src={analyticsIcon} size={24} />
                             <span>Analytics</span>
+                        </NavLink>
+
+                        <NavLink to="/rewards" className={navLinkClass}>
+                            <Icon src={trophyIcon} size={24} />
+                            <span>Rewards</span>
                         </NavLink>
                     </aside>
 

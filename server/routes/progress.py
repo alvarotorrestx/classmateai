@@ -17,6 +17,7 @@ from schemas.study_content import (
     QuizAttemptResponse,
 )
 from utils.deps import get_current_user
+from services.gamification import record_flashcard_review_progress, record_quiz_attempt_progress
 
 router = APIRouter(tags=["progress"])
 
@@ -44,8 +45,11 @@ def submit_attempt(
         is_correct=body.selected_index == question.correct_index,
     )
     db.add(attempt)
-    db.commit()
+    db.flush()
     db.refresh(attempt)
+
+    record_quiz_attempt_progress(db, current_user.id, attempt.attempted_at)
+    db.commit()
 
     return QuizAttemptResponse(
         id=attempt.id,
@@ -79,6 +83,9 @@ def submit_review(
         confidence=body.confidence,
     )
     db.add(review)
-    db.commit()
+    db.flush()
     db.refresh(review)
+
+    record_flashcard_review_progress(db, current_user.id, review.reviewed_at)
+    db.commit()
     return review

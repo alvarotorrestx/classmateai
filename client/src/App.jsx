@@ -20,6 +20,7 @@ import Flashcards from "./pages/app/Flashcards";
 import Quizzes from "./pages/app/Quizzes";
 import QuizSession from "./pages/app/QuizSession";
 import Analytics from "./pages/app/Analytics";
+import Rewards from "./pages/app/Rewards";
 
 // Route guards
 import RequireAuth from "./components/auth/RequireAuth";
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/quizzes/:courseId" element={<Quizzes />} />
         <Route path="/quizzes/:courseId/session/:quizId" element={<QuizSession />} />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/rewards" element={<Rewards />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />
