@@ -49,3 +49,19 @@ def get_current_user(
             detail="Account is inactive",
         )
     return user
+
+def get_current_user_optional(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None = Depends(http_bearer),
+    access_token_cookie: str | None = Cookie(default=None, alias="access_token"),
+    db: Session = Depends(get_db),
+) -> User | None:
+    try:
+        return get_current_user(
+            request=request,
+            credentials=credentials,
+            access_token_cookie=access_token_cookie,
+            db=db,
+        )
+    except HTTPException:
+        return None

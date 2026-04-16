@@ -4,7 +4,8 @@ import MainAppPageLayout from "../../components/layout/MainAppPageLayout";
 import useAuth from "../../hooks/useAuth";
 import { getNotes, getAllStudySets } from "../../services/noteService";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
-import { getCurrentStudyStreakDays, getTotalStudySeconds, formatStudyDuration } from "../../hooks/useStudyMetrics";
+import { getTotalStudySeconds, formatStudyDuration } from "../../hooks/useStudyMetrics";
+import { getMyGamification } from "../../services/gamificationService";
 import { hasStudyContent, getStudyRecommendations } from "../../utils/studyRecommendations";
 import { DashboardSkeleton } from "../../components/loading/PageSkeletons";
 
@@ -21,6 +22,7 @@ const Dashboard = () => {
   const [courses, setCourses] = useState([]);
   const [studySets, setStudySets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [gamiStats, setGamiStats] = useState(null);
 
   const fullName = auth?.user?.full_name || "Student";
   const firstName = fullName.split(" ")[0];
@@ -39,10 +41,11 @@ const Dashboard = () => {
     .toUpperCase();
 
   useEffect(() => {
-    Promise.all([getNotes(), getAllStudySets()])
-      .then(([notes, sets]) => {
+    Promise.all([getNotes(), getAllStudySets(), getMyGamification()])
+      .then(([notes, sets, gami]) => {
         setCourses(notes);
         setStudySets(sets);
+        setGamiStats(gami?.stats || null);
       })
       .catch(() => { })
       .finally(() => setLoading(false));
@@ -78,8 +81,9 @@ const Dashboard = () => {
     }
   }
 
-  const studyStreakDays = getCurrentStudyStreakDays();
   const totalStudySec = getTotalStudySeconds();
+  const studyStreakDays = gamiStats?.current_streak_days ?? 0;
+  const totalPoints = gamiStats?.total_points ?? 0;
 
   return (
     <MainAppPageLayout
@@ -115,11 +119,13 @@ const Dashboard = () => {
             />
             <StatCard
               label="Study Streak"
-              value={studyStreakDays + " days"}
+          value={studyStreakDays}
               sub={
                 totalStudySec > 0
                   ? `${formatStudyDuration(totalStudySec)} total`
-                  : "Finish a deck or quiz"
+              : totalPoints > 0
+                ? `${totalPoints} pts`
+                : "Finish a deck or quiz"
               }
             />
           </div>

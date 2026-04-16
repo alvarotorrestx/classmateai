@@ -4,6 +4,7 @@ import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { getQuiz, getStudySet, getNote } from "../../services/noteService";
 import { saveQuizResult } from "../../hooks/useQuizHistory";
 import { recordStudyActivity } from "../../hooks/useStudyMetrics";
+import { completeQuizSession } from "../../services/gamificationService";
 import { QuizSessionSkeleton } from "../../components/loading/PageSkeletons";
 
 const LETTERS = ["A", "B", "C", "D"];
@@ -72,6 +73,10 @@ const QuizSession = () => {
       scorePercent: Math.round((correct / total) * 100),
       takenAt: new Date().toISOString(),
     });
+
+    if (total > 0) {
+      completeQuizSession(quizId).catch(() => {});
+    }
     if (total > 0 && sessionStartRef.current) {
       const durationSec = Math.max(0, Math.round((Date.now() - sessionStartRef.current) / 1000));
       recordStudyActivity({
