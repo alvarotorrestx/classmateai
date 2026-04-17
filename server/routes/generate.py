@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -13,14 +13,16 @@ from models.summary import Summary
 from models.user import User
 from schemas.study_set import StudySetResponse
 from models.course_study_guide import CourseStudyGuide
-from services.ai import generate_study_materials, generate_flashcards, generate_quiz
+from services.ai import generate_study_materials, generate_flashcards, generate_quiz, GeminiRateLimitError
 from utils.deps import get_current_user
+from utils.rate_limit import limiter
 
 router = APIRouter(tags=["generate"])
 
 
 @router.post("/notes/{note_id}/generate", response_model=StudySetResponse, status_code=status.HTTP_201_CREATED)
-def generate(note_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@limiter.limit("5/minute")
+def generate(request: Request, note_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     note = db.get(Note, note_id)
     if not note or note.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
@@ -32,6 +34,8 @@ def generate(note_id: uuid.UUID, db: Session = Depends(get_db), current_user: Us
 
     try:
         data = generate_study_materials(note.content)
+    except GeminiRateLimitError as e:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -68,7 +72,9 @@ def generate(note_id: uuid.UUID, db: Session = Depends(get_db), current_user: Us
 
 
 @router.post("/notes/{note_id}/generate/flashcards", response_model=StudySetResponse)
+@limiter.limit("5/minute")
 def generate_new_flashcards(
+    request: Request,
     note_id: uuid.UUID,
     study_set_id: uuid.UUID | None = None,
     db: Session = Depends(get_db),
@@ -80,6 +86,8 @@ def generate_new_flashcards(
 
     try:
         data = generate_flashcards(note.content)
+    except GeminiRateLimitError as e:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"AI returned an unexpected response: {e}")
 
@@ -102,7 +110,9 @@ def generate_new_flashcards(
 
 
 @router.post("/notes/{note_id}/generate/quiz", response_model=StudySetResponse)
+@limiter.limit("5/minute")
 def generate_new_quiz(
+    request: Request,
     note_id: uuid.UUID,
     study_set_id: uuid.UUID | None = None,
     db: Session = Depends(get_db),
@@ -114,6 +124,8 @@ def generate_new_quiz(
 
     try:
         data = generate_quiz(note.content)
+    except GeminiRateLimitError as e:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"AI returned an unexpected response: {e}")
 

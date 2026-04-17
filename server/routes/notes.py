@@ -1,7 +1,7 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 
 from db import get_db
 from models.course_study_guide import CourseStudyGuide
@@ -14,8 +14,9 @@ from models.summary import Summary
 from models.user import User
 from schemas.note import NoteCreate, NoteListResponse, NoteResponse, NoteUpdate
 from schemas.study_set import StudySetResponse
-from services.ai import generate_study_materials, generate_course_study_guide
+from services.ai import generate_study_materials, generate_course_study_guide, GeminiRateLimitError
 from utils.deps import get_current_user
+from utils.rate_limit import limiter
 
 
 class NoteContentAdd(BaseModel):
@@ -31,7 +32,12 @@ router = APIRouter(prefix="/notes", tags=["notes"])
 
 @router.get("", response_model=list[NoteListResponse])
 def list_notes(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return db.query(Note).filter(Note.user_id == current_user.id).all()
+    return (
+        db.query(Note)
+        .filter(Note.user_id == current_user.id)
+        .options(load_only(Note.id, Note.title, Note.created_at, Note.updated_at))
+        .all()
+    )
 
 
 @router.post("", response_model=NoteResponse, status_code=status.HTTP_201_CREATED)
@@ -110,7 +116,9 @@ def delete_note(
 
 
 @router.post("/{note_id}/add-content", response_model=StudySetResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 def add_content_to_note(
+    request: Request,
     note_id: uuid.UUID,
     body: NoteContentAdd,
     db: Session = Depends(get_db),
@@ -134,6 +142,8 @@ def add_content_to_note(
     # Generate study set from the NEW content only (fresh flashcards/quizzes for new material)
     try:
         data = generate_study_materials(body.content)
+    except GeminiRateLimitError as e:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"AI generation failed: {e}")
 

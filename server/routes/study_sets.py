@@ -12,6 +12,7 @@ from models.user import User
 from schemas.study_set import (
     FlashcardResponse,
     StudyGuideResponse,
+    StudySetListResponse,
     StudySetResponse,
     SummaryResponse,
     QuizQuestionResponse,
@@ -30,6 +31,7 @@ def _get_owned_study_set(study_set_id: uuid.UUID, db: Session, current_user: Use
 
 
 def _study_set_load_options():
+    """Full load for single-item endpoints (includes summary and study_guide)."""
     return [
         selectinload(StudySet.flashcards),
         selectinload(StudySet.quiz_questions),
@@ -38,18 +40,26 @@ def _study_set_load_options():
     ]
 
 
-@router.get("/study-sets", response_model=list[StudySetResponse])
+def _study_set_list_load_options():
+    """Lightweight load for list endpoints — skips summary/study_guide text blobs."""
+    return [
+        selectinload(StudySet.flashcards),
+        selectinload(StudySet.quiz_questions),
+    ]
+
+
+@router.get("/study-sets", response_model=list[StudySetListResponse])
 def list_all_study_sets(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     # Query by user_id directly so orphaned study sets (course deleted) are still included
     return (
         db.query(StudySet)
         .filter(StudySet.user_id == current_user.id)
-        .options(*_study_set_load_options())
+        .options(*_study_set_list_load_options())
         .all()
     )
 
 
-@router.get("/notes/{note_id}/study-sets", response_model=list[StudySetResponse])
+@router.get("/notes/{note_id}/study-sets", response_model=list[StudySetListResponse])
 def list_study_sets(note_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     note = db.get(Note, note_id)
     if not note or note.user_id != current_user.id:
@@ -57,7 +67,7 @@ def list_study_sets(note_id: uuid.UUID, db: Session = Depends(get_db), current_u
     return (
         db.query(StudySet)
         .filter(StudySet.note_id == note_id)
-        .options(*_study_set_load_options())
+        .options(*_study_set_list_load_options())
         .all()
     )
 

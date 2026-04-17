@@ -172,8 +172,12 @@ const Courses = () => {
       }
       setGenerateModal(null);
       fetchData();
-    } catch {
-      addToast("Generation failed. Please try again.", "error");
+    } catch (err) {
+      if (err?.response?.status === 429) {
+        addToast("AI rate limit reached — please wait a minute and try again.", "error");
+      } else {
+        addToast("Generation failed. Please try again.", "error");
+      }
     } finally {
       setGenerating(false);
     }

@@ -10,8 +10,8 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(
     DATABASE_URL,
-    pool_size=5,
-    max_overflow=2,
+    pool_size=10,
+    max_overflow=5,
     pool_pre_ping=True,
     connect_args={
         "connect_timeout": 10,

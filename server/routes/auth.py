@@ -1,7 +1,7 @@
 import os
 import uuid
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Response, Cookie
 from sqlalchemy.orm import Session
 
 from db import get_db
@@ -10,6 +10,7 @@ from schemas.auth import AuthResponse, UserLogin, UserRegister, UserResponse, Se
 from utils.auth import create_access_token, create_refresh_token, hash_password, verify_password, decode_refresh_token, create_email_verification_token, decode_email_verification_token
 from utils.deps import get_current_user
 from utils.email import send_verification_email
+from utils.rate_limit import limiter
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_MINUTES = int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES", "10080")) # 7 days
@@ -47,7 +48,8 @@ def clear_auth_cookies(response: Response):
 
 
 @router.post("/register", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
-def register(body: UserRegister, response: Response, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def register(request: Request, body: UserRegister, response: Response, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == body.email).first():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -73,7 +75,8 @@ def register(body: UserRegister, response: Response, db: Session = Depends(get_d
     return MessageResponse(message="Account created. Please verify your email to log in.")
 
 @router.post("/login", response_model=AuthResponse)
-def login(body: UserLogin, response: Response, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, body: UserLogin, response: Response, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == body.email).first()
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(
@@ -176,7 +179,8 @@ def verify_email(body: VerifyEmailRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/resend-verification", response_model=MessageResponse)
-def resend_verification(body: ResendVerificationRequest, db: Session = Depends(get_db)):
+@limiter.limit("3/minute")
+def resend_verification(request: Request, body: ResendVerificationRequest, db: Session = Depends(get_db)):
     generic = MessageResponse(message="If an account exists, a verification email has been sent.")
 
     user = db.query(User).filter(User.email == body.email).first()

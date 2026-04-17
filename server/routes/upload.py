@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, status
 from models.user import User
 from services.file_parser import extract_text
 from utils.deps import get_current_user
+from utils.rate_limit import limiter
 
 router = APIRouter(tags=["upload"])
 
@@ -16,7 +17,9 @@ MAX_BYTES = 20 * 1024 * 1024  # 20 MB
 
 
 @router.post("/extract-text")
+@limiter.limit("10/minute")
 async def extract_text_from_file(
+    request: Request,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
 ):

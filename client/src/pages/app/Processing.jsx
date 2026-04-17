@@ -37,8 +37,14 @@ const Processing = () => {
       .then((data) => {
         if (!cancelled) studySetRef.current = data;
       })
-      .catch(() => {
-        if (!cancelled) setError("Generation failed. Please try again.");
+      .catch((err) => {
+        if (!cancelled) {
+          if (err?.response?.status === 429) {
+            setError("AI rate limit reached — please wait a minute and try again.");
+          } else {
+            setError("Generation failed. Please try again.");
+          }
+        }
       });
 
     // Animate: 0->90 slowly (waiting for API), then 90->100 fast once API resolves
