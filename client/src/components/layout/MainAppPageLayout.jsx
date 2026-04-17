@@ -19,6 +19,7 @@ const InnerPageLayout = ({
     profileInitials = "CAI",
     title,
     subtitle,
+    onShowTutorial,
     children
 }) => {
     const navLinkClass = ({ isActive }) =>
@@ -124,6 +125,18 @@ const InnerPageLayout = ({
                         {menuOpen && (
                             <div className="absolute right-0 mt-2 min-w-40 rounded-xl border border-theme bg-surface shadow-lg py-2 z-50">
                                 <ThemeToggle />
+                                {onShowTutorial && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setMenuOpen(false);
+                                            onShowTutorial();
+                                        }}
+                                        className="w-full px-4 py-2 text-left text-sm font-medium text-base-theme hover:bg-surface-muted transition cursor-pointer"
+                                    >
+                                        How it works
+                                    </button>
+                                )}
                                 <button
                                     type="button"
                                     onClick={() => {
