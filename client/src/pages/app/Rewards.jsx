@@ -4,6 +4,7 @@ import useAuth from "../../hooks/useAuth";
 import { getBadges, getMyGamification } from "../../services/gamificationService";
 import BadgeGrid from "../../components/gamification/BadgeGrid";
 import GamificationStats from "../../components/gamification/GamificationStats";
+import PointsLegend from "../../components/gamification/PointsLegend";
 
 const FILTERS = [
   { id: "all", label: "All" },
@@ -65,6 +66,7 @@ const Rewards = () => {
     >
       <div className="flex flex-col gap-5">
         <GamificationStats stats={stats} />
+        {!loading ? <PointsLegend defaultCollapsed /> : null}
 
         <div className="flex flex-wrap gap-2">
           {FILTERS.map((f) => (
