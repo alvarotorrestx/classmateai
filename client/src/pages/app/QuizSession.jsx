@@ -5,6 +5,7 @@ import { getQuiz, getStudySet, getNote } from "../../services/noteService";
 import { saveQuizResult } from "../../hooks/useQuizHistory";
 import { recordStudyActivity } from "../../hooks/useStudyMetrics";
 import { completeQuizSession } from "../../services/gamificationService";
+import api from "../../services/api";
 import { QuizSessionSkeleton } from "../../components/loading/PageSkeletons";
 
 const LETTERS = ["A", "B", "C", "D"];
@@ -73,8 +74,18 @@ const QuizSession = () => {
       scorePercent: Math.round((correct / total) * 100),
       takenAt: new Date().toISOString(),
     });
-
     if (total > 0) {
+      // Submit per-question attempts so backend can aggregate quiz_attempts-based badges.
+      const attemptPayloads = questions
+        .map((q, i) => ({ q, selectedIndex: updated[i] }))
+        .filter((x) => x.selectedIndex !== undefined);
+
+      Promise.allSettled(
+        attemptPayloads.map(({ q, selectedIndex }) =>
+          api.post(`/quiz/${q.id}/attempt`, { selected_index: selectedIndex })
+        )
+      ).catch(() => {});
+
       completeQuizSession(quizId).catch(() => {});
     }
     if (total > 0 && sessionStartRef.current) {
