@@ -1467,7 +1467,7 @@ pattern (`localStorage`), then surface metrics on **Analytics** and **Dashboard*
 
 ---
 
-## Phase 15 — Gamification + Badges ✅ COMPLETE (4/16/26)
+## Phase 15 — Gamification + Badges - Updated (4/22/26)
 
 ### Goal
 Add a backend-driven **gamification layer** that tracks user progression stats, awards badges automatically (no duplicates),
@@ -1526,6 +1526,7 @@ and exposes a dedicated **Rewards** UI showing earned + locked badges with progr
   - `client/src/components/gamification/GamificationStats.jsx`
   - `client/src/components/gamification/BadgeGrid.jsx`
   - `client/src/components/gamification/BadgeCard.jsx`
+  - `client/src/components/gamification/PointsLegend.jsx` — “How Points Work” points legend (collapsible, default collapsed)
 - Icon mapping (no static assets required): `client/src/components/gamification/badgeIcons.js`
   - Uses `lucide-react`
   - Unknown slugs fall back to the **trophy** icon
@@ -1534,3 +1535,4 @@ and exposes a dedicated **Rewards** UI showing earned + locked badges with progr
 - Small integrations:
   - `QuizSession.jsx` calls `POST /quiz-sessions/complete` on finish (safe to retry)
   - Dashboard/Analytics display backend streak/points/totals while keeping **study time** client-side for now
+  - Rewards: shows a “How Points Work” panel explaining point awards (flashcards +10, quiz attempts +15, quiz completion +25); rendered only after data load
