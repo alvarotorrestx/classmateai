@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { sessionClient, setLogoutHandler } from "../services/api";
+import { clearCache } from "../utils/requestCache";
 
 export const AuthContext = createContext(null);
 
@@ -12,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   // Register a global logout handler for the Axios interceptor and other callers.
   useEffect(() => {
     setLogoutHandler(() => {
+      clearCache();
       setAuth(null);
       navigate("/login");
     });

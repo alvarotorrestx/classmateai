@@ -13,6 +13,7 @@ import useAuth from "../../hooks/useAuth";
 import api from "../../services/api";
 import ThemeToggle from "../ui/ThemeToggle";
 import { useToast } from "../../context/ToastContext";
+import { clearCache } from "../../utils/requestCache";
 
 const InnerPageLayout = ({
     headerTitle = "Welcome back!",
@@ -38,6 +39,7 @@ const InnerPageLayout = ({
         } catch {
             // ignore logout API errors; clear client state
         }
+        clearCache();
         addToast("Logged out", "info");
         setAuth(null);
         navigate("/");
