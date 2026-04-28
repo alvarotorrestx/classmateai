@@ -4,6 +4,7 @@ import useAuth from "../../hooks/useAuth";
 import api from "../../services/api";
 import ThemeToggle from "../ui/ThemeToggle";
 import { useToast } from "../../context/ToastContext";
+import { NavLink } from "react-router-dom";
 
 const InnerAppPageLayout = ({ children }) => {
     const { auth, setAuth } = useAuth();
@@ -71,6 +72,13 @@ const InnerAppPageLayout = ({ children }) => {
                         {menuOpen && (
                             <div className="absolute right-0 mt-2 min-w-40 rounded-xl border border-theme bg-surface shadow-lg py-2 z-50">
                                 <ThemeToggle />
+                                <NavLink
+                                    to="/settings/account"
+                                    onClick={() => setMenuOpen(false)}
+                                    className="w-full block px-4 py-2 text-left text-sm font-medium text-base-theme hover:bg-surface-muted transition cursor-pointer"
+                                >
+                                    Account settings
+                                </NavLink>
                                 <button
                                     type="button"
                                     onClick={() => { setMenuOpen(false); handleLogout(); }}

@@ -5,6 +5,7 @@ import Landing from "./pages/public/Landing";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import VerifyEmail from "./pages/auth/VerifyEmail";
+import VerifyEmailChange from "./pages/auth/VerifyEmailChange";
 
 // App pages (protected)
 import Dashboard from "./pages/app/Dashboard";
@@ -21,6 +22,7 @@ import Quizzes from "./pages/app/Quizzes";
 import QuizSession from "./pages/app/QuizSession";
 import Analytics from "./pages/app/Analytics";
 import Rewards from "./pages/app/Rewards";
+import AccountSettings from "./pages/app/AccountSettings";
 
 // Route guards
 import RequireAuth from "./components/auth/RequireAuth";
@@ -40,6 +42,9 @@ export default function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
       </Route>
 
+      {/* verification callback routes should be accessible whether authed or not */}
+      <Route path="/verify-email-change" element={<VerifyEmailChange />} />
+
       <Route element={<RequireAuth />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/courses" element={<AllCourses />} />
@@ -55,6 +60,7 @@ export default function App() {
         <Route path="/quizzes/:courseId/session/:quizId" element={<QuizSession />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/rewards" element={<Rewards />} />
+        <Route path="/settings/account" element={<AccountSettings />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

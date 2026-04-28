@@ -139,6 +139,13 @@ const InnerPageLayout = ({
                                         How it works
                                     </button>
                                 )}
+                                <NavLink
+                                    to="/settings/account"
+                                    onClick={() => setMenuOpen(false)}
+                                    className="w-full block px-4 py-2 text-left text-sm font-medium text-base-theme hover:bg-surface-muted transition cursor-pointer"
+                                >
+                                    Account settings
+                                </NavLink>
                                 <button
                                     type="button"
                                     onClick={() => {
