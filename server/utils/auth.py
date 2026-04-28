@@ -72,3 +72,22 @@ def decode_email_verification_token(token: str) -> dict | None:
         return payload
     except JWTError:
         return None
+
+
+def create_email_change_token(data: dict, expires_delta: timedelta | None = None) -> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(minutes=EMAIL_VERIFY_EXPIRE_MINUTES)
+    )
+    to_encode.update({"exp": expire, "type": "email_change"})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_email_change_token(token: str) -> dict | None:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "email_change":
+            return None
+        return payload
+    except JWTError:
+        return None
