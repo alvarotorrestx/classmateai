@@ -1536,3 +1536,41 @@ and exposes a dedicated **Rewards** UI showing earned + locked badges with progr
   - `QuizSession.jsx` calls `POST /quiz-sessions/complete` on finish (safe to retry)
   - Dashboard/Analytics display backend streak/points/totals while keeping **study time** client-side for now
   - Rewards: shows a “How Points Work” panel explaining point awards (flashcards +10, quiz attempts +15, quiz completion +25); rendered only after data load
+
+---
+
+## Phase 16 — Account Settings (Email + Password) ✅ COMPLETE (4/28/26)
+
+### Backend
+
+- Added **pending email change** flow (new email must be verified before replacing `users.email`)
+  - Columns:
+    - `users.pending_email` (nullable)
+    - `users.pending_email_sent_at` (nullable) — prevents resending the same confirmation email within **10 minutes**
+  - Endpoints:
+    - `POST /users/me/email-change/request` — verifies current password (400 on wrong password), sets `pending_email`, sends confirmation email
+    - `POST /users/me/email-change/verify` — verifies token, swaps `email`, clears `pending_*`
+- Added **password update** endpoint:
+  - `POST /users/me/password` — updates password (min length **10**, 400 on wrong current password), keeps user logged in
+- New email token + email utility:
+  - `type="email_change"` token helpers in `server/utils/auth.py`
+  - Brevo email sender for confirmation link: `FRONTEND_URL/verify-email-change?token=...` in `server/utils/email.py`
+- Schema cleanup:
+  - Account-related schemas (including **UpdatePasswordRequest**) live in `server/schemas/account.py`
+- Registration consistency:
+  - Backend registration schema enforces password min length **10** (`server/schemas/auth.py`)
+
+### Frontend
+
+- New/updated routes:
+  - `client/src/pages/app/AccountSettings.jsx` at `/settings/account` (protected)
+  - `client/src/pages/auth/VerifyEmailChange.jsx` at `/verify-email-change` (accessible whether logged in or out)
+- Avatar dropdown:
+  - Added “Account settings” link to both `MainAppPageLayout.jsx` and `InnerAppPageLayout.jsx` (above Logout)
+- Account Settings UI:
+  - Two cards: **Email Address** + **Password**
+  - Responsive layout: stacked on mobile, **2-column grid** on xl+ screens
+- Session refresh after email change verify:
+  - Verification page re-fetches `/auth/session` to ensure the auth user reflects the new email
+- Registration UI:
+  - `Register.jsx` enforces password min length **10** client-side
