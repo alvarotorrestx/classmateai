@@ -1,5 +1,7 @@
 import uuid
-from sqlalchemy import UUID, Boolean, String, text
+from datetime import datetime
+
+from sqlalchemy import UUID, Boolean, DateTime, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.base import Base, TimestampMixin
 
@@ -12,6 +14,7 @@ class User(TimestampMixin, Base):
     )
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     pending_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    pending_email_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)

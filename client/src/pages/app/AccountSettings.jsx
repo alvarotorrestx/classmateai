@@ -35,10 +35,8 @@ const AccountSettings = () => {
       setCurrentPassword("");
       setNewEmail("");
     } catch (err) {
-      setError(
-        err?.response?.data?.detail ||
-          "Could not request email change. Please try again."
-      );
+      const detail = err?.response?.data?.detail;
+      setError(detail || "Could not request email change. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 import uuid
 import logging
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -63,7 +64,10 @@ def request_email_change(
     current_user: User = Depends(get_current_user),
 ):
     if not verify_password(body.current_password, current_user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please enter the correct current password.",
+        )
 
     new_email = str(body.new_email).strip().lower()
     current_email = (current_user.email or "").strip().lower()
@@ -74,7 +78,20 @@ def request_email_change(
     if exists is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
+    # Cooldown: if requesting the same pending email again, avoid resending within 10 minutes.
+    if (current_user.pending_email or "").strip().lower() == new_email:
+        sent_at = current_user.pending_email_sent_at
+        if sent_at is not None:
+            now = datetime.now(timezone.utc)
+            # Ensure both timestamps are comparable
+            sent_at_utc = sent_at if sent_at.tzinfo is not None else sent_at.replace(tzinfo=timezone.utc)
+            if now - sent_at_utc < timedelta(minutes=10):
+                return MessageResponse(
+                    message="A confirmation email was recently sent. Please check your inbox to confirm this change."
+                )
+
     current_user.pending_email = new_email
+    current_user.pending_email_sent_at = datetime.now(timezone.utc)
     db.commit()
 
     token = create_email_change_token(
@@ -127,6 +144,7 @@ def verify_email_change(
 
     user.email = pending
     user.pending_email = None
+    user.pending_email_sent_at = None
     user.is_verified = True
     db.commit()
 
