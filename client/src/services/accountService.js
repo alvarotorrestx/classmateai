@@ -18,3 +18,11 @@ export const fetchSession = async () => {
   return response.data;
 };
 
+export const updatePassword = async ({ current_password, new_password }) => {
+  const response = await api.post("/users/me/password", {
+    current_password,
+    new_password,
+  });
+  return response.data;
+};
+

@@ -8,6 +8,7 @@ import { registerUser } from "../../services/authService"
 import useAuth from "../../hooks/useAuth"
 
 const Register = () => {
+  const MIN_PASSWORD_LEN = 10;
 
   const navigate = useNavigate()
   const { setAuth } = useAuth()
@@ -23,6 +24,12 @@ const Register = () => {
     e.preventDefault()
     setError("")
     setSuccess("")
+
+    if (password.length < MIN_PASSWORD_LEN) {
+      setError(`Password must be at least ${MIN_PASSWORD_LEN} characters.`)
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -116,6 +123,7 @@ const Register = () => {
             placeholder="password"
             className="w-full rounded-xl border border-theme bg-surface px-5 py-4 shadow-md outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
             required
+            minLength={MIN_PASSWORD_LEN}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}

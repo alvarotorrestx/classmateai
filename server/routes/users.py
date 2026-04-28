@@ -10,11 +10,12 @@ from models.badge import Badge
 from models.gamification_stats import GamificationStats
 from models.user import User
 from models.user_badge import UserBadge
-from schemas.email_change import EmailChangeRequest, EmailChangeVerifyRequest, MessageResponse
+from schemas.account import EmailChangeRequest, EmailChangeVerifyRequest, MessageResponse, UpdatePasswordRequest
 from schemas.gamification import EarnedBadgeResponse, GamificationStatsResponse, UserGamificationResponse
 from services.gamification import ensure_user_gamification_stats
 from utils.deps import get_current_user
 from utils.auth import verify_password, create_email_change_token, decode_email_change_token
+from utils.auth import hash_password
 from utils.email import send_email_change_confirmation_email
 
 
@@ -149,4 +150,35 @@ def verify_email_change(
     db.commit()
 
     return MessageResponse(message="Email updated successfully.")
+
+
+@router.post("/me/password", response_model=MessageResponse, status_code=status.HTTP_200_OK)
+def update_my_password(
+    body: UpdatePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not verify_password(body.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please enter the correct current password.",
+        )
+
+    new_password = (body.new_password or "").strip()
+    if len(new_password) < 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 10 characters.",
+        )
+
+    if verify_password(new_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from your current password.",
+        )
+
+    current_user.password_hash = hash_password(new_password)
+    db.commit()
+
+    return MessageResponse(message="Password updated successfully.")
 
