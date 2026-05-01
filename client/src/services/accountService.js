@@ -26,3 +26,11 @@ export const updatePassword = async ({ current_password, new_password }) => {
   return response.data;
 };
 
+export const updateProfile = async ({ full_name, avatar_url }) => {
+  const body = {};
+  if (full_name !== undefined) body.full_name = full_name;
+  if (avatar_url !== undefined) body.avatar_url = avatar_url;
+  const response = await api.patch("/users/me/profile", body);
+  return response.data;
+};
+

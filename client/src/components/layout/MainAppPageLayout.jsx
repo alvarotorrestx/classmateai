@@ -18,6 +18,7 @@ import { clearCache } from "../../utils/requestCache";
 const InnerPageLayout = ({
     headerTitle = "Welcome back!",
     profileInitials = "CAI",
+    profileAvatarUrl = null,
     title,
     subtitle,
     onShowTutorial,
@@ -118,10 +119,18 @@ const InnerPageLayout = ({
                         <button
                             type="button"
                             onClick={() => setMenuOpen((prev) => !prev)}
-                            className="w-10 h-10 rounded-full bg-(--mint-400) flex items-center justify-center font-semibold text-(--mint-950) hover:bg-(--mint-300) transition cursor-pointer"
+                            className="w-10 h-10 rounded-full bg-(--mint-400) flex items-center justify-center font-semibold text-(--mint-950) hover:bg-(--mint-300) transition cursor-pointer overflow-hidden"
                             title="Account menu"
                         >
-                            {profileInitials}
+                            {profileAvatarUrl ? (
+                                <img
+                                    src={profileAvatarUrl}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                profileInitials
+                            )}
                         </button>
 
                         {menuOpen && (

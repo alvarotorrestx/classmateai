@@ -113,6 +113,7 @@ const AllCourses = () => {
     <MainAppPageLayout
       headerTitle="Courses"
       profileInitials={initials}
+      profileAvatarUrl={auth?.user?.avatar_url || null}
       title="Your Courses"
       subtitle={
         courses.length > 0

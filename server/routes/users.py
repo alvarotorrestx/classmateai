@@ -10,7 +10,8 @@ from models.badge import Badge
 from models.gamification_stats import GamificationStats
 from models.user import User
 from models.user_badge import UserBadge
-from schemas.account import EmailChangeRequest, EmailChangeVerifyRequest, MessageResponse, UpdatePasswordRequest
+from schemas.account import EmailChangeRequest, EmailChangeVerifyRequest, MessageResponse, UpdatePasswordRequest, ProfileUpdateRequest
+from schemas.auth import UserResponse
 from schemas.gamification import EarnedBadgeResponse, GamificationStatsResponse, UserGamificationResponse
 from services.gamification import ensure_user_gamification_stats
 from utils.deps import get_current_user
@@ -21,6 +22,22 @@ from utils.email import send_email_change_confirmation_email
 
 router = APIRouter(prefix="/users", tags=["users"])
 logger = logging.getLogger(__name__)
+
+
+@router.patch("/me/profile", response_model=UserResponse)
+def update_my_profile(
+    body: ProfileUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if body.full_name is not None:
+        current_user.full_name = body.full_name
+    if "avatar_url" in body.model_fields_set:
+        # Allow explicit None to clear the avatar
+        current_user.avatar_url = body.avatar_url or None
+    db.commit()
+    db.refresh(current_user)
+    return UserResponse.model_validate(current_user)
 
 
 @router.get("/me/gamification", response_model=UserGamificationResponse)

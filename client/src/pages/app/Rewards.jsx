@@ -61,6 +61,7 @@ const Rewards = () => {
     <MainAppPageLayout
       headerTitle="Rewards"
       profileInitials={initials}
+      profileAvatarUrl={auth?.user?.avatar_url || null}
       title="Rewards"
       subtitle={loading ? "Loading your rewards…" : `${earnedCount} badge${earnedCount === 1 ? "" : "s"} earned`}
     >

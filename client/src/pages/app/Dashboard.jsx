@@ -93,6 +93,7 @@ const Dashboard = () => {
       <MainAppPageLayout
       headerTitle={`Welcome Back, ${firstName}!`}
       profileInitials={initials}
+      profileAvatarUrl={auth?.user?.avatar_url || null}
       onShowTutorial={reopenTutorial}
       title={`${greeting}, ${firstName}!`}
       subtitle={

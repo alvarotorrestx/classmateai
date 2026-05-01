@@ -19,6 +19,7 @@ class User(TimestampMixin, Base):
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    avatar_url: Mapped[str | None] = mapped_column(String, nullable=True)
 
     notes = relationship("Note", back_populates="user", cascade="all, delete-orphan")
     study_sets = relationship("StudySet", back_populates="user", cascade="all, delete-orphan")
