@@ -14,6 +14,7 @@ from routes.upload import router as upload_router
 from routes.users import router as users_router
 from routes.badges import router as badges_router
 from routes.quiz_sessions import router as quiz_sessions_router
+from routes.shares import router as shares_router
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from utils.rate_limit import limiter
@@ -46,6 +47,7 @@ app.include_router(upload_router)
 app.include_router(users_router)
 app.include_router(badges_router)
 app.include_router(quiz_sessions_router)
+app.include_router(shares_router)
 
 
 @app.get("/")

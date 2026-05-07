@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 
 // Public pages
 import Landing from "./pages/public/Landing";
+import SharedContent from "./pages/public/SharedContent";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import VerifyEmail from "./pages/auth/VerifyEmail";
@@ -34,6 +35,8 @@ import NotFound from "./pages/NotFound";
 export default function App() {
   return (
     <Routes>
+
+      <Route path="/shared/:token" element={<SharedContent />} />
 
       <Route element={<RedirectIfAuth />}>
         <Route path="/" element={<Landing />} />
