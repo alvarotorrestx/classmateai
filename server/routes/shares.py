@@ -2,13 +2,20 @@ import secrets
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from db import get_db
+from models.course_study_guide import CourseStudyGuide
+from models.flashcard import Flashcard
 from models.note import Note
+from models.quiz_question import QuizQuestion
+from models.share_import import ShareImport
 from models.share_link import ShareLink
+from models.study_set import StudySet
+from models.study_guide import StudyGuide
+from models.summary import Summary
 from models.user import User
 from schemas.share import (
     ShareCreateRequest,
@@ -130,11 +137,42 @@ def get_share_preview(
     if not note:
         raise HTTPException(status_code=404, detail="Shared content not found")
 
+    study_set_count = db.execute(
+        select(func.count(StudySet.id)).where(StudySet.note_id == note.id)
+    ).scalar_one()
+    flashcard_count = db.execute(
+        select(func.count(Flashcard.id))
+        .join(StudySet, StudySet.id == Flashcard.study_set_id)
+        .where(StudySet.note_id == note.id)
+    ).scalar_one()
+    quiz_question_count = db.execute(
+        select(func.count(QuizQuestion.id))
+        .join(StudySet, StudySet.id == QuizQuestion.study_set_id)
+        .where(StudySet.note_id == note.id)
+    ).scalar_one()
+    has_course_guide = (
+        db.execute(select(func.count(CourseStudyGuide.id)).where(CourseStudyGuide.note_id == note.id)).scalar_one()
+        > 0
+    )
+    has_set_guides = (
+        db.execute(
+            select(func.count(StudyGuide.id))
+            .join(StudySet, StudySet.id == StudyGuide.study_set_id)
+            .where(StudySet.note_id == note.id)
+        ).scalar_one()
+        > 0
+    )
+    has_study_guide = bool(has_course_guide or has_set_guides)
+
     return ShareNotePreviewResponse(
         token=link.token,
         resource_type=link.resource_type,
         title=note.title,
         content=note.content,
+        study_set_count=int(study_set_count or 0),
+        flashcard_count=int(flashcard_count or 0),
+        quiz_question_count=int(quiz_question_count or 0),
+        has_study_guide=has_study_guide,
         created_at=link.created_at,
         expires_at=link.expires_at,
     )
@@ -156,18 +194,145 @@ def import_shared_content(
     if link.resource_type != "note":
         raise HTTPException(status_code=400, detail="Unsupported resource type")
 
+    existing_import = (
+        db.execute(
+            select(ShareImport).where(
+                ShareImport.share_link_id == link.id,
+                ShareImport.importer_user_id == current_user.id,
+            )
+        )
+        .scalars()
+        .first()
+    )
+    if existing_import:
+        return ShareImportResponse(
+            message="Already imported.",
+            note_id=existing_import.imported_note_id,
+        )
+
     note = db.get(Note, link.resource_id)
     if not note:
         raise HTTPException(status_code=404, detail="Shared content not found")
 
-    new_note = Note(
-        user_id=current_user.id,
-        title=f"{note.title} (Shared)",
-        content=note.content,
-    )
-    db.add(new_note)
-    db.commit()
-    db.refresh(new_note)
+    # Deep copy of the full study pack.
+    try:
+        new_note = Note(
+            user_id=current_user.id,
+            title=f"{note.title} (Shared)",
+            content=note.content,
+        )
+        db.add(new_note)
+        db.flush()
 
-    return ShareImportResponse(message="Added to your account.", note_id=new_note.id)
+        course_guide = (
+            db.execute(select(CourseStudyGuide).where(CourseStudyGuide.note_id == note.id))
+            .scalars()
+            .first()
+        )
+        if course_guide:
+            db.add(CourseStudyGuide(note_id=new_note.id, content=course_guide.content))
+
+        study_sets = (
+            db.execute(select(StudySet).where(StudySet.note_id == note.id))
+            .scalars()
+            .all()
+        )
+
+        for ss in study_sets:
+            new_ss = StudySet(
+                user_id=current_user.id,
+                note_id=new_note.id,
+                label=ss.label,
+            )
+            db.add(new_ss)
+            db.flush()
+
+            # Flashcards
+            cards = (
+                db.execute(
+                    select(Flashcard).where(Flashcard.study_set_id == ss.id).order_by(Flashcard.display_order.asc())
+                )
+                .scalars()
+                .all()
+            )
+            for fc in cards:
+                db.add(
+                    Flashcard(
+                        study_set_id=new_ss.id,
+                        front=fc.front,
+                        back=fc.back,
+                        display_order=fc.display_order,
+                    )
+                )
+
+            # Quiz questions
+            questions = (
+                db.execute(
+                    select(QuizQuestion)
+                    .where(QuizQuestion.study_set_id == ss.id)
+                    .order_by(QuizQuestion.display_order.asc())
+                )
+                .scalars()
+                .all()
+            )
+            for q in questions:
+                db.add(
+                    QuizQuestion(
+                        study_set_id=new_ss.id,
+                        question=q.question,
+                        options=q.options,
+                        correct_index=q.correct_index,
+                        explanation=q.explanation,
+                        display_order=q.display_order,
+                    )
+                )
+
+            # Summary (optional)
+            summary = (
+                db.execute(select(Summary).where(Summary.study_set_id == ss.id))
+                .scalars()
+                .first()
+            )
+            if summary:
+                db.add(Summary(study_set_id=new_ss.id, content=summary.content))
+
+            sg = (
+                db.execute(select(StudyGuide).where(StudyGuide.study_set_id == ss.id))
+                .scalars()
+                .first()
+            )
+            if sg:
+                db.add(StudyGuide(study_set_id=new_ss.id, content=sg.content))
+
+        # Record import to prevent duplicates
+        db.add(
+            ShareImport(
+                share_link_id=link.id,
+                importer_user_id=current_user.id,
+                imported_note_id=new_note.id,
+            )
+        )
+
+        db.commit()
+        db.refresh(new_note)
+    except IntegrityError:
+        db.rollback()
+        existing_import2 = (
+            db.execute(
+                select(ShareImport).where(
+                    ShareImport.share_link_id == link.id,
+                    ShareImport.importer_user_id == current_user.id,
+                )
+            )
+            .scalars()
+            .first()
+        )
+        if existing_import2:
+            return ShareImportResponse(
+                message="Already imported.",
+                note_id=existing_import2.imported_note_id,
+            )
+        raise
+
+    return ShareImportResponse(message="Study pack imported successfully.", note_id=new_note.id)
 

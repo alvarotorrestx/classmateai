@@ -95,6 +95,24 @@ const SharedContent = () => {
           <>
             <div className="bg-surface rounded-2xl border border-theme shadow-sm p-6 sm:p-8">
               <p className="font-bold text-base text-em mb-3">{title}</p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted mb-4">
+                <span>
+                  <span className="font-semibold text-em">{data?.study_set_count ?? 0}</span>{" "}
+                  study sets
+                </span>
+                <span>
+                  <span className="font-semibold text-em">{data?.flashcard_count ?? 0}</span>{" "}
+                  flashcards
+                </span>
+                <span>
+                  <span className="font-semibold text-em">{data?.quiz_question_count ?? 0}</span>{" "}
+                  quiz questions
+                </span>
+                <span>
+                  <span className="font-semibold text-em">{data?.has_study_guide ? "Contains" : "Does Not Contain"}</span>{" "}
+                  study guide
+                </span>
+              </div>
               <pre className="text-sm text-base-theme leading-relaxed whitespace-pre-wrap font-sans">
                 {data?.content || ""}
               </pre>
@@ -104,7 +122,7 @@ const SharedContent = () => {
               <div>
                 <p className="font-semibold text-em mb-1">Add to your account</p>
                 <p className="text-sm text-muted">
-                  Importing will add this note to your account. You can generate flashcards, quizzes, and a study guide after importing.
+                  Importing will add this study pack to your account: note, flashcards, quizzes, and study guides.
                 </p>
               </div>
 
