@@ -7,6 +7,7 @@ import Button from "../../components/ui/Button"
 import { loginUser, resendVerification } from "../../services/authService"
 import useAuth from "../../hooks/useAuth"
 import { useToast } from "../../context/ToastContext"
+import { getSafeRedirect } from "../../utils/redirects"
 
 const Login = () => {
 
@@ -37,9 +38,7 @@ const Login = () => {
       setAuth({ user: data.user })
       const firstName = data.user?.full_name?.split(" ")[0] || "back"
       addToast(`Welcome back, ${firstName}!`)
-      const from = location.state?.from
-      const next =
-        (from?.pathname ? `${from.pathname}${from.search || ""}` : null) || "/dashboard"
+      const next = getSafeRedirect(location.search, "/dashboard")
       navigate(next)
 
     } catch (err) {

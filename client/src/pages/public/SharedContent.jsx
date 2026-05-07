@@ -20,6 +20,8 @@ const SharedContent = () => {
   const [data, setData] = useState(null);
 
   const isAuthed = Boolean(auth?.user);
+  const redirectTo = `${location.pathname}${location.search || ""}`;
+  const redirectParam = encodeURIComponent(redirectTo);
 
   const title = useMemo(() => {
     if (!data?.title) return "Shared content";
@@ -117,12 +119,12 @@ const SharedContent = () => {
                 </Button>
               ) : (
                 <div className="flex gap-3">
-                  <Link to="/login" state={{ from: location }}>
+                  <Link to={`/login?redirect=${redirectParam}`} state={{ from: location }}>
                     <Button variant="primary" className="w-full sm:w-auto sm:min-w-32">
                       Login
                     </Button>
                   </Link>
-                  <Link to="/register" state={{ from: location }}>
+                  <Link to={`/register?redirect=${redirectParam}`} state={{ from: location }}>
                     <Button variant="secondary" className="w-full sm:w-auto sm:min-w-32">
                       Register
                     </Button>
