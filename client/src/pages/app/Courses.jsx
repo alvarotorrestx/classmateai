@@ -238,67 +238,67 @@ const Courses = () => {
     }
 
     // ── Flashcards ───────────────────────────────────────────────────────
-    // if (type === "flashcards" || type === "all") {
-    //   const allFlashcards = decks.flatMap((d, i) =>
-    //     d.flashcards.map((fc) => ({ ...fc, setLabel: d.label || `Study Set ${i + 1}` }))
-    //   );
-    //   if (allFlashcards.length > 0) {
-    //     const lines = [...header("Flashcards"), ""];
-    //     let lastLabel = null;
-    //     for (const fc of allFlashcards) {
-    //       if (fc.setLabel !== lastLabel) {
-    //         lines.push(`### ${fc.setLabel}`);
-    //         lines.push("");
-    //         lastLabel = fc.setLabel;
-    //       }
-    //       lines.push(`**${fc.front}**`);
-    //       lines.push(fc.back);
-    //       lines.push("");
-    //     }
-    //     triggerDownload(safeFilename(title, "flashcards"), lines.join("\n"));
-    //     if (type === "flashcards") { addToast("Flashcards exported!"); setExporting(false); return; }
-    //   } else if (type === "flashcards") {
-    //     addToast("No flashcards to export.", "error");
-    //     setExporting(false);
-    //     return;
-    //   }
-    // }
+    if (type === "flashcards" || type === "all") {
+      const allFlashcards = decks.flatMap((d, i) =>
+        d.flashcards.map((fc) => ({ ...fc, setLabel: d.label || `Study Set ${i + 1}` }))
+      );
+      if (allFlashcards.length > 0) {
+        const lines = [...header("Flashcards"), ""];
+        let lastLabel = null;
+        for (const fc of allFlashcards) {
+          if (fc.setLabel !== lastLabel) {
+            lines.push(`### ${fc.setLabel}`);
+            lines.push("");
+            lastLabel = fc.setLabel;
+          }
+          lines.push(`**${fc.front}**`);
+          lines.push(fc.back);
+          lines.push("");
+        }
+        triggerDownload(safeFilename(title, "flashcards"), lines.join("\n"));
+        if (type === "flashcards") { addToast("Flashcards exported!"); setExporting(false); return; }
+      } else if (type === "flashcards") {
+        addToast("No flashcards to export.", "error");
+        setExporting(false);
+        return;
+      }
+    }
 
     // ── Quiz Questions ───────────────────────────────────────────────────
-    // if (type === "quiz" || type === "all") {
-    //   const allQuestions = decks.flatMap((d, i) =>
-    //     d.quiz_questions.map((q) => ({ ...q, setLabel: d.label || `Study Set ${i + 1}` }))
-    //   );
-    //   if (allQuestions.length > 0) {
-    //     const lines = [...header("Quiz Questions"), ""];
-    //     const letters = ["A", "B", "C", "D"];
-    //     let lastLabel = null;
-    //     let counter = 1;
-    //     for (const q of allQuestions) {
-    //       if (q.setLabel !== lastLabel) {
-    //         lines.push(`### ${q.setLabel}`);
-    //         lines.push("");
-    //         lastLabel = q.setLabel;
-    //         counter = 1;
-    //       }
-    //       lines.push(`**${counter}. ${q.question}**`);
-    //       lines.push("");
-    //       q.options.forEach((opt, idx) => {
-    //         const marker = idx === q.correct_index ? " ✓" : "";
-    //         lines.push(`- ${letters[idx] || idx + 1}) ${opt}${marker}`);
-    //       });
-    //       if (q.explanation) { lines.push(""); lines.push(`> ${q.explanation}`); }
-    //       lines.push("");
-    //       counter++;
-    //     }
-    //     triggerDownload(safeFilename(title, "quiz"), lines.join("\n"));
-    //     if (type === "quiz") { addToast("Quiz questions exported!"); setExporting(false); return; }
-    //   } else if (type === "quiz") {
-    //     addToast("No quiz questions to export.", "error");
-    //     setExporting(false);
-    //     return;
-    //   }
-    // }
+    if (type === "quiz" || type === "all") {
+      const allQuestions = decks.flatMap((d, i) =>
+        d.quiz_questions.map((q) => ({ ...q, setLabel: d.label || `Study Set ${i + 1}` }))
+      );
+      if (allQuestions.length > 0) {
+        const lines = [...header("Quiz Questions"), ""];
+        const letters = ["A", "B", "C", "D"];
+        let lastLabel = null;
+        let counter = 1;
+        for (const q of allQuestions) {
+          if (q.setLabel !== lastLabel) {
+            lines.push(`### ${q.setLabel}`);
+            lines.push("");
+            lastLabel = q.setLabel;
+            counter = 1;
+          }
+          lines.push(`**${counter}. ${q.question}**`);
+          lines.push("");
+          q.options.forEach((opt, idx) => {
+            const marker = idx === q.correct_index ? " ✓" : "";
+            lines.push(`- ${letters[idx] || idx + 1}) ${opt}${marker}`);
+          });
+          if (q.explanation) { lines.push(""); lines.push(`> ${q.explanation}`); }
+          lines.push("");
+          counter++;
+        }
+        triggerDownload(safeFilename(title, "quiz"), lines.join("\n"));
+        if (type === "quiz") { addToast("Quiz questions exported!"); setExporting(false); return; }
+      } else if (type === "quiz") {
+        addToast("No quiz questions to export.", "error");
+        setExporting(false);
+        return;
+      }
+    }
 
     // ── All ──────────────────────────────────────────────────────────────
     if (type === "all") addToast("Course exported!");
