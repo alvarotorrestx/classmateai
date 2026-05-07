@@ -189,8 +189,68 @@ const Courses = () => {
     });
     const exportDateLabel = exportDate;
 
+    if (type === "all") {
+      // ── Study Guide — fetch if not loaded ─────────────────────────────
+      let guide = studyGuide;
+      if (guide === null) {
+        setExportStatus("Fetching study guide…");
+        try {
+          const data = await getCourseStudyGuide(courseId);
+          guide = data.content;
+          setStudyGuide(guide);
+        } catch {
+          guide = false;
+        }
+      }
+
+      setExportStatus("Preparing files…");
+      const files = {};
+
+      if (note?.content) {
+        files[safeFilename(title, "notes")] = buildNotesMarkdown({
+          title,
+          exportDateLabel,
+          noteContent: note.content,
+        });
+      }
+
+      if (guide && guide !== false) {
+        files[safeFilename(title, "study_guide")] = buildStudyGuideMarkdown({
+          title,
+          exportDateLabel,
+          guideContent: guide,
+        });
+      }
+
+      const { markdown: fcMd, count: fcCount } = buildFlashcardsMarkdown({
+        title,
+        exportDateLabel,
+        decks,
+      });
+      if (fcCount > 0) files[safeFilename(title, "flashcards")] = fcMd;
+
+      const { markdown: quizMd, count: quizCount } = buildQuizMarkdown({
+        title,
+        exportDateLabel,
+        decks,
+      });
+      if (quizCount > 0) files[safeFilename(title, "quiz")] = quizMd;
+
+      setExportStatus("Zipping files…");
+      const zipBlob = buildCourseZipBlob({ filesByName: files });
+      const zipName = safeFilename(title, "course_export", "zip");
+
+      setExportStatus("Downloading…");
+      triggerDownloadBlob(zipName, zipBlob);
+      addToast("Course exported!");
+
+      setExporting(false);
+      setExportStatus("");
+      return;
+    }
+
     // ── Notes ────────────────────────────────────────────────────────────
-    if (type === "notes" || type === "all") {
+    if (type === "notes") {
       if (note?.content) {
         setExportStatus("Downloading notes…");
         const md = buildNotesMarkdown({
@@ -209,7 +269,7 @@ const Courses = () => {
 
     // ── Study Guide — fetch if not loaded ────────────────────────────────
     let guide = studyGuide;
-    if ((type === "guide" || type === "all") && guide === null) {
+    if (type === "guide" && guide === null) {
       setExportStatus("Fetching study guide…");
       try {
         const data = await getCourseStudyGuide(courseId);
@@ -234,7 +294,7 @@ const Courses = () => {
     }
 
     // ── Flashcards ───────────────────────────────────────────────────────
-    if (type === "flashcards" || type === "all") {
+    if (type === "flashcards") {
       const { markdown, count } = buildFlashcardsMarkdown({ title, exportDateLabel, decks });
       if (count > 0) {
         setExportStatus("Downloading flashcards…");
@@ -252,7 +312,7 @@ const Courses = () => {
     }
 
     // ── Quiz Questions ───────────────────────────────────────────────────
-    if (type === "quiz" || type === "all") {
+    if (type === "quiz") {
       const { markdown, count } = buildQuizMarkdown({ title, exportDateLabel, decks });
       if (count > 0) {
         setExportStatus("Downloading quiz…");
@@ -268,38 +328,6 @@ const Courses = () => {
         return;
       }
     }
-
-    // ── All ──────────────────────────────────────────────────────────────
-    if (type === "all") {
-      setExportStatus("Zipping files…");
-      const files = {};
-      if (note?.content) {
-        files[safeFilename(title, "notes")] = buildNotesMarkdown({
-          title,
-          exportDateLabel,
-          noteContent: note.content,
-        });
-      }
-      if (guide && guide !== false) {
-        files[safeFilename(title, "study_guide")] = buildStudyGuideMarkdown({
-          title,
-          exportDateLabel,
-          guideContent: guide,
-        });
-      }
-
-      const { markdown: fcMd, count: fcCount } = buildFlashcardsMarkdown({ title, exportDateLabel, decks });
-      if (fcCount > 0) files[safeFilename(title, "flashcards")] = fcMd;
-
-      const { markdown: quizMd, count: quizCount } = buildQuizMarkdown({ title, exportDateLabel, decks });
-      if (quizCount > 0) files[safeFilename(title, "quiz")] = quizMd;
-
-      setExportStatus("Downloading zip…");
-      const zipBlob = buildCourseZipBlob({ filesByName: files });
-      const zipName = safeFilename(title, "course_export", "zip");
-      triggerDownloadBlob(zipName, zipBlob);
-      addToast("Course exported!");
-    }
     setExporting(false);
     setExportStatus("");
   };
@@ -312,8 +340,20 @@ const Courses = () => {
       setShareStatus("Creating share link…");
       try {
         const res = await createShareLink({ resource_type: "note", resource_id: courseId });
-        setShareToken(res?.token || null);
-        addToast("Share link ready!");
+        const token = res?.token || null;
+        setShareToken(token);
+
+        const url = token ? `${window.location.origin}/shared/${token}` : null;
+        if (url) {
+          try {
+            await navigator.clipboard.writeText(url);
+            addToast("Share link created and copied.");
+          } catch {
+            addToast("Share link created. Use Copy link to copy it.");
+          }
+        } else {
+          addToast("Share link created.");
+        }
       } catch (err) {
         addToast(err?.response?.data?.detail || "Failed to create share link.", "error");
       } finally {

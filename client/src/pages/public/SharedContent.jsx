@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 
 import DefaultPageLayout from "../../components/layout/DefaultPageLayout";
@@ -10,6 +10,7 @@ import { getSharePreview, importShare } from "../../services/shareService";
 const SharedContent = () => {
   const { token } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { addToast } = useToast();
   const { auth } = useAuth();
 
@@ -101,7 +102,7 @@ const SharedContent = () => {
               <div>
                 <p className="font-semibold text-em mb-1">Add to your account</p>
                 <p className="text-sm text-muted">
-                  Importing creates a copy in your courses list.
+                  Importing will add this note to your account. You can generate flashcards, quizzes, and a study guide after importing.
                 </p>
               </div>
 
@@ -116,12 +117,12 @@ const SharedContent = () => {
                 </Button>
               ) : (
                 <div className="flex gap-3">
-                  <Link to="/login">
+                  <Link to="/login" state={{ from: location }}>
                     <Button variant="primary" className="w-full sm:w-auto sm:min-w-32">
                       Login
                     </Button>
                   </Link>
-                  <Link to="/register">
+                  <Link to="/register" state={{ from: location }}>
                     <Button variant="secondary" className="w-full sm:w-auto sm:min-w-32">
                       Register
                     </Button>

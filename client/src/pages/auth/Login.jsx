@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useState } from "react"
 
 import DefaultPageLayout from "../../components/layout/DefaultPageLayout"
@@ -11,6 +11,7 @@ import { useToast } from "../../context/ToastContext"
 const Login = () => {
 
   const navigate = useNavigate()
+  const location = useLocation()
   const { setAuth } = useAuth()
   const { addToast } = useToast()
 
@@ -36,7 +37,10 @@ const Login = () => {
       setAuth({ user: data.user })
       const firstName = data.user?.full_name?.split(" ")[0] || "back"
       addToast(`Welcome back, ${firstName}!`)
-      navigate("/dashboard")
+      const from = location.state?.from
+      const next =
+        (from?.pathname ? `${from.pathname}${from.search || ""}` : null) || "/dashboard"
+      navigate(next)
 
     } catch (err) {
       if (!err?.response) {
