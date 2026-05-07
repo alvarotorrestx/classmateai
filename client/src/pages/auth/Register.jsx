@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { useState } from "react"
 
 import DefaultPageLayout from "../../components/layout/DefaultPageLayout"
@@ -11,7 +11,6 @@ import { getSafeRedirect } from "../../utils/redirects"
 const Register = () => {
   const MIN_PASSWORD_LEN = 10;
 
-  const navigate = useNavigate()
   const location = useLocation()
   const { setAuth } = useAuth()
 
@@ -44,7 +43,8 @@ const Register = () => {
       const data = await registerUser({
         full_name: fullName,
         email,
-        password
+        password,
+        redirect: safeRedirect && safeRedirect !== "/dashboard" ? safeRedirect : undefined,
       })
 
       setAuth(null)

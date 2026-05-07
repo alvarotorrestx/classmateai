@@ -6,10 +6,18 @@ import Button from "../../components/ui/Button";
 import api from "../../services/api";
 import { resendVerification } from "../../services/authService";
 import { useToast } from "../../context/ToastContext";
+import { getSafeRedirect } from "../../utils/redirects";
 
 const VerifyEmail = () => {
   const [params] = useSearchParams();
   const token = params.get("token");
+  const redirectParam = params.get("redirect");
+  const safeRedirect =
+    redirectParam && getSafeRedirect(`?redirect=${encodeURIComponent(redirectParam)}`, "/dashboard");
+  const loginHref =
+    safeRedirect && safeRedirect !== "/dashboard"
+      ? `/login?redirect=${encodeURIComponent(safeRedirect)}`
+      : "/login";
 
   const { addToast } = useToast();
   const [status, setStatus] = useState("idle"); // idle | loading | success | error
@@ -83,7 +91,7 @@ const VerifyEmail = () => {
             <p className="text-sm text-muted mb-6">
               You can now sign in to ClassmateAI.
             </p>
-            <Link to="/login">
+            <Link to={loginHref}>
               <Button variant="primary" className="w-full sm:w-auto sm:min-w-48">
                 Go to Login
               </Button>

@@ -7,6 +7,7 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str = Field(min_length=10)
     full_name: str
+    redirect: str | None = None
 
 
 class UserLogin(BaseModel):
