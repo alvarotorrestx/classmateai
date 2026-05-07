@@ -113,7 +113,7 @@ const SharedContent = () => {
                   study guide
                 </span>
               </div>
-              <pre className="text-sm text-base-theme leading-relaxed whitespace-pre-wrap font-sans">
+              <pre className="text-sm text-base-theme leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] font-sans">
                 {data?.content || ""}
               </pre>
             </div>
