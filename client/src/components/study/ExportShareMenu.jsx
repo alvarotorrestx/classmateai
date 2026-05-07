@@ -75,9 +75,7 @@ const ExportShareMenu = ({
   statusText = "",
   exportItems = [],
   onExport,
-  shareEnabled = false,
-  shareItems = [],
-  onShareAction,
+  onShare,
 }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -126,26 +124,16 @@ const ExportShareMenu = ({
             </div>
           ))}
 
-          {shareEnabled ? (
-            <>
-              <div className="my-1 border-t border-theme" />
-              <div className="px-4 pt-2 pb-1 text-xs font-semibold text-muted">
-                Share
-              </div>
-              {shareItems.map((it, idx) => (
-                <MenuItem
-                  key={it.id || idx}
-                  icon={<ShareIcon className="text-muted shrink-0" />}
-                  label={it.label}
-                  disabled={disabled || it.disabled}
-                  onClick={() => {
-                    setOpen(false);
-                    onShareAction?.(it.action);
-                  }}
-                />
-              ))}
-            </>
-          ) : null}
+          <div className="my-1 border-t border-theme" />
+          <MenuItem
+            icon={<ShareIcon className="text-muted shrink-0" />}
+            label="Share study pack"
+            disabled={disabled}
+            onClick={() => {
+              setOpen(false);
+              onShare?.();
+            }}
+          />
         </div>
       ) : null}
     </div>

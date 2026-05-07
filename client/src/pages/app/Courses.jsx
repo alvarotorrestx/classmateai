@@ -13,6 +13,7 @@ import { DeckGridSkeleton, StudyGuideSkeleton } from "../../components/loading/P
 import { useToast } from "../../context/ToastContext";
 import ExportShareMenu from "../../components/study/ExportShareMenu";
 import { createShareLink } from "../../services/shareService";
+import ShareStudyPackModal from "../../components/study/ShareStudyPackModal";
 import {
   buildCourseZipBlob,
   buildFlashcardsMarkdown,
@@ -131,6 +132,7 @@ const Courses = () => {
   const [shareBusy,     setShareBusy]     = useState(false);
   const [shareStatus,   setShareStatus]   = useState("");
   const [shareToken,    setShareToken]    = useState(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   const isBusy = exporting || shareBusy;
 
@@ -385,6 +387,56 @@ const Courses = () => {
     }
   };
 
+  const ensureShareLink = async () => {
+    setShareBusy(true);
+    setShareStatus("Creating share link…");
+    try {
+      const res = await createShareLink({ resource_type: "note", resource_id: courseId });
+      const token = res?.token || null;
+      setShareToken(token);
+
+      const url = token ? `${window.location.origin}/shared/${token}` : null;
+      if (url) {
+        try {
+          await navigator.clipboard.writeText(url);
+          addToast("Share link created and copied.");
+        } catch {
+          addToast("Share link created. Use Copy link to copy it.");
+        }
+      } else {
+        addToast("Share link created.");
+      }
+    } catch (err) {
+      addToast(err?.response?.data?.detail || "Failed to create share link.", "error");
+    } finally {
+      setShareBusy(false);
+      setShareStatus("");
+    }
+  };
+
+  const copyShareLink = async () => {
+    if (!shareUrl) {
+      addToast("Create a share link first.", "error");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      addToast("Link copied!");
+    } catch {
+      addToast("Could not copy link.", "error");
+    }
+  };
+
+  const shareViaEmail = () => {
+    if (!shareUrl) {
+      addToast("Create a share link first.", "error");
+      return;
+    }
+    const subject = encodeURIComponent("ClassmateAI study materials");
+    const body = encodeURIComponent(`Here are the notes: ${shareUrl}`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
   const handleGenerate = async (studySetId) => {
     setGenerating(true);
     try {
@@ -547,13 +599,7 @@ const Courses = () => {
             { type: "all", label: "Export everything (.zip)", divider: true },
           ]}
           onExport={handleExport}
-          shareEnabled
-          shareItems={[
-            { action: "create_link", label: shareToken ? "Share link ready (recreate)" : "Create share link" },
-            { action: "copy_link", label: "Copy share link", disabled: !shareToken },
-            { action: "mailto", label: "Share via email", disabled: !shareToken },
-          ]}
-          onShareAction={handleShareAction}
+          onShare={() => setShareModalOpen(true)}
         />
       </div>
 
@@ -610,6 +656,16 @@ const Courses = () => {
           onCancel={() => setGenerateModal(null)}
         />
       )}
+
+      <ShareStudyPackModal
+        open={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        busy={shareBusy}
+        shareUrl={shareUrl || ""}
+        onCreateLink={ensureShareLink}
+        onCopyLink={copyShareLink}
+        onShareViaEmail={shareViaEmail}
+      />
     </InnerAppPageLayout>
   );
 };

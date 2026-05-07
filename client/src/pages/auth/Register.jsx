@@ -163,7 +163,15 @@ const Register = () => {
 
         {success && (
           <div className="text-(--mint-700) body-small sm:text-right">
-            {success}{" "}
+            {loginHref.includes("redirect=/shared/") ? (
+              <>
+                Account created. Please verify your email, then log in to import this shared study pack.{" "}
+              </>
+            ) : (
+              <>
+                {success}{" "}
+              </>
+            )}
             <Link to={loginHref} className="font-semibold underline underline-offset-2">
               Go to login
             </Link>
