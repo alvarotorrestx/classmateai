@@ -13,6 +13,8 @@ from models.gamification_stats import GamificationStats
 from models.badge import Badge
 from models.user_badge import UserBadge
 from models.quiz_session_completion import QuizSessionCompletion
+from models.share_link import ShareLink
+from models.share_import import ShareImport
 
 __all__ = [
     "Base",
@@ -30,4 +32,6 @@ __all__ = [
     "Badge",
     "UserBadge",
     "QuizSessionCompletion",
+    "ShareLink",
+    "ShareImport",
 ]

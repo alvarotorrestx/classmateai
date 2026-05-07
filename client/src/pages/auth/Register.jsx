@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { useState } from "react"
 
 import DefaultPageLayout from "../../components/layout/DefaultPageLayout"
@@ -6,12 +6,19 @@ import Button from "../../components/ui/Button"
 
 import { registerUser } from "../../services/authService"
 import useAuth from "../../hooks/useAuth"
+import { getSafeRedirect } from "../../utils/redirects"
 
 const Register = () => {
   const MIN_PASSWORD_LEN = 10;
 
-  const navigate = useNavigate()
+  const location = useLocation()
   const { setAuth } = useAuth()
+
+  const safeRedirect = getSafeRedirect(location.search, "/dashboard")
+  const loginHref =
+    safeRedirect && safeRedirect !== "/dashboard"
+      ? `/login?redirect=${encodeURIComponent(safeRedirect)}`
+      : "/login"
 
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
@@ -36,7 +43,8 @@ const Register = () => {
       const data = await registerUser({
         full_name: fullName,
         email,
-        password
+        password,
+        redirect: safeRedirect && safeRedirect !== "/dashboard" ? safeRedirect : undefined,
       })
 
       setAuth(null)
@@ -155,8 +163,16 @@ const Register = () => {
 
         {success && (
           <div className="text-(--mint-700) body-small sm:text-right">
-            {success}{" "}
-            <Link to="/login" className="font-semibold underline underline-offset-2">
+            {loginHref.includes("redirect=/shared/") ? (
+              <>
+                Account created. Please verify your email, then log in to import this shared study pack.{" "}
+              </>
+            ) : (
+              <>
+                {success}{" "}
+              </>
+            )}
+            <Link to={loginHref} className="font-semibold underline underline-offset-2">
               Go to login
             </Link>
           </div>

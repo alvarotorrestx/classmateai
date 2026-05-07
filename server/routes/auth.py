@@ -11,6 +11,7 @@ from utils.auth import create_access_token, create_refresh_token, hash_password,
 from utils.deps import get_current_user
 from utils.email import send_verification_email
 from utils.rate_limit import limiter
+from utils.redirects import is_safe_internal_redirect
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_MINUTES = int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES", "10080")) # 7 days
@@ -67,7 +68,8 @@ def register(request: Request, body: UserRegister, response: Response, db: Sessi
 
     token = create_email_verification_token({"sub": str(user.id), "email": user.email})
     try:
-        send_verification_email(user.email, user.full_name, token)
+        redirect = body.redirect if is_safe_internal_redirect(body.redirect) else None
+        send_verification_email(user.email, user.full_name, token, redirect=redirect)
     except Exception:
         # Avoid blocking account creation if email fails; allow resend endpoint.
         logger.exception("Failed to send verification email")

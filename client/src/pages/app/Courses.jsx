@@ -11,6 +11,19 @@ import {
 } from "../../services/noteService";
 import { DeckGridSkeleton, StudyGuideSkeleton } from "../../components/loading/PageSkeletons";
 import { useToast } from "../../context/ToastContext";
+import ExportShareMenu from "../../components/study/ExportShareMenu";
+import { createShareLink } from "../../services/shareService";
+import ShareStudyPackModal from "../../components/study/ShareStudyPackModal";
+import {
+  buildCourseZipBlob,
+  buildFlashcardsMarkdown,
+  buildNotesMarkdown,
+  buildQuizMarkdown,
+  buildStudyGuideMarkdown,
+  safeFilename,
+  triggerDownloadBlob,
+  triggerDownloadMarkdown,
+} from "../../utils/exportStudyContent";
 
 const TrashIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -115,18 +128,13 @@ const Courses = () => {
   const [guideOpen,     setGuideOpen]     = useState(false);
   const [guideLoading,  setGuideLoading]  = useState(false);
   const [exporting,     setExporting]     = useState(false);
-  const [exportMenuOpen, setExportMenuOpen] = useState(false);
-  const exportMenuRef = useRef(null);
+  const [exportStatus,  setExportStatus]  = useState("");
+  const [shareBusy,     setShareBusy]     = useState(false);
+  const [shareStatus,   setShareStatus]   = useState("");
+  const [shareToken,    setShareToken]    = useState(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target)) {
-        setExportMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const isBusy = exporting || shareBusy;
 
   const fetchData = () => {
     setLoading(true);
@@ -173,38 +181,86 @@ const Courses = () => {
     }
   };
 
-  const triggerDownload = (filename, markdown) => {
-    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const safeFilename = (base, suffix) => {
-    const slug = base.replace(/[^a-z0-9]/gi, "_").replace(/_+/g, "_").replace(/^_|_$/g, "");
-    return `${slug}_${suffix}.md`;
-  };
-
   const handleExport = async (type) => {
-    setExportMenuOpen(false);
     setExporting(true);
+    setExportStatus("Preparing export…");
 
     const title = note?.title || "Course";
     const exportDate = new Date().toLocaleDateString("en-US", {
       year: "numeric", month: "long", day: "numeric",
     });
-    const header = (section) => [`# ${title} — ${section}`, `_Exported on ${exportDate}_`, "", "---", ""];
+    const exportDateLabel = exportDate;
+
+    if (type === "all") {
+      // ── Study Guide — fetch if not loaded ─────────────────────────────
+      let guide = studyGuide;
+      if (guide === null) {
+        setExportStatus("Fetching study guide…");
+        try {
+          const data = await getCourseStudyGuide(courseId);
+          guide = data.content;
+          setStudyGuide(guide);
+        } catch {
+          guide = false;
+        }
+      }
+
+      setExportStatus("Preparing files…");
+      const files = {};
+
+      if (note?.content) {
+        files[safeFilename(title, "notes")] = buildNotesMarkdown({
+          title,
+          exportDateLabel,
+          noteContent: note.content,
+        });
+      }
+
+      if (guide && guide !== false) {
+        files[safeFilename(title, "study_guide")] = buildStudyGuideMarkdown({
+          title,
+          exportDateLabel,
+          guideContent: guide,
+        });
+      }
+
+      const { markdown: fcMd, count: fcCount } = buildFlashcardsMarkdown({
+        title,
+        exportDateLabel,
+        decks,
+      });
+      if (fcCount > 0) files[safeFilename(title, "flashcards")] = fcMd;
+
+      const { markdown: quizMd, count: quizCount } = buildQuizMarkdown({
+        title,
+        exportDateLabel,
+        decks,
+      });
+      if (quizCount > 0) files[safeFilename(title, "quiz")] = quizMd;
+
+      setExportStatus("Zipping files…");
+      const zipBlob = buildCourseZipBlob({ filesByName: files });
+      const zipName = safeFilename(title, "course_export", "zip");
+
+      setExportStatus("Downloading…");
+      triggerDownloadBlob(zipName, zipBlob);
+      addToast("Course exported!");
+
+      setExporting(false);
+      setExportStatus("");
+      return;
+    }
 
     // ── Notes ────────────────────────────────────────────────────────────
-    if (type === "notes" || type === "all") {
+    if (type === "notes") {
       if (note?.content) {
-        const lines = [...header("Notes"), "", note.content.trim(), ""];
-        triggerDownload(safeFilename(title, "notes"), lines.join("\n"));
+        setExportStatus("Downloading notes…");
+        const md = buildNotesMarkdown({
+          title,
+          exportDateLabel,
+          noteContent: note.content,
+        });
+        triggerDownloadMarkdown(safeFilename(title, "notes"), md);
         if (type === "notes") { addToast("Notes exported!"); setExporting(false); return; }
       } else if (type === "notes") {
         addToast("No notes content to export.", "error");
@@ -215,7 +271,8 @@ const Courses = () => {
 
     // ── Study Guide — fetch if not loaded ────────────────────────────────
     let guide = studyGuide;
-    if ((type === "guide" || type === "all") && guide === null) {
+    if (type === "guide" && guide === null) {
+      setExportStatus("Fetching study guide…");
       try {
         const data = await getCourseStudyGuide(courseId);
         guide = data.content;
@@ -227,8 +284,9 @@ const Courses = () => {
 
     if (type === "guide") {
       if (guide && guide !== false) {
-        const lines = [...header("Study Guide"), "", guide.trim(), ""];
-        triggerDownload(safeFilename(title, "study_guide"), lines.join("\n"));
+        setExportStatus("Downloading study guide…");
+        const md = buildStudyGuideMarkdown({ title, exportDateLabel, guideContent: guide });
+        triggerDownloadMarkdown(safeFilename(title, "study_guide"), md);
         addToast("Study guide exported!");
       } else {
         addToast("No study guide available yet.", "error");
@@ -238,25 +296,16 @@ const Courses = () => {
     }
 
     // ── Flashcards ───────────────────────────────────────────────────────
-    if (type === "flashcards" || type === "all") {
-      const allFlashcards = decks.flatMap((d, i) =>
-        d.flashcards.map((fc) => ({ ...fc, setLabel: d.label || `Study Set ${i + 1}` }))
-      );
-      if (allFlashcards.length > 0) {
-        const lines = [...header("Flashcards"), ""];
-        let lastLabel = null;
-        for (const fc of allFlashcards) {
-          if (fc.setLabel !== lastLabel) {
-            lines.push(`### ${fc.setLabel}`);
-            lines.push("");
-            lastLabel = fc.setLabel;
-          }
-          lines.push(`**${fc.front}**`);
-          lines.push(fc.back);
-          lines.push("");
+    if (type === "flashcards") {
+      const { markdown, count } = buildFlashcardsMarkdown({ title, exportDateLabel, decks });
+      if (count > 0) {
+        setExportStatus("Downloading flashcards…");
+        triggerDownloadMarkdown(safeFilename(title, "flashcards"), markdown);
+        if (type === "flashcards") {
+          addToast("Flashcards exported!");
+          setExporting(false);
+          return;
         }
-        triggerDownload(safeFilename(title, "flashcards"), lines.join("\n"));
-        if (type === "flashcards") { addToast("Flashcards exported!"); setExporting(false); return; }
       } else if (type === "flashcards") {
         addToast("No flashcards to export.", "error");
         setExporting(false);
@@ -265,44 +314,127 @@ const Courses = () => {
     }
 
     // ── Quiz Questions ───────────────────────────────────────────────────
-    if (type === "quiz" || type === "all") {
-      const allQuestions = decks.flatMap((d, i) =>
-        d.quiz_questions.map((q) => ({ ...q, setLabel: d.label || `Study Set ${i + 1}` }))
-      );
-      if (allQuestions.length > 0) {
-        const lines = [...header("Quiz Questions"), ""];
-        const letters = ["A", "B", "C", "D"];
-        let lastLabel = null;
-        let counter = 1;
-        for (const q of allQuestions) {
-          if (q.setLabel !== lastLabel) {
-            lines.push(`### ${q.setLabel}`);
-            lines.push("");
-            lastLabel = q.setLabel;
-            counter = 1;
-          }
-          lines.push(`**${counter}. ${q.question}**`);
-          lines.push("");
-          q.options.forEach((opt, idx) => {
-            const marker = idx === q.correct_index ? " ✓" : "";
-            lines.push(`- ${letters[idx] || idx + 1}) ${opt}${marker}`);
-          });
-          if (q.explanation) { lines.push(""); lines.push(`> ${q.explanation}`); }
-          lines.push("");
-          counter++;
+    if (type === "quiz") {
+      const { markdown, count } = buildQuizMarkdown({ title, exportDateLabel, decks });
+      if (count > 0) {
+        setExportStatus("Downloading quiz…");
+        triggerDownloadMarkdown(safeFilename(title, "quiz"), markdown);
+        if (type === "quiz") {
+          addToast("Quiz questions exported!");
+          setExporting(false);
+          return;
         }
-        triggerDownload(safeFilename(title, "quiz"), lines.join("\n"));
-        if (type === "quiz") { addToast("Quiz questions exported!"); setExporting(false); return; }
       } else if (type === "quiz") {
         addToast("No quiz questions to export.", "error");
         setExporting(false);
         return;
       }
     }
-
-    // ── All ──────────────────────────────────────────────────────────────
-    if (type === "all") addToast("Course exported!");
     setExporting(false);
+    setExportStatus("");
+  };
+
+  const shareUrl = shareToken ? `${window.location.origin}/shared/${shareToken}` : null;
+
+  const handleShareAction = async (action) => {
+    if (action === "create_link") {
+      setShareBusy(true);
+      setShareStatus("Creating share link…");
+      try {
+        const res = await createShareLink({ resource_type: "note", resource_id: courseId });
+        const token = res?.token || null;
+        setShareToken(token);
+
+        const url = token ? `${window.location.origin}/shared/${token}` : null;
+        if (url) {
+          try {
+            await navigator.clipboard.writeText(url);
+            addToast("Share link created and copied.");
+          } catch {
+            addToast("Share link created. Use Copy link to copy it.");
+          }
+        } else {
+          addToast("Share link created.");
+        }
+      } catch (err) {
+        addToast(err?.response?.data?.detail || "Failed to create share link.", "error");
+      } finally {
+        setShareBusy(false);
+        setShareStatus("");
+      }
+      return;
+    }
+
+    if (!shareUrl) {
+      addToast("Create a share link first.", "error");
+      return;
+    }
+
+    if (action === "copy_link") {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        addToast("Link copied!");
+      } catch {
+        addToast("Could not copy link.", "error");
+      }
+      return;
+    }
+
+    if (action === "mailto") {
+      const subject = encodeURIComponent("ClassmateAI study materials");
+      const body = encodeURIComponent(`Here are the notes: ${shareUrl}`);
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    }
+  };
+
+  const ensureShareLink = async () => {
+    setShareBusy(true);
+    setShareStatus("Creating share link…");
+    try {
+      const res = await createShareLink({ resource_type: "note", resource_id: courseId });
+      const token = res?.token || null;
+      setShareToken(token);
+
+      const url = token ? `${window.location.origin}/shared/${token}` : null;
+      if (url) {
+        try {
+          await navigator.clipboard.writeText(url);
+          addToast("Share link created and copied.");
+        } catch {
+          addToast("Share link created. Use Copy link to copy it.");
+        }
+      } else {
+        addToast("Share link created.");
+      }
+    } catch (err) {
+      addToast(err?.response?.data?.detail || "Failed to create share link.", "error");
+    } finally {
+      setShareBusy(false);
+      setShareStatus("");
+    }
+  };
+
+  const copyShareLink = async () => {
+    if (!shareUrl) {
+      addToast("Create a share link first.", "error");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      addToast("Link copied!");
+    } catch {
+      addToast("Could not copy link.", "error");
+    }
+  };
+
+  const shareViaEmail = () => {
+    if (!shareUrl) {
+      addToast("Create a share link first.", "error");
+      return;
+    }
+    const subject = encodeURIComponent("ClassmateAI study materials");
+    const body = encodeURIComponent(`Here are the notes: ${shareUrl}`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
   const handleGenerate = async (studySetId) => {
@@ -455,62 +587,20 @@ const Courses = () => {
         >
           New Quiz Deck
         </button>
-        <div className="relative" ref={exportMenuRef}>
-          <button
-            type="button"
-            onClick={() => setExportMenuOpen((prev) => !prev)}
-            disabled={exporting || loading}
-            className="border border-theme text-base-theme rounded-xl px-5 py-2.5 text-sm font-semibold hover:bg-surface-muted transition disabled:opacity-50 flex items-center gap-2"
-          >
-            {exporting ? (
-              <div className="w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
-            ) : (
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-            )}
-            {exporting ? "Exporting…" : "Export"}
-            {!exporting && (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                className={`transition-transform ${exportMenuOpen ? "rotate-180" : ""}`}>
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            )}
-          </button>
-
-          {exportMenuOpen && (
-            <div className="absolute left-0 bottom-full mb-2 w-52 rounded-xl border border-theme bg-surface shadow-lg py-1.5 z-20">
-              {[
-                { type: "notes",      label: "Notes" },
-                { type: "guide",      label: "Study Guide" },
-                // { type: "flashcards", label: "Flashcards" },
-                // { type: "quiz",       label: "Quiz Questions" },
-                { type: "all",        label: "Everything", divider: true },
-              ].map(({ type, label, divider }) => (
-                <div key={type}>
-                  {divider && <div className="my-1 border-t border-theme" />}
-                  <button
-                    type="button"
-                    onClick={() => handleExport(type)}
-                    className="w-full text-left px-4 py-2 text-sm font-medium text-base-theme hover:bg-surface-muted transition flex items-center gap-2.5"
-                  >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted shrink-0">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                    {label}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ExportShareMenu
+          disabled={loading || isBusy}
+          busy={isBusy}
+          statusText={exporting ? exportStatus : shareStatus}
+          exportItems={[
+            { type: "notes", label: "Export notes" },
+            { type: "guide", label: "Export study guide" },
+            { type: "flashcards", label: "Export flashcards" },
+            { type: "quiz", label: "Export quiz questions" },
+            { type: "all", label: "Export everything (.zip)", divider: true },
+          ]}
+          onExport={handleExport}
+          onShare={() => setShareModalOpen(true)}
+        />
       </div>
 
       {/* Course Study Guide */}
@@ -566,6 +656,16 @@ const Courses = () => {
           onCancel={() => setGenerateModal(null)}
         />
       )}
+
+      <ShareStudyPackModal
+        open={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        busy={shareBusy}
+        shareUrl={shareUrl || ""}
+        onCreateLink={ensureShareLink}
+        onCopyLink={copyShareLink}
+        onShareViaEmail={shareViaEmail}
+      />
     </InnerAppPageLayout>
   );
 };

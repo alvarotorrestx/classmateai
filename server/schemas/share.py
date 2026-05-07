@@ -1,0 +1,35 @@
+import uuid
+from datetime import datetime
+from pydantic import BaseModel
+
+
+class ShareCreateRequest(BaseModel):
+    resource_type: str
+    resource_id: uuid.UUID
+
+
+class ShareCreateResponse(BaseModel):
+    token: str
+    resource_type: str
+    resource_id: uuid.UUID
+    created_at: datetime
+    expires_at: datetime | None = None
+
+
+class ShareNotePreviewResponse(BaseModel):
+    token: str
+    resource_type: str
+    title: str
+    content: str
+    study_set_count: int | None = None
+    flashcard_count: int | None = None
+    quiz_question_count: int | None = None
+    has_study_guide: bool | None = None
+    created_at: datetime
+    expires_at: datetime | None = None
+
+
+class ShareImportResponse(BaseModel):
+    message: str
+    note_id: uuid.UUID
+

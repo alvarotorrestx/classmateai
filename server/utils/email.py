@@ -5,7 +5,7 @@ import httpx
 
 
 # Send a transactional verification email via Brevo.
-def send_verification_email(email: str, full_name: str, token: str) -> None:
+def send_verification_email(email: str, full_name: str, token: str, redirect: str | None = None) -> None:
     api_key = os.getenv("BREVO_API_KEY")
     email_from = os.getenv("EMAIL_FROM")
     frontend_url = os.getenv("FRONTEND_URL")
@@ -18,6 +18,8 @@ def send_verification_email(email: str, full_name: str, token: str) -> None:
         raise RuntimeError("FRONTEND_URL is not set")
 
     verify_link = f"{frontend_url.rstrip('/')}/verify-email?token={quote(token)}"
+    if redirect:
+        verify_link += f"&redirect={quote(redirect, safe='')}"
 
     subject = "Verify your email for ClassmateAI"
     html_content = f"""
