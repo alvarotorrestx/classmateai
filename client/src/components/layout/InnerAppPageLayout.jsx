@@ -10,6 +10,7 @@ const InnerAppPageLayout = ({ children }) => {
     const { auth, setAuth } = useAuth();
 
     const fullName = auth?.user?.full_name || "Student";
+    const profileAvatarUrl = auth?.user?.avatar_url || null;
     const initials = fullName
         .split(" ")
         .map((n) => n[0])
@@ -63,10 +64,18 @@ const InnerAppPageLayout = ({ children }) => {
                         <button
                             type="button"
                             onClick={() => setMenuOpen((prev) => !prev)}
-                            className="w-10 h-10 rounded-full bg-(--mint-400) flex items-center justify-center font-semibold text-(--mint-950) hover:bg-(--mint-300) transition cursor-pointer"
+                            className="w-10 h-10 rounded-full bg-(--mint-400) flex items-center justify-center font-semibold text-(--mint-950) hover:bg-(--mint-300) transition cursor-pointer overflow-hidden"
                             title="Account menu"
                         >
-                            {initials}
+                            {profileAvatarUrl ? (
+                                <img
+                                    src={profileAvatarUrl}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                initials
+                            )}
                         </button>
 
                         {menuOpen && (
