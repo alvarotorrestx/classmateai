@@ -1,9 +1,6 @@
-import json
 import os
-import time
 import uuid
 import logging
-from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Response, Cookie
 from sqlalchemy.orm import Session
 
@@ -71,31 +68,6 @@ def clear_auth_cookies(response: Response):
         httponly=True,
         samesite=ss,
     )
-    # #region agent log
-    try:
-        _logpath = Path(__file__).resolve().parents[2] / "debug-cfda95.log"
-        with open(_logpath, "a", encoding="utf-8") as _f:
-            _f.write(
-                json.dumps(
-                    {
-                        "sessionId": "cfda95",
-                        "hypothesisId": "A",
-                        "location": "server/routes/auth.py:clear_auth_cookies",
-                        "message": "delete_cookie_matching_attrs",
-                        "data": {
-                            "secure": COOKIE_SECURE,
-                            "samesite": ss,
-                            "access_path": "/",
-                            "refresh_path": "/auth",
-                        },
-                        "timestamp": int(time.time() * 1000),
-                    }
-                )
-                + "\n"
-            )
-    except Exception:
-        pass
-    # #endregion
 
 
 @router.post("/register", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
