@@ -1,6 +1,9 @@
+import json
 import os
+import time
 import uuid
 import logging
+from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Response, Cookie
 from sqlalchemy.orm import Session
 
@@ -22,13 +25,22 @@ COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax")
 logger = logging.getLogger(__name__)
 
+
+def _normalized_samesite_for_cookie() -> str:
+    """Starlette delete_cookie / set_cookie expect lax|strict|none (lowercase)."""
+    ss = (COOKIE_SAMESITE or "lax").strip().lower()
+    if ss not in ("lax", "strict", "none"):
+        return "lax"
+    return ss
+
+
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
         secure=COOKIE_SECURE,
-        samesite=COOKIE_SAMESITE,
+        samesite=_normalized_samesite_for_cookie(),
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
     )
@@ -37,15 +49,53 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
         value=refresh_token,
         httponly=True,
         secure=COOKIE_SECURE,
-        samesite=COOKIE_SAMESITE,
+        samesite=_normalized_samesite_for_cookie(),
         max_age=REFRESH_TOKEN_EXPIRE_MINUTES * 60,
         path="/auth",
     )
 
 
 def clear_auth_cookies(response: Response):
-    response.delete_cookie(key="access_token", path="/")
-    response.delete_cookie(key="refresh_token", path="/auth")
+    ss = _normalized_samesite_for_cookie()
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        secure=COOKIE_SECURE,
+        httponly=True,
+        samesite=ss,
+    )
+    response.delete_cookie(
+        key="refresh_token",
+        path="/auth",
+        secure=COOKIE_SECURE,
+        httponly=True,
+        samesite=ss,
+    )
+    # #region agent log
+    try:
+        _logpath = Path(__file__).resolve().parents[2] / "debug-cfda95.log"
+        with open(_logpath, "a", encoding="utf-8") as _f:
+            _f.write(
+                json.dumps(
+                    {
+                        "sessionId": "cfda95",
+                        "hypothesisId": "A",
+                        "location": "server/routes/auth.py:clear_auth_cookies",
+                        "message": "delete_cookie_matching_attrs",
+                        "data": {
+                            "secure": COOKIE_SECURE,
+                            "samesite": ss,
+                            "access_path": "/",
+                            "refresh_path": "/auth",
+                        },
+                        "timestamp": int(time.time() * 1000),
+                    }
+                )
+                + "\n"
+            )
+    except Exception:
+        pass
+    # #endregion
 
 
 @router.post("/register", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
