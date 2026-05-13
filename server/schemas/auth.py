@@ -1,12 +1,13 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserRegister(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=10)
     full_name: str
+    redirect: str | None = None
 
 
 class UserLogin(BaseModel):
@@ -19,12 +20,29 @@ class UserResponse(BaseModel):
     email: str
     full_name: str
     is_active: bool
+    is_verified: bool
     created_at: datetime
+    avatar_url: str | None = None
 
     model_config = {"from_attributes": True}
 
 
 class AuthResponse(BaseModel):
     user: UserResponse
-    access_token: str
-    token_type: str = "bearer"
+    message: str
+
+
+class SessionResponse(BaseModel):
+    user: UserResponse
+
+
+class MessageResponse(BaseModel):
+    message: str
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str
+
+
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr

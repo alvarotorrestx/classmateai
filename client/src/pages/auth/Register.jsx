@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { useState } from "react"
 
 import DefaultPageLayout from "../../components/layout/DefaultPageLayout"
@@ -6,37 +6,49 @@ import Button from "../../components/ui/Button"
 
 import { registerUser } from "../../services/authService"
 import useAuth from "../../hooks/useAuth"
+import { getSafeRedirect } from "../../utils/redirects"
 
 const Register = () => {
+  const MIN_PASSWORD_LEN = 10;
 
-  const navigate = useNavigate()
+  const location = useLocation()
   const { setAuth } = useAuth()
+
+  const safeRedirect = getSafeRedirect(location.search, "/dashboard")
+  const loginHref =
+    safeRedirect && safeRedirect !== "/dashboard"
+      ? `/login?redirect=${encodeURIComponent(safeRedirect)}`
+      : "/login"
 
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
+    setSuccess("")
+
+    if (password.length < MIN_PASSWORD_LEN) {
+      setError(`Password must be at least ${MIN_PASSWORD_LEN} characters.`)
+      return
+    }
+
     setLoading(true)
 
     try {
       const data = await registerUser({
         full_name: fullName,
         email,
-        password
+        password,
+        redirect: safeRedirect && safeRedirect !== "/dashboard" ? safeRedirect : undefined,
       })
 
-      setAuth({
-        user: data.user,
-        accessToken: data.access_token,
-        tokenType: data.token_type
-      })
-
-      navigate("/dashboard")
+      setAuth(null)
+      setSuccess(data?.message || "Account created. Please verify your email to log in.")
 
     } catch (err) {
       if (!err?.response) {
@@ -75,7 +87,7 @@ const Register = () => {
             name="fullName"
             type="text"
             placeholder="John Carter"
-            className="w-full rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-md outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
+            className="w-full rounded-xl border border-theme bg-surface px-5 py-4 shadow-md outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
@@ -96,7 +108,7 @@ const Register = () => {
             name="email"
             type="email"
             placeholder="user@email.com"
-            className="w-full rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-md outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
+            className="w-full rounded-xl border border-theme bg-surface px-5 py-4 shadow-md outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -117,8 +129,9 @@ const Register = () => {
             name="password"
             type="password"
             placeholder="password"
-            className="w-full rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-md outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
+            className="w-full rounded-xl border border-theme bg-surface px-5 py-4 shadow-md outline-none transition focus:border-(--mint-400) focus:ring-2 focus:ring-(--mint-200)"
             required
+            minLength={MIN_PASSWORD_LEN}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
@@ -145,6 +158,23 @@ const Register = () => {
         {error && (
           <div className="text-error body-small sm:text-right">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="text-(--mint-700) body-small sm:text-right">
+            {loginHref.includes("redirect=/shared/") ? (
+              <>
+                Account created. Please verify your email, then log in to import this shared study pack.{" "}
+              </>
+            ) : (
+              <>
+                {success}{" "}
+              </>
+            )}
+            <Link to={loginHref} className="font-semibold underline underline-offset-2">
+              Go to login
+            </Link>
           </div>
         )}
       </form>

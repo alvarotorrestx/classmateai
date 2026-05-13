@@ -11,11 +11,15 @@ class StudySet(TimestampMixin, Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
     )
-    note_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("notes.id", ondelete="CASCADE"), nullable=False
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    note_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("notes.id", ondelete="SET NULL"), nullable=True
     )
     label: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
+    user = relationship("User", back_populates="study_sets")
     note = relationship("Note", back_populates="study_sets")
     flashcards = relationship("Flashcard", back_populates="study_set", cascade="all, delete-orphan")
     quiz_questions = relationship("QuizQuestion", back_populates="study_set", cascade="all, delete-orphan")

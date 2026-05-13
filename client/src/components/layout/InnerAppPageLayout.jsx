@@ -1,11 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
+import api from "../../services/api";
+import ThemeToggle from "../ui/ThemeToggle";
+import { useToast } from "../../context/ToastContext";
+import { NavLink } from "react-router-dom";
 
 const InnerAppPageLayout = ({ children }) => {
     const { auth, setAuth } = useAuth();
 
     const fullName = auth?.user?.full_name || "Student";
+    const profileAvatarUrl = auth?.user?.avatar_url || null;
     const initials = fullName
         .split(" ")
         .map((n) => n[0])
@@ -14,12 +19,18 @@ const InnerAppPageLayout = ({ children }) => {
         .toUpperCase();
 
     const navigate = useNavigate();
+    const { addToast } = useToast();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await api.post("/auth/logout");
+        } catch {
+            // ignore logout API errors; clear client state
+        }
+        addToast("Logged out", "info");
         setAuth(null);
-        localStorage.removeItem("auth");
         navigate("/");
     };
 
@@ -44,7 +55,7 @@ const InnerAppPageLayout = ({ children }) => {
                             alt="ClassmateAI logo"
                             className="w-15 h-12 rounded-md bg-white p-1"
                         />
-                        <Link to="/dashboard" className="text-white font-medium flex items-center gap-2">
+                        <Link to="/dashboard" className="text-(--surface-muted) font-medium flex items-center gap-2">
                             <span>←</span> Back to Dashboard
                         </Link>
                     </div>
@@ -53,18 +64,34 @@ const InnerAppPageLayout = ({ children }) => {
                         <button
                             type="button"
                             onClick={() => setMenuOpen((prev) => !prev)}
-                            className="w-10 h-10 rounded-full bg-(--mint-400) flex items-center justify-center font-semibold text-(--mint-950) hover:bg-(--mint-300) transition cursor-pointer"
+                            className="w-10 h-10 rounded-full bg-(--mint-400) flex items-center justify-center font-semibold text-(--mint-950) hover:bg-(--mint-300) transition cursor-pointer overflow-hidden"
                             title="Account menu"
                         >
-                            {initials}
+                            {profileAvatarUrl ? (
+                                <img
+                                    src={profileAvatarUrl}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                initials
+                            )}
                         </button>
 
                         {menuOpen && (
-                            <div className="absolute right-0 mt-2 min-w-36 rounded-xl border border-(--mint-100) bg-white shadow-lg py-2 z-50">
+                            <div className="absolute right-0 mt-2 min-w-40 rounded-xl border border-theme bg-surface shadow-lg py-2 z-50">
+                                <ThemeToggle />
+                                <NavLink
+                                    to="/settings/account"
+                                    onClick={() => setMenuOpen(false)}
+                                    className="w-full block px-4 py-2 text-left text-sm font-medium text-base-theme hover:bg-surface-muted transition cursor-pointer"
+                                >
+                                    Account settings
+                                </NavLink>
                                 <button
                                     type="button"
                                     onClick={() => { setMenuOpen(false); handleLogout(); }}
-                                    className="w-full px-4 py-2 text-left text-sm font-medium text-(--text) hover:bg-(--mint-50) transition cursor-pointer"
+                                    className="w-full px-4 py-2 text-left text-sm font-medium text-base-theme hover:bg-surface-muted transition cursor-pointer"
                                 >
                                     Logout
                                 </button>

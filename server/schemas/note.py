@@ -13,6 +13,15 @@ class NoteUpdate(BaseModel):
     content: str | None = None
 
 
+class NoteListResponse(BaseModel):
+    id: uuid.UUID
+    title: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class NoteResponse(BaseModel):
     id: uuid.UUID
     title: str

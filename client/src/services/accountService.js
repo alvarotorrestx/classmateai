@@ -1,0 +1,36 @@
+import api, { sessionClient } from "./api";
+
+export const requestEmailChange = async ({ new_email, current_password }) => {
+  const response = await api.post("/users/me/email-change/request", {
+    new_email,
+    current_password,
+  });
+  return response.data;
+};
+
+export const verifyEmailChange = async (token) => {
+  const response = await sessionClient.post("/users/me/email-change/verify", { token });
+  return response.data;
+};
+
+export const fetchSession = async () => {
+  const response = await sessionClient.get("/auth/session");
+  return response.data;
+};
+
+export const updatePassword = async ({ current_password, new_password }) => {
+  const response = await api.post("/users/me/password", {
+    current_password,
+    new_password,
+  });
+  return response.data;
+};
+
+export const updateProfile = async ({ full_name, avatar_url }) => {
+  const body = {};
+  if (full_name !== undefined) body.full_name = full_name;
+  if (avatar_url !== undefined) body.avatar_url = avatar_url;
+  const response = await api.patch("/users/me/profile", body);
+  return response.data;
+};
+

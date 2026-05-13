@@ -37,9 +37,21 @@ class StudyGuideResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class StudySetListResponse(BaseModel):
+    """Lightweight response for list endpoints — omits summary/study_guide content."""
+    id: uuid.UUID
+    note_id: uuid.UUID | None
+    label: str | None
+    created_at: datetime
+    flashcards: list[FlashcardResponse]
+    quiz_questions: list[QuizQuestionResponse]
+
+    model_config = {"from_attributes": True}
+
+
 class StudySetResponse(BaseModel):
     id: uuid.UUID
-    note_id: uuid.UUID
+    note_id: uuid.UUID | None
     label: str | None
     created_at: datetime
     flashcards: list[FlashcardResponse]
