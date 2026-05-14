@@ -1,3 +1,5 @@
+import os
+
 import models
 from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +21,29 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from utils.rate_limit import limiter
 
+_DEFAULT_CORS_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://classmateai-five.vercel.app",
+    "http://classmateai-five.vercel.app",
+]
+
+
+def _build_cors_origins() -> list[str]:
+    """Merge default origins with CORS_ORIGINS (comma-separated). No wildcards."""
+    extra = os.getenv("CORS_ORIGINS", "")
+    merged: list[str] = list(_DEFAULT_CORS_ORIGINS)
+    for raw in extra.split(","):
+        o = raw.strip()
+        if o and o not in merged:
+            merged.append(o)
+    return merged
+
+
+_CORS_METHODS = ("DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT")
+# Keep "*" so preflight mirrors Access-Control-Request-Headers (e.g. Sentry, custom clients).
+_CORS_HEADERS = ("*",)
+
 app = FastAPI()
 
 app.state.limiter = limiter
@@ -26,17 +51,13 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://classmateai-five.vercel.app",
-        "http://classmateai-five.vercel.app"
-    ],
+    allow_origins=_build_cors_origins(),
     allow_origin_regex=r"https://classmateai-five.*\.vercel\.app",
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=_CORS_METHODS,
+    allow_headers=_CORS_HEADERS,
 )
+
 
 app.include_router(auth_router)
 app.include_router(notes_router)

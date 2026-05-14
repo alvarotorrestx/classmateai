@@ -1,4 +1,5 @@
 import api from "./api";
+import { apiUrl } from "../utils/apiBaseUrl";
 import { cachedFetch, invalidate, invalidateByPrefix } from "../utils/requestCache";
 
 // ─── TTLs ────────────────────────────────────────────────────────────────────
@@ -112,10 +113,11 @@ export const extractTextFromFile = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
   // Use fetch instead of axios — axios overrides the multipart/form-data boundary.
-  const response = await fetch(
-    `${import.meta.env.VITE_API_BASE_URL}/extract-text`,
-    { method: "POST", credentials: "include", body: formData }
-  );
+  const response = await fetch(apiUrl("/extract-text"), {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
     const err = new Error(body.detail || "File extraction failed");
