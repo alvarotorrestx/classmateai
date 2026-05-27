@@ -1,5 +1,6 @@
 import api from "./api";
 import { apiUrl } from "../utils/apiBaseUrl";
+import { MAX_UPLOAD_BYTES, OVERSIZE_MESSAGE } from "../utils/uploadLimits";
 import { cachedFetch, invalidate, invalidateByPrefix } from "../utils/requestCache";
 
 // ─── TTLs ────────────────────────────────────────────────────────────────────
@@ -110,6 +111,11 @@ export const deleteStudySetQuiz = async (studySetId) => {
 // ─── FILE UPLOAD — never cached ──────────────────────────────────────────────
 
 export const extractTextFromFile = async (file) => {
+  if (file.size > MAX_UPLOAD_BYTES) {
+    const err = new Error(OVERSIZE_MESSAGE);
+    err.response = { data: { detail: OVERSIZE_MESSAGE } };
+    throw err;
+  }
   const formData = new FormData();
   formData.append("file", file);
   // Use fetch instead of axios — axios overrides the multipart/form-data boundary.

@@ -1,6 +1,10 @@
 import io
+
+from docx import Document
 from pypdf import PdfReader
 from pptx import Presentation
+
+LEGACY_DOC_MESSAGE = "Legacy .doc files are not supported. Please save as .docx and try again."
 
 
 def extract_text_from_pdf(data: bytes) -> str:
@@ -29,11 +33,24 @@ def extract_text_from_pptx(data: bytes) -> str:
     return "\n\n".join(slides)
 
 
+def extract_text_from_docx(data: bytes) -> str:
+    doc = Document(io.BytesIO(data))
+    paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+    return "\n\n".join(paragraphs)
+
+
 def extract_text(data: bytes, filename: str) -> str:
     lower = filename.lower()
     if lower.endswith(".pdf"):
         return extract_text_from_pdf(data)
     if lower.endswith(".pptx"):
         return extract_text_from_pptx(data)
-    # Plain text fallback (.txt, .md)
-    return data.decode("utf-8", errors="replace")
+    if lower.endswith(".docx"):
+        return extract_text_from_docx(data)
+    if lower.endswith(".doc"):
+        raise ValueError(LEGACY_DOC_MESSAGE)
+    if lower.endswith(".txt") or lower.endswith(".md"):
+        return data.decode("utf-8", errors="replace")
+    raise ValueError(
+        "Unsupported file type. Please upload a PDF, PPTX, TXT, MD, or DOCX file."
+    )
