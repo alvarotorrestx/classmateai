@@ -9,11 +9,12 @@ router = APIRouter(tags=["upload"])
 SUPPORTED_TYPES = {
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "text/plain",
     "text/markdown",
 }
 
-MAX_BYTES = 20 * 1024 * 1024  # 20 MB
+MAX_BYTES = 4 * 1024 * 1024  # 4 MB (align with Vercel request body limits)
 
 
 @router.post("/extract-text")
@@ -26,7 +27,10 @@ async def extract_text_from_file(
     data = await file.read()
 
     if len(data) > MAX_BYTES:
-        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="File exceeds 20 MB limit")
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="This file is too large to upload. Please use a file under 4 MB or try again.",
+        )
 
     try:
         text = extract_text(data, file.filename or "")

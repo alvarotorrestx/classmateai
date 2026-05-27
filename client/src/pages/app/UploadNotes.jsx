@@ -3,8 +3,9 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import InnerAppPageLayout from "../../components/layout/InnerAppPageLayout";
 import { createNote, getNote, extractTextFromFile, addContentToNote } from "../../services/noteService";
 import { useToast } from "../../context/ToastContext";
+import { LEGACY_DOC_MESSAGE, MAX_UPLOAD_BYTES, OVERSIZE_MESSAGE, SUPPORTED_UPLOAD_LABEL, UNSUPPORTED_TYPE_MESSAGE } from "../../utils/uploadLimits";
 
-const ACCEPTED = ".txt,.md,.pdf,.pptx";
+const ACCEPTED = ".txt,.md,.pdf,.pptx,.docx";
 const PLAIN_TEXT_TYPES = ["text/plain", "text/markdown", "text/x-markdown"];
 
 const UploadNotes = () => {
@@ -26,7 +27,7 @@ const UploadNotes = () => {
         .then((n) => setCourseTitle(n.title))
         .catch(() => {});
     }
-  }, [courseId, location.state?.title]);
+  }, [courseId, isExistingCourse, location.state?.title]);
 
   const readFileAsText = (file) =>
     new Promise((resolve, reject) => {
@@ -36,16 +37,34 @@ const UploadNotes = () => {
       reader.readAsText(file);
     });
 
+  const resolveUploadError = (err) => {
+    const detail = err?.response?.data?.detail;
+    if (typeof detail === "string" && detail) return detail;
+    if (err?.message === OVERSIZE_MESSAGE) return OVERSIZE_MESSAGE;
+    return "Failed to process file. Please try again.";
+  };
+
   const processFile = async (file) => {
     if (!file) return;
 
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError(OVERSIZE_MESSAGE);
+      return;
+    }
+
     const name = file.name.toLowerCase();
+    if (name.endsWith(".doc") && !name.endsWith(".docx")) {
+      setError(LEGACY_DOC_MESSAGE);
+      return;
+    }
+
     const isPlain = PLAIN_TEXT_TYPES.includes(file.type) || name.endsWith(".txt") || name.endsWith(".md");
     const isPdf = name.endsWith(".pdf");
     const isPptx = name.endsWith(".pptx");
+    const isDocx = name.endsWith(".docx");
 
-    if (!isPlain && !isPdf && !isPptx) {
-      setError("Unsupported file type. Please upload a TXT, MD, PDF, or PPTX file.");
+    if (!isPlain && !isPdf && !isPptx && !isDocx) {
+      setError(UNSUPPORTED_TYPE_MESSAGE);
       return;
     }
 
@@ -58,13 +77,14 @@ const UploadNotes = () => {
         setLoadingMsg("Reading file…");
         content = await readFileAsText(file);
       } else {
-        setLoadingMsg(isPdf ? "Extracting text from PDF…" : "Extracting text from PowerPoint…");
+        if (isPdf) setLoadingMsg("Extracting text from PDF…");
+        else if (isPptx) setLoadingMsg("Extracting text from PowerPoint…");
+        else setLoadingMsg("Extracting text from Word document…");
         content = await extractTextFromFile(file);
       }
 
       if (!content || !content.trim()) {
         setError("No text could be extracted from this file. Please try a different file.");
-        setLoading(false);
         return;
       }
 
@@ -73,17 +93,14 @@ const UploadNotes = () => {
         setError(
           `Not enough content to generate a study set. Your file contains only ${wordCount} word${wordCount !== 1 ? "s" : ""} — please upload at least 150 words of notes, such as a full lecture handout or chapter summary.`
         );
-        setLoading(false);
         return;
       }
 
       if (isExistingCourse) {
-        // Adding more content to an existing course — generate new study set + update course guide
         setLoadingMsg("Generating study materials…");
         await addContentToNote(courseId, content);
         navigate(`/courses/${courseId}`);
       } else {
-        // New course — create the note then let the processing page handle generation
         setLoadingMsg("Uploading…");
         const title = courseTitle || "My Notes";
         const note = await createNote(title, content);
@@ -91,16 +108,17 @@ const UploadNotes = () => {
         navigate(`/courses/${note.id}/processing`);
       }
     } catch (err) {
-      const msg = err?.response?.data?.detail;
-      setError(msg || "Failed to process file. Please try again.");
+      setError(resolveUploadError(err));
+    } finally {
       setLoading(false);
+      if (inputRef.current) inputRef.current.value = "";
     }
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragging(false);
-    processFile(e.dataTransfer.files[0]);
+    if (!loading) processFile(e.dataTransfer.files[0]);
   };
 
   const handleFile = (e) => {
@@ -117,13 +135,16 @@ const UploadNotes = () => {
       </p>
 
       {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="mb-4 rounded-xl border border-theme bg-surface px-4 py-3 text-sm font-semibold text-error">
           {error}
         </div>
       )}
 
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (!loading) setDragging(true);
+        }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         className={`rounded-2xl border-2 border-dashed p-12 flex flex-col items-center gap-4 transition ${
@@ -164,10 +185,19 @@ const UploadNotes = () => {
           </>
         )}
 
-        <input ref={inputRef} type="file" accept={ACCEPTED} className="hidden" onChange={handleFile} />
+        <input
+          ref={inputRef}
+          type="file"
+          accept={ACCEPTED}
+          className="hidden"
+          disabled={loading}
+          onChange={handleFile}
+        />
 
-        <div className="flex gap-3 mt-1">
-          {["PDF", "PPTX", "TXT", "MD"].map((fmt) => (
+        <p className="text-xs text-muted text-center mt-1">{SUPPORTED_UPLOAD_LABEL}</p>
+
+        <div className="flex flex-wrap justify-center gap-3 mt-1">
+          {["PDF", "PPTX", "TXT", "MD", "DOCX"].map((fmt) => (
             <span key={fmt} className="text-xs font-semibold text-(--mint-700) bg-(--mint-100) rounded-lg px-2.5 py-1">
               {fmt}
             </span>
