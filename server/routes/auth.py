@@ -18,17 +18,23 @@ REFRESH_TOKEN_EXPIRE_MINUTES = int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES", "10
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
-COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax")
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").strip().lower() == "true"
+COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").strip().lower()
 logger = logging.getLogger(__name__)
+
+_ALLOWED_SAMESITE = frozenset({"lax", "strict", "none"})
+
+
+def _is_vercel_or_production() -> bool:
+    return bool(os.getenv("VERCEL")) or os.getenv("VERCEL_ENV", "").strip().lower() == "production"
 
 
 def _normalized_samesite_for_cookie() -> str:
     """Starlette delete_cookie / set_cookie expect lax|strict|none (lowercase)."""
-    ss = (COOKIE_SAMESITE or "lax").strip().lower()
-    if ss not in ("lax", "strict", "none"):
-        return "lax"
-    return ss
+    ss = COOKIE_SAMESITE or "lax"
+    if ss in _ALLOWED_SAMESITE:
+        return ss
+    return "none" if _is_vercel_or_production() else "lax"
 
 
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
