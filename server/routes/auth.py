@@ -20,6 +20,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").strip().lower() == "true"
 COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").strip().lower()
+COOKIE_ACCESS_PATH = os.getenv("COOKIE_ACCESS_PATH", "/").strip() or "/"
+COOKIE_REFRESH_PATH = os.getenv("COOKIE_REFRESH_PATH", "/").strip() or "/"
 logger = logging.getLogger(__name__)
 
 _ALLOWED_SAMESITE = frozenset({"lax", "strict", "none"})
@@ -45,7 +47,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
         secure=COOKIE_SECURE,
         samesite=_normalized_samesite_for_cookie(),
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        path="/",
+        path=COOKIE_ACCESS_PATH,
     )
     response.set_cookie(
         key="refresh_token",
@@ -54,7 +56,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
         secure=COOKIE_SECURE,
         samesite=_normalized_samesite_for_cookie(),
         max_age=REFRESH_TOKEN_EXPIRE_MINUTES * 60,
-        path="/auth",
+        path=COOKIE_REFRESH_PATH,
     )
 
 
@@ -62,14 +64,14 @@ def clear_auth_cookies(response: Response):
     ss = _normalized_samesite_for_cookie()
     response.delete_cookie(
         key="access_token",
-        path="/",
+        path=COOKIE_ACCESS_PATH,
         secure=COOKIE_SECURE,
         httponly=True,
         samesite=ss,
     )
     response.delete_cookie(
         key="refresh_token",
-        path="/auth",
+        path=COOKIE_REFRESH_PATH,
         secure=COOKIE_SECURE,
         httponly=True,
         samesite=ss,
