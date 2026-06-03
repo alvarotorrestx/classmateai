@@ -375,12 +375,14 @@ const QuizSession = () => {
                 Next &gt;
               </button>
             )}
-            <button
-              onClick={handleFinish}
-              className="bg-(--mint-600) text-white rounded-xl px-8 py-2.5 text-sm font-semibold hover:bg-(--mint-700) transition"
-            >
-              Finish Quiz
-            </button>
+            {isLast && (
+              <button
+                onClick={handleFinish}
+                className="bg-(--mint-600) text-white rounded-xl px-8 py-2.5 text-sm font-semibold hover:bg-(--mint-700) transition"
+              >
+                Finish Quiz
+              </button>
+            )}
           </div>
         </div>
       </div>
