@@ -109,7 +109,7 @@ const QuizSession = () => {
 
   if (loading) {
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Quiz Session">
         <QuizSessionSkeleton />
       </InnerAppPageLayout>
     );
@@ -117,7 +117,7 @@ const QuizSession = () => {
 
   if (error) {
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Quiz Session">
         <div className="max-w-lg mx-auto text-center py-16">
           <p className="text-red-500 font-semibold mb-4">{error}</p>
           <button
@@ -133,7 +133,7 @@ const QuizSession = () => {
 
   if (questions.length === 0) {
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Quiz Session">
         <div className="max-w-lg mx-auto text-center py-16">
           <p className="font-bold text-base mb-2">No questions available</p>
           <p className="text-sm text-muted mb-6">
@@ -166,7 +166,7 @@ const QuizSession = () => {
     }));
 
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Quiz Session">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
@@ -296,7 +296,7 @@ const QuizSession = () => {
   const isFirst = current === 0;
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle="Quiz Session">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

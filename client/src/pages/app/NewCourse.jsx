@@ -14,7 +14,7 @@ const NewCourse = () => {
   };
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle="Create Course">
       <div className="max-w-lg mx-auto text-center">
         <h3 className="mb-2">Create New Course</h3>
         <p className="text-sm text-muted mb-8">

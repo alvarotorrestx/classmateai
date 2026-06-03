@@ -81,7 +81,7 @@ const Analytics = () => {
   }, []);
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle="Analytics">
       <h3 className="mb-1">Performance Analytics</h3>
       <p className="text-sm text-muted mb-8">
         Track your progress and identify areas for improvement

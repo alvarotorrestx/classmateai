@@ -70,7 +70,7 @@ const AllQuizzes = () => {
       : null;
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle="Quizzes">
       <h3 className="mb-1">Quizzes</h3>
       <p className="text-sm text-muted mb-8">All your available quizzes</p>
 

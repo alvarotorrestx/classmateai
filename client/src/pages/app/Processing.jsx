@@ -78,7 +78,7 @@ const Processing = () => {
 
   if (error) {
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Processing">
         <div className="max-w-lg mx-auto text-center">
           <div className="bg-surface rounded-2xl border border-red-100 shadow-sm p-8">
             <div className="w-16 h-16 rounded-full bg-red-100 mx-auto mb-4 flex items-center justify-center">
@@ -102,7 +102,7 @@ const Processing = () => {
   }
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle="Processing">
       <div className="max-w-lg mx-auto text-center">
         <h3 className="mb-2">Analyzing Your Notes...</h3>
         <p className="text-sm text-muted mb-8">This usually takes 30 - 60 seconds</p>

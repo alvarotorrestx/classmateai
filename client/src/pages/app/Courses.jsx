@@ -461,7 +461,7 @@ const Courses = () => {
   };
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle="Course Materials">
       <div className="flex items-start justify-between mb-1 gap-4">
         <h3 className="leading-snug">{note?.title || "Course Materials"}</h3>
       </div>
