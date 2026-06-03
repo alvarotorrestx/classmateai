@@ -7,6 +7,7 @@ import { recordStudyActivity } from "../../hooks/useStudyMetrics";
 import { completeQuizSession } from "../../services/gamificationService";
 import api from "../../services/api";
 import { QuizSessionSkeleton } from "../../components/loading/PageSkeletons";
+import SubmitQuizConfirmModal from "../../components/modals/SubmitQuizConfirmModal";
 
 const LETTERS = ["A", "B", "C", "D"];
 
@@ -23,6 +24,8 @@ const QuizSession = () => {
   const [answers, setAnswers] = useState({});
   const [selected, setSelected] = useState(null);
   const [finished, setFinished] = useState(false);
+  const [confirmSubmitOpen, setConfirmSubmitOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const sessionStartRef = useRef(null);
 
   useEffect(() => {
@@ -104,12 +107,22 @@ const QuizSession = () => {
     setSelected(null);
     setCurrent(0);
     setFinished(false);
+    setConfirmSubmitOpen(false);
+    setSubmitting(false);
     sessionStartRef.current = questions.length > 0 ? Date.now() : null;
+  };
+
+  const handleConfirmSubmit = () => {
+    if (submitting) return;
+    setSubmitting(true);
+    handleFinish();
+    setConfirmSubmitOpen(false);
+    setSubmitting(false);
   };
 
   if (loading) {
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Quiz Session">
         <QuizSessionSkeleton />
       </InnerAppPageLayout>
     );
@@ -117,7 +130,7 @@ const QuizSession = () => {
 
   if (error) {
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Quiz Session">
         <div className="max-w-lg mx-auto text-center py-16">
           <p className="text-red-500 font-semibold mb-4">{error}</p>
           <button
@@ -133,7 +146,7 @@ const QuizSession = () => {
 
   if (questions.length === 0) {
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Quiz Session">
         <div className="max-w-lg mx-auto text-center py-16">
           <p className="font-bold text-base mb-2">No questions available</p>
           <p className="text-sm text-muted mb-6">
@@ -166,7 +179,7 @@ const QuizSession = () => {
     }));
 
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Quiz Session">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
@@ -296,7 +309,7 @@ const QuizSession = () => {
   const isFirst = current === 0;
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle="Quiz Session">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -377,14 +390,22 @@ const QuizSession = () => {
             )}
             {isLast && (
               <button
-                onClick={handleFinish}
-                className="bg-(--mint-600) text-white rounded-xl px-8 py-2.5 text-sm font-semibold hover:bg-(--mint-700) transition"
+                onClick={() => setConfirmSubmitOpen(true)}
+                disabled={confirmSubmitOpen || submitting}
+                className="bg-(--mint-600) text-white rounded-xl px-8 py-2.5 text-sm font-semibold hover:bg-(--mint-700) transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Finish Quiz
+                Submit Quiz
               </button>
             )}
           </div>
         </div>
+
+        <SubmitQuizConfirmModal
+          open={confirmSubmitOpen}
+          submitting={submitting}
+          onCancel={() => setConfirmSubmitOpen(false)}
+          onConfirm={handleConfirmSubmit}
+        />
       </div>
     </InnerAppPageLayout>
   );

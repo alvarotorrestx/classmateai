@@ -24,7 +24,7 @@ const NAV_LINKS = [
     { to: "/rewards",    icon: trophyIcon,      label: "Rewards"    },
 ];
 
-const InnerAppPageLayout = ({ children }) => {
+const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
     const { auth, setAuth } = useAuth();
     const navigate = useNavigate();
     const { addToast } = useToast();
@@ -116,7 +116,7 @@ const InnerAppPageLayout = ({ children }) => {
                         />
 
                         <span className="text-(--surface-muted) font-semibold truncate body-large">
-                            {fullName}
+                            {headerTitle}
                         </span>
                     </div>
 

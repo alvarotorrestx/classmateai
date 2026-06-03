@@ -9,7 +9,7 @@ const StudyMaterialsReady = () => {
   const studySetId = location.state?.studySetId;
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle="Study Materials">
       <div className="bg-surface rounded-2xl border border-theme shadow-sm p-8 text-center mb-6">
         <div className="w-16 h-16 rounded-full bg-(--mint-600) mx-auto mb-5 flex items-center justify-center">
           <svg

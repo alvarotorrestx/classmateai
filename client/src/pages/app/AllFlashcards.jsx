@@ -71,7 +71,7 @@ const AllFlashcards = () => {
       : null;
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle="Flashcards">
       <h3 className="mb-1">Flashcards</h3>
       <p className="text-sm text-muted mb-8">All your flashcard decks</p>
 

@@ -73,7 +73,7 @@ const Flashcards = () => {
 
   if (loading) {
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Flashcards">
         <FlashcardSessionSkeleton />
       </InnerAppPageLayout>
     );
@@ -81,7 +81,7 @@ const Flashcards = () => {
 
   if (cards.length === 0) {
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Flashcards">
         <div className="max-w-lg mx-auto text-center">
           <p className="text-xl font-bold mb-1">{courseTitle || "Flashcards"}</p>
           <p className="text-sm text-muted mb-8">Study your generated cards</p>
@@ -100,7 +100,7 @@ const Flashcards = () => {
     const reviewedCount = reviewedIdsRef.current.size;
 
     return (
-      <InnerAppPageLayout>
+      <InnerAppPageLayout headerTitle="Flashcards">
         <div className="max-w-lg mx-auto text-center">
           <p className="text-xl font-bold mb-1">
             {courseTitle || "Flashcards complete"}
@@ -155,7 +155,7 @@ const Flashcards = () => {
   }
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle="Flashcards">
       <div className="max-w-lg mx-auto">
         <p className="text-xl font-bold text-center mb-1">{courseTitle || "Flashcards"}</p>
         <p className="text-sm text-muted mb-6 text-center">

@@ -126,7 +126,7 @@ const UploadNotes = () => {
   };
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle={isExistingCourse ? "Add More Notes" : "Upload Notes"}>
       <h3 className="mb-1">{isExistingCourse ? "Add More Notes" : "Upload Lecture Notes"}</h3>
       <p className="text-sm text-muted mb-6">
         {courseTitle

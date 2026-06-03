@@ -21,7 +21,7 @@ const Quizzes = () => {
   }, [courseId]);
 
   return (
-    <InnerAppPageLayout>
+    <InnerAppPageLayout headerTitle="Quizzes">
       <h3 className="mb-1">Available Quizzes</h3>
       <p className="text-sm text-muted mb-8">{note?.title || "Test your knowledge"}</p>
 
