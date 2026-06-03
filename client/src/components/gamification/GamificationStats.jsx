@@ -1,10 +1,12 @@
 import { Flame, Sparkles, Trophy } from "lucide-react";
+import Tooltip from "../ui/Tooltip";
 
-const StatPill = ({ icon: Icon, label, value, sub }) => (
+const StatPill = ({ icon: Icon, label, value, sub, tooltip }) => (
   <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
     <div className="flex items-center gap-2 mb-2">
       <Icon size={18} className="text-(--mint-700)" aria-hidden />
       <p className="text-(--mint-700) font-bold text-base">{label}</p>
+      {tooltip && <Tooltip content={tooltip} />}
     </div>
     <p className="text-4xl font-bold text-(--text-emphasis) tabular-nums">{value}</p>
     {sub ? <p className="text-sm text-muted mt-1">{sub}</p> : null}
@@ -20,17 +22,23 @@ const GamificationStats = ({ stats }) => {
         label="Study streak"
         value={stats.current_streak_days ?? 0}
         sub={`Best: ${stats.longest_streak_days ?? 0} day${(stats.longest_streak_days ?? 0) === 1 ? "" : "s"}`}
+        tooltip="Study at least once a day to keep your streak going. Missing a day resets it back to 0."
       />
-      <StatPill icon={Trophy} label="Total points" value={stats.total_points ?? 0} />
+      <StatPill
+        icon={Trophy}
+        label="Total points"
+        value={stats.total_points ?? 0}
+        tooltip="Points are earned by studying: +10 per flashcard reviewed, +15 per quiz question answered, and +25 for finishing a full quiz."
+      />
       <StatPill
         icon={Sparkles}
         label="Activity totals"
         value={`${stats.total_flashcards_reviewed ?? 0} / ${stats.total_quiz_attempts ?? 0}`}
         sub="Flashcards reviewed / quiz attempts"
+        tooltip="Total flashcard cards you've reviewed across all your decks, and the total number of individual quiz questions you've answered."
       />
     </div>
   );
 };
 
 export default GamificationStats;
-
