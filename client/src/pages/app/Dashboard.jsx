@@ -8,8 +8,7 @@ import { getTotalStudySeconds, formatStudyDuration } from "../../hooks/useStudyM
 import { getMyGamification } from "../../services/gamificationService";
 import { hasStudyContent, getStudyRecommendations } from "../../utils/studyRecommendations";
 import { DashboardSkeleton } from "../../components/loading/PageSkeletons";
-import TutorialModal from "../../components/ui/TutorialModal";
-import { useTutorial } from "../../hooks/useTutorial";
+import RecommendationNudge from "../../components/study/RecommendationNudge";
 
 const StatCard = ({ label, value, sub }) => (
   <div className="bg-surface rounded-2xl border border-theme shadow-sm p-4 flex flex-col gap-1">
@@ -21,7 +20,6 @@ const StatCard = ({ label, value, sub }) => (
 
 const Dashboard = () => {
   const { auth } = useAuth();
-  const { tutorialOpen, dismissTutorial, reopenTutorial } = useTutorial();
   const [courses, setCourses] = useState([]);
   const [studySets, setStudySets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,11 +88,10 @@ const Dashboard = () => {
 
   return (
     <>
-      <MainAppPageLayout
+    <MainAppPageLayout
       headerTitle={`Welcome Back, ${firstName}!`}
       profileInitials={initials}
       profileAvatarUrl={auth?.user?.avatar_url || null}
-      onShowTutorial={reopenTutorial}
       title={`${greeting}, ${firstName}!`}
       subtitle={
         activeCourseCount > 0
@@ -272,7 +269,7 @@ const Dashboard = () => {
       )}
       </MainAppPageLayout>
 
-      {tutorialOpen && <TutorialModal onDismiss={dismissTutorial} />}
+      <RecommendationNudge recommendations={studyRecommendations} />
     </>
   );
 };

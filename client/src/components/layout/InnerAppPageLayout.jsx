@@ -14,6 +14,8 @@ import api from "../../services/api";
 import ThemeToggle from "../ui/ThemeToggle";
 import { useToast } from "../../context/ToastContext";
 import { clearCache } from "../../utils/requestCache";
+import { useTutorial } from "../../hooks/useTutorial";
+import TutorialModal from "../ui/TutorialModal";
 
 const NAV_LINKS = [
     { to: "/dashboard",  icon: dashboardIcon,  label: "Dashboard"  },
@@ -26,6 +28,7 @@ const NAV_LINKS = [
 
 const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
     const { auth, setAuth } = useAuth();
+    const { tutorialOpen, dismissTutorial, reopenTutorial } = useTutorial();
     const navigate = useNavigate();
     const { addToast } = useToast();
 
@@ -90,6 +93,7 @@ const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
     const closeSidebar = () => setSidebarOpen(false);
 
     return (
+        <>
         <section className="w-full flex items-center justify-center max-w-500 mx-auto">
             <div className="w-full bg-(--surface) overflow-hidden">
 
@@ -213,6 +217,8 @@ const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
 
             </div>
         </section>
+        {tutorialOpen && <TutorialModal onDismiss={dismissTutorial} />}
+        </>
     );
 };
 

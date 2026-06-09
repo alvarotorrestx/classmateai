@@ -68,6 +68,8 @@ Upload your notes as a PDF, PowerPoint, Word document, or text file, and Classma
 - **Persistent sidebar** — full navigation sidebar visible on all app pages on desktop; collapsible drawer on mobile
 - **Dark mode** — full dark/light theme toggle on the landing page, sign-in/register screens, and account menu; respects system preference on first visit, persisted across sessions
 - **Quiz completion feedback** — success toast and brief confetti burst when you submit a quiz (any score)
+- **Onboarding tutorial** — 7-step guided tour shown automatically on first visit; re-accessible at any time via "How it works" in the account menu, available on every page of the app
+- **Study recommendation nudge** — a floating ✨ button surfaces contextual study suggestions: on the Dashboard it cycles through all three recommendations (‹ 1 of 3 ›); on the Courses, Flashcards, and Quizzes pages it shows the single highest-priority action for that content type
 - **Toast notifications** — slide-in feedback for all key actions (login, logout, course created, materials generated, items deleted, errors)
 - **Skeleton loading** — shape-matched skeleton screens on every data-loading page to minimize layout shift
 - **Delete controls** — hover trash icon on every card with inline confirm; bulk select + delete on the Courses page
@@ -474,4 +476,6 @@ The full application is functional end-to-end across all features.
 - Gamification stats with tooltip explanations on the Rewards page
 - Analytics page with study metrics
 - Persistent sidebar navigation on all app pages (hamburger drawer on mobile)
+- Onboarding tutorial accessible from every page via the account menu
+- Study recommendation nudge on Dashboard (cycles all 3), Courses, Flashcards, and Quizzes pages
 - Dark mode with system-preference detection and persistence
