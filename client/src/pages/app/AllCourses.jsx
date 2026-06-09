@@ -271,7 +271,7 @@ const AllCourses = () => {
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-muted mb-1">
-                  <span>Mastery</span>
+                  <span>Best Quiz Score</span>
                   <span className="font-semibold text-(--text-emphasis)">
                     {typeof mastery === "number" ? `${mastery}%` : "—%"}
                   </span>

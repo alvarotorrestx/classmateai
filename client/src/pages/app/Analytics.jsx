@@ -84,14 +84,14 @@ const Analytics = () => {
     <InnerAppPageLayout headerTitle="Analytics">
       <h3 className="mb-1">Performance Analytics</h3>
       <p className="text-sm text-muted mb-8">
-        Track your progress and identify areas for improvement
+        See your quiz scores, study habits, and best results by course.
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
           <p className="text-(--mint-700) font-bold text-base mb-0.5">Study streak</p>
           <p className="text-xs text-muted italic mb-4">
-            Backend streak (UTC days) from reviews, attempts, and completions
+            Consecutive days you&apos;ve studied. Review a flashcard, answer a quiz question, or finish a quiz to keep it going.
           </p>
           <p className="text-4xl font-bold text-(--text-emphasis) tabular-nums">{gamiStats?.current_streak_days ?? 0}</p>
           <p className="text-sm text-muted mt-1">days in a row</p>
@@ -104,9 +104,9 @@ const Analytics = () => {
           <p className="text-4xl font-bold text-(--text-emphasis) tabular-nums">{gamiStats?.total_points ?? 0}</p>
         </div>
         <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
-          <p className="text-(--mint-700) font-bold text-base mb-0.5">Study time (device)</p>
+          <p className="text-(--mint-700) font-bold text-base mb-0.5">Study time</p>
           <p className="text-xs text-muted italic mb-4">
-            From completed flashcard decks and quizzes (local only)
+            Time tracked on this browser from finished flashcard decks and quizzes.
           </p>
           <p className="text-4xl font-bold text-(--text-emphasis) tabular-nums">{totalStudyLabel}</p>
         </div>
@@ -191,14 +191,14 @@ const Analytics = () => {
           )}
         </div>
 
-        {/* Topics mastery */}
+        {/* Best quiz score by course */}
         <div className="bg-surface rounded-2xl border-2 border-(--mint-200) p-5">
-          <p className="text-(--mint-700) font-bold text-base mb-0.5">Topics Mastery</p>
+          <p className="text-(--mint-700) font-bold text-base mb-0.5">Best Quiz Score by Course</p>
           <p className="text-xs text-muted italic mb-4">Best quiz score per course — tap to open course or retake</p>
 
           {topicsData.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center" style={{ height: "144px" }}>
-              <p className="text-sm text-muted">No mastery data yet</p>
+              <p className="text-sm text-muted">No quiz scores yet</p>
               <p className="text-xs text-muted mt-1 opacity-90">Take quizzes to see your best score per course</p>
             </div>
           ) : (
@@ -212,7 +212,7 @@ const Analytics = () => {
                     <div className="flex items-center gap-2 shrink-0">
                       {t.isMastered && (
                         <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700">
-                          Mastered
+                          Perfect Score
                         </span>
                       )}
                       <span className="text-sm font-semibold tabular-nums">
