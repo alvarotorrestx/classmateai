@@ -14,6 +14,8 @@ import api from "../../services/api";
 import ThemeToggle from "../ui/ThemeToggle";
 import { useToast } from "../../context/ToastContext";
 import { clearCache } from "../../utils/requestCache";
+import { useTutorial } from "../../hooks/useTutorial";
+import TutorialModal from "../ui/TutorialModal";
 
 const NAV_LINKS = [
     { to: "/dashboard",  icon: dashboardIcon,  label: "Dashboard"  },
@@ -26,6 +28,7 @@ const NAV_LINKS = [
 
 const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
     const { auth, setAuth } = useAuth();
+    const { tutorialOpen, dismissTutorial, reopenTutorial } = useTutorial();
     const navigate = useNavigate();
     const { addToast } = useToast();
 
@@ -90,6 +93,7 @@ const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
     const closeSidebar = () => setSidebarOpen(false);
 
     return (
+        <>
         <section className="w-full flex items-center justify-center max-w-500 mx-auto">
             <div className="w-full bg-(--surface) overflow-hidden">
 
@@ -138,6 +142,13 @@ const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
                         {menuOpen && (
                             <div className="absolute right-0 mt-2 min-w-40 rounded-xl border border-theme bg-surface shadow-lg py-2 z-50">
                                 <ThemeToggle />
+                                <button
+                                    type="button"
+                                    onClick={() => { setMenuOpen(false); reopenTutorial(); }}
+                                    className="w-full px-4 py-2 text-left text-sm font-medium text-base-theme hover:bg-surface-muted transition cursor-pointer"
+                                >
+                                    How it works
+                                </button>
                                 <NavLink
                                     to="/settings/account"
                                     onClick={() => setMenuOpen(false)}
@@ -212,6 +223,8 @@ const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
 
             </div>
         </section>
+        {tutorialOpen && <TutorialModal onDismiss={dismissTutorial} />}
+        </>
     );
 };
 

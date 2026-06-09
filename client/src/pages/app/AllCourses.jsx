@@ -6,6 +6,8 @@ import { getNotes, getAllStudySets, deleteNote } from "../../services/noteServic
 import DeleteCourseModal from "../../components/modals/DeleteCourseModal";
 import { getQuizHistory } from "../../hooks/useQuizHistory";
 import { CourseGridSkeleton } from "../../components/loading/PageSkeletons";
+import RecommendationNudge from "../../components/study/RecommendationNudge";
+import { getStudyRecommendations, hasStudyContent } from "../../utils/studyRecommendations";
 import { useToast } from "../../context/ToastContext";
 
 const AllCourses = () => {
@@ -109,7 +111,13 @@ const AllCourses = () => {
     (a, b) => new Date(b.created_at) - new Date(a.created_at)
   );
 
+  const courseRecommendations =
+    !loading && hasStudyContent(courses, studySets)
+      ? getStudyRecommendations({ notes: courses, studySets, quizHistory })
+      : [];
+
   return (
+    <>
     <MainAppPageLayout
       headerTitle="Courses"
       profileInitials={initials}
@@ -369,6 +377,9 @@ const AllCourses = () => {
         </div>
       )}
     </MainAppPageLayout>
+
+      <RecommendationNudge recommendation={courseRecommendations[0] ?? null} />
+    </>
   );
 };
 

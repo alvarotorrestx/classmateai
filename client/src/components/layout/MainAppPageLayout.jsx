@@ -14,6 +14,8 @@ import api from "../../services/api";
 import ThemeToggle from "../ui/ThemeToggle";
 import { useToast } from "../../context/ToastContext";
 import { clearCache } from "../../utils/requestCache";
+import { useTutorial } from "../../hooks/useTutorial";
+import TutorialModal from "../ui/TutorialModal";
 
 const InnerPageLayout = ({
     headerTitle = "Welcome back!",
@@ -21,9 +23,9 @@ const InnerPageLayout = ({
     profileAvatarUrl = null,
     title,
     subtitle,
-    onShowTutorial,
     children
 }) => {
+    const { tutorialOpen, dismissTutorial, reopenTutorial } = useTutorial();
     const navLinkClass = ({ isActive }) =>
         `flex items-center gap-3 rounded-lg px-3 py-2 transition font-medium ${isActive
             ? "bg-(--mint-100) text-(--mint-900)"
@@ -82,6 +84,7 @@ const InnerPageLayout = ({
     const closeSidebar = () => setSidebarOpen(false);
 
     return (
+        <>
         <section className="w-full flex items-center justify-center max-w-500 mx-auto">
             <div className="w-full bg-(--surface) overflow-hidden">
                 {/* Header */}
@@ -136,18 +139,16 @@ const InnerPageLayout = ({
                         {menuOpen && (
                             <div className="absolute right-0 mt-2 min-w-40 rounded-xl border border-theme bg-surface shadow-lg py-2 z-50">
                                 <ThemeToggle />
-                                {onShowTutorial && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setMenuOpen(false);
-                                            onShowTutorial();
-                                        }}
-                                        className="w-full px-4 py-2 text-left text-sm font-medium text-base-theme hover:bg-surface-muted transition cursor-pointer"
-                                    >
-                                        How it works
-                                    </button>
-                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setMenuOpen(false);
+                                        reopenTutorial();
+                                    }}
+                                    className="w-full px-4 py-2 text-left text-sm font-medium text-base-theme hover:bg-surface-muted transition cursor-pointer"
+                                >
+                                    How it works
+                                </button>
                                 <NavLink
                                     to="/settings/account"
                                     onClick={() => setMenuOpen(false)}
@@ -283,6 +284,8 @@ const InnerPageLayout = ({
                 </div>
             </div>
         </section>
+        {tutorialOpen && <TutorialModal onDismiss={dismissTutorial} />}
+        </>
     );
 };
 
