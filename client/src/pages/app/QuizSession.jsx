@@ -8,12 +8,15 @@ import { completeQuizSession } from "../../services/gamificationService";
 import api from "../../services/api";
 import { QuizSessionSkeleton } from "../../components/loading/PageSkeletons";
 import SubmitQuizConfirmModal from "../../components/modals/SubmitQuizConfirmModal";
+import { useToast } from "../../context/ToastContext";
+import { fireQuizCompletionConfetti } from "../../utils/quizCompletionCelebration";
 
 const LETTERS = ["A", "B", "C", "D"];
 
 const QuizSession = () => {
   const { courseId, quizId } = useParams();
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
   const [questions, setQuestions] = useState([]);
   const [quizMeta, setQuizMeta] = useState({ quizLabel: null, courseTitle: null });
@@ -27,6 +30,14 @@ const QuizSession = () => {
   const [confirmSubmitOpen, setConfirmSubmitOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const sessionStartRef = useRef(null);
+  const celebratedRef = useRef(false);
+
+  useEffect(() => {
+    if (!finished || celebratedRef.current) return;
+    celebratedRef.current = true;
+    addToast("Quiz completed! Great job finishing your review.", "success");
+    fireQuizCompletionConfetti();
+  }, [finished, addToast]);
 
   useEffect(() => {
     Promise.all([
@@ -109,6 +120,7 @@ const QuizSession = () => {
     setFinished(false);
     setConfirmSubmitOpen(false);
     setSubmitting(false);
+    celebratedRef.current = false;
     sessionStartRef.current = questions.length > 0 ? Date.now() : null;
   };
 

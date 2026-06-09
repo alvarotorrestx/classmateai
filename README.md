@@ -2,9 +2,7 @@
 
 **ClassmateAI** is an AI-powered study companion that transforms your lecture notes into interactive learning materials — automatically.
 
-Upload your notes (paste text or drop a PDF, PowerPoint, or text file), and ClassmateAI uses Google Gemini to generate flashcards, multiple-choice quizzes, summaries, and study guides. Study the generated content, track your performance, and let the app surface what you need to review next.
-
-> **Project Status: Beta** — All core features are functional end-to-end. See [Project Status](#project-status) for details.
+Upload your notes as a PDF, PowerPoint, Word document, or text file, and ClassmateAI uses Google Gemini to generate flashcards, multiple-choice quizzes, and a study guide. Study the generated content, track your performance, earn badges, and share your study packs with classmates.
 
 ---
 
@@ -24,51 +22,58 @@ Upload your notes (paste text or drop a PDF, PowerPoint, or text file), and Clas
 ## Features
 
 ### Auth & Accounts
-- **Email + password registration** — accounts require email verification before first login (verification link sent via Brevo)
+- **Email + password registration** — accounts require email verification before first login (link sent via Brevo)
 - **Secure cookie-based auth** — access and refresh tokens stored in HttpOnly cookies; no tokens exposed to JavaScript
 - **Automatic token refresh** — expired access tokens are silently refreshed in the background; failed refresh triggers logout
 - **Session persistence** — browser refresh restores your session via `/auth/session` with no login flash
+- **iOS / Safari compatible** — cookie SameSite and Secure flags are environment-driven to support cross-origin deployments on mobile browsers
+- **Profile settings** — update your display name and upload a profile avatar (resized client-side to 150×150 JPEG before upload)
 
 ### Courses & Notes
-- **Course creation** — create named courses (name + optional course code)
-- **Multi-format upload** — upload lecture notes as PDF, PowerPoint (PPTX), plain text, or Markdown; or paste content directly
+- **Course creation** — create named courses
+- **Multi-format upload** — upload lecture notes as PDF, PowerPoint (PPTX), Word (DOCX), plain text, or Markdown (up to 4 MB); legacy `.doc` files show a clear unsupported message
 - **Add more content** — upload additional notes to an existing course at any time to generate fresh study materials
 - **Course study guide** — an AI-generated, accumulated study guide that rebuilds from the full course content each time new notes are added
-- **Dashboard** — shows 3 most recent courses with flashcard/quiz counts and mastery progress bars
+- **Dashboard** — shows recent courses and gamification stats at a glance
 - **All Courses page** — full list with sort, select, and bulk delete
 
 ### AI Generation (Google Gemini 2.5 Flash)
 - **Flashcards** — front/back cards generated from your notes
 - **Multiple-choice quizzes** — 4-option questions with correct answer index and explanation
-- **Summaries** — concise summaries of the uploaded content
 - **Study guides** — detailed, structured guides extracted from your notes
-- **Regenerate on demand** — generate additional flashcard or quiz decks for any existing course at any time
-- **Automatic retry** — transient Gemini API failures are retried up to 2 times before surfacing an error
+- **Regenerate on demand** — generate additional flashcard or quiz decks for any existing course at any time; choose to create a new deck or add to an existing one
 
 ### Study Modes
-- **Flashcard study mode** — flip-card interface with Previous / Skip / Next navigation; confidence rating (Again / Hard / Good / Easy) recorded per card
-- **Flashcard completion screen** — end-of-deck summary showing cards reviewed and session time, with a direct link to take the course quiz
-- **Quiz session mode** — answer one question at a time with back/forward navigation; submit to see full results
-- **Quiz results screen** — score percentage, correct/incorrect counts, and a per-question review showing your answer vs. the correct answer with explanation for every question
-- **Retake any quiz** — re-take any quiz from the Quizzes page or results screen
+- **Flashcard study mode** — flip-card interface with Previous / Skip / Next navigation
+- **Quiz session mode** — answer one question at a time with back/forward navigation; "Finish Quiz" only appears on the final question to prevent accidental submission
+- **Submit confirmation modal** — a confirmation dialog before grading prevents accidentally ending a quiz mid-session
+- **Quiz results screen** — score percentage, correct/incorrect/skipped counts, and a per-question review showing your answer vs. the correct answer with explanation for every question
+- **Retake any quiz** — re-take any quiz from the results screen
 
-### Progress & Analytics
-- **Quiz history** — last 20 sessions stored locally (localStorage); browsable from the Quizzes tab with scores and retake links
-- **Study streak** — consecutive days with a completed flashcard deck or quiz session, displayed on Dashboard and Analytics
-- **Total study time** — accumulated time from completed flashcard and quiz sessions, tracked locally per device
-- **Weekly performance chart** — 7-day bar chart of daily average quiz scores, color-coded (green ≥80%, mint ≥60%, red <60%), with hover tooltips
-- **Topics mastery** — best quiz score per course, sorted with 100% mastered courses first; links to open the course or retake the quiz
+### Export & Share
+- **Individual exports** — download notes, study guide, flashcards, or quiz questions as Markdown files
+- **Export everything** — download all content for a course as a ZIP archive
+- **Share study packs** — generate a public share link for any course; recipients can preview the content and import it into their own account
 
-### Study Recommendations
-- **Suggested for you** — Dashboard surfaces up to 3 personalized study recommendations (quiz or flashcards) based on weak quiz scores and study history
-- **Recommendation nudge** — floating action button on Flashcards and Quizzes pages with a glass-panel card showing the single best study pick
+### Progress & Gamification
+- **Points** — earn points by studying: +10 per flashcard reviewed, +15 per quiz question answered, +25 for finishing a full quiz
+- **Study streak** — consecutive days with study activity, displayed on the Rewards page with your all-time best
+- **Badges** — unlock achievement badges based on study milestones; locked badges show progress bars toward the next unlock
+- **Rewards page** — view all earned and locked badges, filter by status, and see how points are earned
+- **Gamification tooltips** — each stat card shows a `?` tooltip explaining exactly how the number is calculated
+- **Analytics** — study metrics dashboard tracking activity across courses
 
 ### UX & Polish
-- **Dark mode** — full dark/light theme toggle, respects system preference on first visit, persisted across sessions
+- **Landing page** — public marketing page at `/` with feature overview and CTAs before authentication
+- **Persistent sidebar** — full navigation sidebar visible on all app pages on desktop; collapsible drawer on mobile
+- **Dark mode** — full dark/light theme toggle on the landing page, sign-in/register screens, and account menu; respects system preference on first visit, persisted across sessions
+- **Quiz completion feedback** — success toast and brief confetti burst when you submit a quiz (any score)
+- **Onboarding tutorial** — 7-step guided tour shown automatically on first visit; re-accessible at any time via "How it works" in the account menu, available on every page of the app
+- **Study recommendation nudge** — a floating ✨ button surfaces contextual study suggestions: on the Dashboard it cycles through all three recommendations (‹ 1 of 3 ›); on the Courses, Flashcards, and Quizzes pages it shows the single highest-priority action for that content type
 - **Toast notifications** — slide-in feedback for all key actions (login, logout, course created, materials generated, items deleted, errors)
 - **Skeleton loading** — shape-matched skeleton screens on every data-loading page to minimize layout shift
-- **Delete controls** — hover trash icon on every card (courses, flashcard decks, quiz decks) with inline confirm; bulk select + delete on the Courses page
-- **Mobile navigation** — collapsible sidebar drawer on small screens
+- **Delete controls** — hover trash icon on every card with inline confirm; bulk select + delete on the Courses page
+- **Rate limiting** — API endpoints protected with per-user rate limits via slowapi
 
 ---
 
@@ -79,10 +84,12 @@ Upload your notes (paste text or drop a PDF, PowerPoint, or text file), and Clas
 | Technology | Version | Purpose |
 |---|---|---|
 | React | 19 | UI framework |
-| Vite | 6 | Build tool and dev server |
+| Vite | 7 | Build tool and dev server |
 | React Router | v7 | Client-side routing |
 | TailwindCSS | v4 | Utility-first styling |
 | Axios | — | HTTP client with automatic token-refresh interceptor |
+| Lucide React | — | Icon library |
+| fflate | — | Client-side ZIP creation for "Export Everything" |
 
 ### Backend
 
@@ -90,12 +97,16 @@ Upload your notes (paste text or drop a PDF, PowerPoint, or text file), and Clas
 |---|---|
 | Python 3.13 | Runtime |
 | FastAPI | REST API framework |
-| SQLAlchemy 2.0 | ORM with eager-loading (`selectinload`) for performance |
+| SQLAlchemy 2.0 | ORM |
 | Alembic | Database migrations |
-| psycopg3 | PostgreSQL driver |
+| psycopg3 (`psycopg[binary]`) | PostgreSQL driver |
 | bcrypt + python-jose | Password hashing and JWT signing |
 | google-genai SDK | Official Python client for the Gemini API |
-| httpx | Async HTTP client used for Brevo email API calls |
+| pypdf | PDF text extraction |
+| python-pptx | PowerPoint text extraction |
+| python-docx | Word document text extraction |
+| slowapi | Per-user API rate limiting |
+| httpx | HTTP client used for Brevo email API calls |
 
 ### Services & Infrastructure
 
@@ -114,7 +125,7 @@ Upload your notes (paste text or drop a PDF, PowerPoint, or text file), and Clas
 ### Prerequisites
 
 - [Node.js 18+](https://nodejs.org/)
-- [Python 3.13](https://www.python.org/downloads/) (`py` command on Windows)
+- [Python 3.11+](https://www.python.org/downloads/) (`py` command on Windows)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - A [Google AI Studio](https://aistudio.google.com/) account for a Gemini API key
 - A [Brevo](https://www.brevo.com/) account for a transactional email API key
@@ -124,13 +135,23 @@ Upload your notes (paste text or drop a PDF, PowerPoint, or text file), and Clas
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-org/classmateai.git
+git clone https://github.com/alvarotorrestx/classmateai.git
 cd classmateai
 ```
 
 ---
 
-### 2. Backend setup
+### 2. Start the local database
+
+```bash
+docker compose -f docker/compose.yml up -d
+```
+
+Starts PostgreSQL 17 on port `5432` and pgAdmin on port `5050`.
+
+---
+
+### 3. Backend setup
 
 ```bash
 cd server
@@ -143,63 +164,46 @@ Open `server/.env` and fill in all values:
 # Database
 DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/classmateai
 
-# JWT
-SECRET_KEY=<generate with: py -c "import secrets; print(secrets.token_hex(32))">
+# JWT — generate with: py -c "import secrets; print(secrets.token_hex(32))"
+SECRET_KEY=your-secret-key-here
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_MINUTES=10080
 
 # Google Gemini
-GEMINI_API_KEY=<your key from https://aistudio.google.com/app/apikey>
+GEMINI_API_KEY=your-gemini-api-key-here
 
 # Brevo (email verification)
-BREVO_API_KEY=<your Brevo API key>
-EMAIL_FROM=<your verified sender address>
+BREVO_API_KEY=your-brevo-api-key-here
+EMAIL_FROM=classmateai@example.com
 FRONTEND_URL=http://localhost:5173
 EMAIL_VERIFY_EXPIRE_MINUTES=60
+
+# Auth cookies (defaults work for local dev — do not change unless deploying)
+# COOKIE_SECURE=false
+# COOKIE_SAMESITE=lax
 ```
 
-Install Python dependencies:
+Install dependencies and apply migrations:
 
 ```bash
 py -m pip install -r requirements.txt
-```
-
----
-
-### 3. Start the local database
-
-```bash
-docker compose -f docker/compose.yml up -d
-```
-
-Starts PostgreSQL 17 on port `5432` and pgAdmin on port `5050`. Then apply migrations:
-
-```bash
-cd server
 py -m alembic upgrade head
 ```
 
----
-
-### 4. Start the backend server
-
-> **Windows note:** Do not use `&&` to chain commands in PowerShell — run each line separately. Do not use `--reload` — it hides request logs on Windows.
+Start the server:
 
 ```bash
-cd server
 py -m uvicorn app.main:app
 ```
 
 - API: `http://localhost:8000`
 - Swagger docs: `http://localhost:8000/docs`
 
+> **Windows note:** Use `py` instead of `python`. Do not use `&&` in PowerShell — run each command separately. Do not use `--reload`; it suppresses uvicorn request logs on Windows.
+
 ---
 
-### 5. Frontend setup
-
-```bash
-cd client
-```
+### 4. Frontend setup
 
 Create `client/.env`:
 
@@ -210,15 +214,16 @@ VITE_API_BASE_URL=http://localhost:8000
 Install and run:
 
 ```bash
+cd client
 npm install
 npm run dev
 ```
 
-- App: `http://localhost:5173`
+App: `http://localhost:5173`
 
 ---
 
-### 6. pgAdmin (optional)
+### 5. pgAdmin (optional)
 
 - URL: `http://localhost:5050`
 - Login: `admin@classmateai.com` / `admin123`
@@ -230,7 +235,7 @@ npm run dev
 
 ### Network note (Full Sail campus)
 
-The school network blocks outbound connections to Supabase (`db.xxxx.supabase.co:5432`). Use the local Docker setup above, or connect via a mobile hotspot when running against Supabase.
+The school network blocks outbound connections to Supabase (`db.xxxx.supabase.co:5432`). Use the local Docker setup above, or connect via a mobile hotspot when working against Supabase directly.
 
 ---
 
@@ -238,67 +243,66 @@ The school network blocks outbound connections to Supabase (`db.xxxx.supabase.co
 
 ```
 classmateai/
-├── client/                              # React 19 frontend (Vite)
+├── client/                              # React 19 frontend (Vite 7)
 │   └── src/
 │       ├── assets/icons/                # SVG icons by category
-│       │   ├── core/
-│       │   ├── navigation/
-│       │   ├── status_and_feedback/
-│       │   └── study_tools/
 │       ├── components/
-│       │   ├── auth/                    # AuthLoading, RequireAuth, RedirectIfAuth
-│       │   ├── layout/                  # DefaultPageLayout, MainAppPageLayout, InnerAppPageLayout
-│       │   ├── loading/                 # SkeletonBlock, PageSkeletons (per-page variants)
-│       │   ├── modals/                  # DeleteCourseModal
-│       │   ├── study/                   # RecommendationNudge
-│       │   └── ui/                      # Button, Badge, Icon, Toast, ThemeToggle
+│       │   ├── auth/                    # RequireAuth, RedirectIfAuth, AuthLoading
+│       │   ├── gamification/            # BadgeCard, BadgeGrid, GamificationStats, PointsLegend
+│       │   ├── layout/                  # MainAppPageLayout, InnerAppPageLayout
+│       │   ├── loading/                 # SkeletonBlock, PageSkeletons
+│       │   ├── modals/                  # DeleteCourseModal, SubmitQuizConfirmModal
+│       │   ├── study/                   # ExportShareMenu, ShareStudyPackModal, RecommendationNudge
+│       │   └── ui/                      # Badge, Button, Icon, ThemeToggle, Toast, Tooltip, TutorialModal
 │       ├── context/                     # AuthContext, ToastContext
-│       ├── hooks/                       # useAuth, useQuizHistory, useStudyMetrics, useTheme
+│       ├── hooks/                       # useAuth, useQuizHistory, useStudyMetrics, useTutorial
 │       ├── pages/
 │       │   ├── app/                     # Dashboard, AllCourses, Courses, NewCourse,
 │       │   │                            #   UploadNotes, Processing, StudyMaterialsReady,
 │       │   │                            #   AllFlashcards, Flashcards, AllQuizzes,
-│       │   │                            #   Quizzes, QuizSession, Analytics
-│       │   ├── auth/                    # Login, Register, VerifyEmail
-│       │   └── public/                  # Landing, NotFound
-│       ├── services/                    # api.js (Axios + refresh interceptor),
-│       │                                #   authService.js, noteService.js, progressService.js
-│       └── utils/                       # studyRecommendations.js
+│       │   │                            #   Quizzes, QuizSession, Analytics,
+│       │   │                            #   Rewards, AccountSettings
+│       │   ├── auth/                    # Login, Register, VerifyEmail, VerifyEmailChange
+│       │   └── public/                  # Landing, SharedContent, NotFound
+│       ├── services/                    # api.js, accountService, gamificationService,
+│       │                                #   noteService, shareService
+│       └── utils/                       # apiBaseUrl, exportStudyContent, requestCache,
+│                                        #   studyRecommendations, uploadLimits
 │
 ├── server/                              # FastAPI backend
 │   ├── app/
-│   │   └── main.py                      # FastAPI app + router registration + CORS
+│   │   └── main.py                      # App entry point, router registration, CORS
 │   ├── db/
-│   │   └── __init__.py                  # SQLAlchemy engine (connection pool), session factory
-│   ├── models/                          # ORM models
-│   │   ├── user.py                      # User (id, email, password_hash, full_name, is_verified)
-│   │   ├── note.py                      # Note/Course (id, user_id, title, content)
-│   │   ├── study_set.py                 # StudySet (id, user_id, note_id, label)
-│   │   ├── flashcard.py                 # Flashcard (id, study_set_id, front, back, display_order)
-│   │   ├── flashcard_review.py          # FlashcardReview (confidence 1–5, reviewed_at)
-│   │   ├── quiz_question.py             # QuizQuestion (question, options JSONB, correct_index, explanation)
-│   │   ├── quiz_attempt.py              # QuizAttempt (selected_index, is_correct, attempted_at)
-│   │   ├── summary.py                   # Summary (study_set_id, content)
-│   │   ├── study_guide.py               # StudyGuide (study_set_id, content)
-│   │   └── course_study_guide.py        # CourseStudyGuide (note_id, accumulated content)
-│   ├── routes/                          # API routers
+│   │   └── __init__.py                  # SQLAlchemy engine (NullPool), session factory
+│   ├── models/                          # SQLAlchemy ORM models (user, note, study_set,
+│   │                                    #   flashcard, quiz_question, quiz_attempt,
+│   │                                    #   study_guide, course_study_guide, badge,
+│   │                                    #   gamification_stats, share_link, share_import)
+│   ├── routes/
 │   │   ├── auth.py                      # /auth/* — register, login, logout, refresh, session, verify-email
-│   │   ├── notes.py                     # /notes/* — CRUD + add-content + course study guide
-│   │   ├── study_sets.py                # /study-sets/* — read + delete endpoints
-│   │   ├── generate.py                  # /notes/{id}/generate/* — full set, flashcards-only, quiz-only
-│   │   ├── progress.py                  # /quiz/*/attempt, /flashcards/*/review
-│   │   └── upload.py                    # /extract-text — PDF, PPTX, TXT parsing
+│   │   ├── notes.py                     # /notes/* — CRUD, add-content, course study guide
+│   │   ├── study_sets.py                # /study-sets/* — read, delete
+│   │   ├── generate.py                  # /notes/{id}/generate/* — full set, flashcards, quiz
+│   │   ├── progress.py                  # Quiz attempts, flashcard reviews
+│   │   ├── upload.py                    # /extract-text — multipart file parsing
+│   │   ├── users.py                     # /users/me — profile read + update
+│   │   ├── badges.py                    # /badges — badge definitions + earned status
+│   │   ├── quiz_sessions.py             # Quiz session completion (gamification triggers)
+│   │   └── shares.py                    # /shares — create link, preview, import
 │   ├── schemas/                         # Pydantic request/response models
 │   ├── services/
 │   │   ├── ai.py                        # Gemini API calls with retry logic
-│   │   └── file_parser.py               # Text extraction from PDF, PPTX, text files
+│   │   └── file_parser.py               # Text extraction from PDF, PPTX, DOCX, TXT, MD
 │   ├── utils/
 │   │   ├── auth.py                      # JWT helpers (access, refresh, email-verification tokens)
-│   │   ├── deps.py                      # get_current_user dependency (cookie or header)
-│   │   └── email.py                     # Brevo email sender
+│   │   ├── deps.py                      # get_current_user dependency
+│   │   ├── email.py                     # Brevo email sender
+│   │   ├── rate_limit.py                # slowapi limiter config
+│   │   └── redirects.py                 # Safe internal redirect validation
 │   └── alembic/                         # Migration history
 │
-└── docker/                              # PostgreSQL 17 + pgAdmin 4 compose config
+└── docker/
+    └── compose.yml                      # PostgreSQL 17 + pgAdmin 4
 ```
 
 ---
@@ -313,57 +317,102 @@ classmateai/
 | POST | `/auth/login` | No | Login; sets access + refresh cookies |
 | POST | `/auth/logout` | No | Clear auth cookies |
 | POST | `/auth/refresh` | Cookie | Rotate both tokens |
-| GET | `/auth/session` | Cookie | Return current user (used for session hydration) |
+| GET | `/auth/session` | Cookie | Return current user (session hydration on page load) |
 | POST | `/auth/verify-email` | No | Verify email with token from link |
 | POST | `/auth/resend-verification` | No | Resend verification email |
+
+### Users (`/users`)
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/users/me` | Get current user profile |
+| PATCH | `/users/me/profile` | Update display name and/or avatar URL |
 
 ### Notes / Courses (`/notes`)
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/notes` | List all courses (title + metadata, no content) |
+| GET | `/notes` | List all courses |
 | POST | `/notes` | Create course |
-| GET | `/notes/{id}` | Get single course (includes content) |
+| GET | `/notes/{id}` | Get single course |
 | PATCH | `/notes/{id}` | Update title or content |
-| DELETE | `/notes/{id}` | Delete course (with options for flashcards/quizzes) |
+| DELETE | `/notes/{id}` | Delete course (optional cascade for flashcards/quizzes) |
 | POST | `/notes/{id}/add-content` | Append content + generate new study set |
+| GET | `/notes/{id}/study-sets` | Get study sets for a course |
 | GET | `/notes/{id}/study-guide` | Get accumulated course study guide |
 
 ### Study Sets (`/study-sets`)
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/study-sets` | All study sets for current user (eager-loaded) |
-| GET | `/notes/{id}/study-sets` | Study sets for a specific course |
-| GET | `/study-sets/{id}` | Single study set |
+| GET | `/study-sets` | All study sets for current user |
+| GET | `/study-sets/{id}` | Single study set with flashcards and quiz questions |
 | DELETE | `/study-sets/{id}` | Delete entire study set |
 | GET | `/study-sets/{id}/flashcards` | Get flashcards |
-| DELETE | `/study-sets/{id}/flashcards` | Delete flashcards |
+| DELETE | `/study-sets/{id}/flashcards` | Delete flashcards only |
 | GET | `/study-sets/{id}/quiz` | Get quiz questions |
-| DELETE | `/study-sets/{id}/quiz` | Delete quiz questions |
-| GET | `/study-sets/{id}/summary` | Get summary |
-| GET | `/study-sets/{id}/study-guide` | Get study guide |
+| DELETE | `/study-sets/{id}/quiz` | Delete quiz questions only |
 
-### Generation (`/notes/{id}/generate`)
+### Generation
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/notes/{id}/generate` | Generate full study set (flashcards + quiz + summary + guide) |
-| POST | `/notes/{id}/generate/flashcards` | Generate additional flashcards |
-| POST | `/notes/{id}/generate/quiz` | Generate additional quiz questions |
+| POST | `/notes/{id}/generate` | Generate full study set (flashcards + quiz + guide) |
+| POST | `/notes/{id}/generate/flashcards` | Generate additional flashcards (optionally into an existing set) |
+| POST | `/notes/{id}/generate/quiz` | Generate additional quiz questions (optionally into an existing set) |
 
-### Progress
+### Progress & Gamification
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/quiz/{id}/attempt` | Record quiz answer (correct/incorrect) |
-| POST | `/flashcards/{id}/review` | Record flashcard confidence rating (1–5) |
+| POST | `/quiz/{id}/attempt` | Record a quiz question answer |
+| POST | `/quiz-sessions/{id}/complete` | Mark a quiz session complete (awards points + streak) |
+| GET | `/badges` | List all badge definitions with earned status and progress |
 
 ### File Upload
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/extract-text` | Parse PDF, PPTX, or text file; return extracted text (20 MB limit) |
+| POST | `/extract-text` | Parse PDF, PPTX, DOCX, TXT, or MD file; return extracted text (4 MB limit) |
+
+### Shares
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/shares` | Create a share link for a course |
+| GET | `/shares/{token}` | Preview shared content (public) |
+| POST | `/shares/{token}/import` | Import shared content into your account |
+
+---
+
+## Deployment
+
+The app is deployed as two separate Vercel projects:
+
+| Project | URL |
+|---|---|
+| Frontend | `https://classmateai-five.vercel.app` |
+| Backend API | `https://classmateai-api.vercel.app` |
+
+`client/vercel.json` rewrites `/api/:path*` to the backend, so the frontend never makes cross-origin requests in production — all API calls go through the same domain.
+
+**Frontend environment variable (set in Vercel dashboard):**
+```
+VITE_API_BASE_URL=   (leave empty — the /api rewrite handles routing)
+```
+
+**Backend environment variables (set in Vercel dashboard):**
+```
+DATABASE_URL          (Supabase connection string)
+SECRET_KEY
+GEMINI_API_KEY
+BREVO_API_KEY
+EMAIL_FROM
+FRONTEND_URL          (https://classmateai-five.vercel.app)
+COOKIE_SECURE=true
+COOKIE_SAMESITE=none
+CORS_ORIGINS          (any additional preview deployment URLs)
+```
 
 ---
 
@@ -410,30 +459,23 @@ This project is maintained by Patrick Caldwell and Alvaro Torres as part of the 
 
 ## Project Status
 
-**Current state: Beta**
+The full application is functional end-to-end across all features.
 
-The full application loop is functional end-to-end across all features:
-
-- Email-verified account registration and secure cookie-based authentication
-- Course creation with PDF, PPTX, TXT, and Markdown upload support
-- AI generation (flashcards, quizzes, summaries, study guides) via Gemini 2.5 Flash with automatic retry
+**What works:**
+- Email-verified account registration and secure cookie-based authentication (iOS/Safari compatible)
+- Profile settings with avatar upload
+- Course creation with PDF, PPTX, DOCX, TXT, and Markdown upload (up to 4 MB)
+- AI generation (flashcards, quizzes, study guides) via Gemini 2.5 Flash
 - Regenerate additional flashcard or quiz decks for any existing course
 - Accumulated course study guide that rebuilds as content is added
-- Flashcard study mode with confidence ratings recorded to the database
-- Quiz sessions with per-question back/forward navigation and full results review
-- Quiz history (last 20 sessions) with retake links
-- Study streak and total study time tracking per device
-- Weekly quiz performance chart and topics mastery analytics
-- Personalized study recommendations on Dashboard and study pages
+- Flashcard study mode
+- Quiz sessions with navigation, submit confirmation, and full per-question results review
+- Export notes, study guide, flashcards, and quizzes as Markdown; export everything as ZIP
+- Share study packs via link; recipients can preview and import into their account
+- Points, daily study streaks, and achievement badges
+- Gamification stats with tooltip explanations on the Rewards page
+- Analytics page with study metrics
+- Persistent sidebar navigation on all app pages (hamburger drawer on mobile)
+- Onboarding tutorial accessible from every page via the account menu
+- Study recommendation nudge on Dashboard (cycles all 3), Courses, Flashcards, and Quizzes pages
 - Dark mode with system-preference detection and persistence
-- Toast notifications for all key actions
-- Skeleton loading on all data-loading pages
-- Delete controls on all content cards with bulk delete on Courses page
-- Mobile-responsive navigation
-
-**Known limitations:**
-
-- No spaced-repetition scheduling — flashcard confidence ratings are recorded in the database but not yet used to schedule reviews
-- No password reset flow
-- Quiz history, study streak, and total study time are stored in the browser (localStorage) — they do not sync across devices or browsers
-- No offline support
