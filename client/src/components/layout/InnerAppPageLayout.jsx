@@ -98,7 +98,7 @@ const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
             <div className="w-full bg-(--surface) overflow-hidden">
 
                 {/* ── Header ── */}
-                <header className="w-full bg-(--brand) px-4 py-3 flex items-center justify-between">
+                <header className="w-full bg-(--brand) px-4 py-3 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                         {/* Hamburger — mobile only */}
                         <button
@@ -124,8 +124,9 @@ const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
                         </span>
                     </div>
 
-                    {/* Profile / account menu */}
-                    <div className="relative shrink-0" ref={menuRef}>
+                    <div className="flex items-center gap-3 shrink-0">
+                        <ThemeToggle variant="inline" />
+                        <div className="relative" ref={menuRef}>
                         <button
                             type="button"
                             onClick={() => setMenuOpen((prev) => !prev)}
@@ -141,14 +142,6 @@ const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
 
                         {menuOpen && (
                             <div className="absolute right-0 mt-2 min-w-40 rounded-xl border border-theme bg-surface shadow-lg py-2 z-50">
-                                <ThemeToggle />
-                                <button
-                                    type="button"
-                                    onClick={() => { setMenuOpen(false); reopenTutorial(); }}
-                                    className="w-full px-4 py-2 text-left text-sm font-medium text-base-theme hover:bg-surface-muted transition cursor-pointer"
-                                >
-                                    How it works
-                                </button>
                                 <NavLink
                                     to="/settings/account"
                                     onClick={() => setMenuOpen(false)}
@@ -165,6 +158,7 @@ const InnerAppPageLayout = ({ children, headerTitle = "ClassmateAI" }) => {
                                 </button>
                             </div>
                         )}
+                        </div>
                     </div>
                 </header>
 
