@@ -474,9 +474,3 @@ The full application is functional end-to-end across all features.
 - Analytics page with study metrics
 - Persistent sidebar navigation on all app pages (hamburger drawer on mobile)
 - Dark mode with system-preference detection and persistence
-
-**Known limitations:**
-- No spaced-repetition scheduling — flashcard reviews are recorded but not yet used to schedule future sessions
-- No password reset flow
-- Study time and quiz history are stored in `localStorage` — they do not sync across devices or browsers
-- No offline support
