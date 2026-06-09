@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import ThemeToggle from "../../components/ui/ThemeToggle";
 
 // ── Inline SVG icons ──────────────────────────────────────────────────────────
 
@@ -126,22 +127,23 @@ const Landing = () => {
     <div className="min-h-screen bg-(--surface) text-(--text)">
 
       {/* ── Sticky nav ── */}
-      <nav className="sticky top-0 z-30 bg-brand px-4 sm:px-6 py-3 flex items-center justify-between gap-3 shadow-sm">
+      <nav className="sticky top-0 z-30 bg-brand px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm">
         <img
           src="/images/logo/logo.png"
           alt="ClassmateAI logo"
           className="w-15 h-12 rounded-md bg-white p-1 shrink-0"
         />
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
+          <ThemeToggle variant="inline" />
           <Link
             to="/login"
-            className="rounded-xl bg-(--mint-800) text-white px-4 py-2 sm:px-5 text-sm font-semibold hover:bg-(--mint-700) transition whitespace-nowrap"
+            className="rounded-xl bg-(--mint-800) text-white px-3 py-2 sm:px-5 text-xs sm:text-sm font-semibold hover:bg-(--mint-700) transition whitespace-nowrap"
           >
             Sign In
           </Link>
           <Link
             to="/register"
-            className="rounded-xl bg-white text-(--mint-800) px-4 py-2 sm:px-5 text-sm font-semibold hover:bg-(--mint-50) transition whitespace-nowrap"
+            className="rounded-xl bg-white text-(--mint-800) px-3 py-2 sm:px-5 text-xs sm:text-sm font-semibold hover:bg-(--mint-50) transition whitespace-nowrap"
           >
             Get Started
           </Link>
